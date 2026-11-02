@@ -91,6 +91,7 @@ test("accepts: an option's text or number for choices, any sentence for word til
 test("word tiles in another order go to the AI, whose verdict grades them", () => {
   assert.ok(!needsJudge(bank, "I like tea."));
   assert.ok(needsJudge(bank, "tea. I like"));
+  assert.ok(!needsJudge(bank, "I like coffee."), "other words are wrong without asking the AI");
   assert.ok(!needsJudge(choice, "likes"));
   const st = next(answer(begin(openPractice(), set), "1"));
   assert.equal(answer(st, "tea. I like", true).last?.correct, true);

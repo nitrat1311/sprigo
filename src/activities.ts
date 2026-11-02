@@ -215,6 +215,12 @@ export function rejected(items: Item[], checked: z.infer<typeof checkSchema> | n
 export const normalize = (t: string) =>
   t.normalize("NFKC").toLocaleLowerCase().replace(/[’`]/g, "'").replace(/[\p{P}\p{S}]/gu, (ch) => (ch === "'" ? ch : " ")).replace(/\s+/g, " ").trim();
 
+/** Whether `given` has exactly the words of `answer`, in any order: only then can word tiles in another order be right. */
+export const sameWords = (given: string, answer: string) => {
+  const words = (s: string) => normalize(s).split(" ").filter(Boolean).sort().join(" ");
+  return words(given) === words(answer);
+};
+
 /** Shown instead of a word-tile prompt (also for items cached before this fix). Models sometimes write the tile sentence into the prompt ("'They played…' (Dün…)"): cut it out, keep the meaning. */
 export function hideAnswer(prompt: string, answer: string) {
   const words = answer.replace(/[.!?…]+$/, "").trim().split(/\s+/).map((w) => w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));

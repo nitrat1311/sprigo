@@ -4,7 +4,7 @@ import { Icon } from "./icons";
 import { useApp } from "./store";
 import { useBuy } from "./screens/Screens";
 import * as db from "./db";
-import { SPEECH_PASS, hideAnswer, listenItems, madnessItems, matchesAnswer, normalize, speakItems, speechMisses, speechScore, type Item } from "./activities";
+import { SPEECH_PASS, hideAnswer, listenItems, madnessItems, matchesAnswer, normalize, sameWords, speakItems, speechMisses, speechScore, type Item } from "./activities";
 import { MicButton } from "./Mic";
 import { answerLang } from "./evalRules";
 import { sttReady } from "./stt";
@@ -235,7 +235,7 @@ export function Lesson({ id }: { id: string }) {
     // Tiles too: "A nevem Anna" and "Anna a nevem" are both right, and the model gives only one order.
     const [given, expected] = it.kind === "bank" ? [bankSel.map((j) => it.bank[j]).join(" "), it.answer.join(" ")] : [text, it.answer];
     if (it.kind === "bank" ? normalize(given) === normalize(expected) : matchesAnswer(text, it)) return grade(true, expected, given);
-    if (!ctx) return grade(false, expected, given);
+    if (!ctx || (it.kind === "bank" && !sameWords(given, expected))) return grade(false, expected, given); // other tiles: wrong, no AI needed
     setChecking(true); // C4: string match failed, let the AI judge meaning
     // A failed AI call is not a wrong answer: no heart lost, the learner just checks again.
     try { const r = await judge(ctx, questionOf(it), expected, given); grade(r.correct, expected, given, r.feedback, true); }

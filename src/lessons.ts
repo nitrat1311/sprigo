@@ -119,7 +119,7 @@ async function generateItems(c: LessonContext, mistakes: string[], about: string
 // Gemma takes 5–10 s; in tests about 1 request in 60 hung for 5 minutes, which must not hold a lesson back.
 const SECOND_LOOK_S = 30;
 
-/** Indexes of the exercises a second look calls wrong (both checks run at once); a check that fails flags nothing. */
+/** Indexes of the exercises a second look calls wrong (both checks run at once); a check that fails, or rejects over half, flags nothing. */
 async function flagged(c: Parameters<typeof checkPrompt>[0], items: Item[], text = ""): Promise<Set<number>> {
   const quiet = <T>(p: Promise<T>) => p.catch((e) => { console.warn("Second look failed, keeping the exercises as written", e); return null; });
   const solve = solvePrompt(c, items, text);
@@ -127,7 +127,9 @@ async function flagged(c: Parameters<typeof checkPrompt>[0], items: Item[], text
     quiet(generate(checkSchema, reviewSystem, checkPrompt(c, items, text), undefined, undefined, SECOND_LOOK_S)),
     solve ? quiet(generate(solveSchema, solveSystem(c.course.name), solve, undefined, undefined, SECOND_LOOK_S)) : null,
   ]);
-  return rejected(items, checked, solved);
+  const bad = rejected(items, checked, solved);
+  // ponytail: a look that rejects most of a set is more likely wrong than the set; trusted only up to half, tune once measured.
+  return bad.size > items.length / 2 ? new Set() : bad;
 }
 
 /** The lesson without the exercises a second look calls wrong, unless that would leave nothing. */

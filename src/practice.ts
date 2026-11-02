@@ -2,7 +2,7 @@
 // The app owns the flow and grades answers; the tutor only gets events and a text picture of the screen (describePractice).
 import { z } from "zod";
 import { CEFR, levelsOf, type Cefr, type Course, type CourseLevel } from "./course.ts";
-import { lessonSchema, normalize, REGISTRY, toItems, type Item, type LessonActivity } from "./activities.ts";
+import { lessonSchema, normalize, REGISTRY, sameWords, toItems, type Item, type LessonActivity } from "./activities.ts";
 import { currentUnit } from "./tutor.ts";
 
 export const PRACTICE_XP = 5; // per correct answer, added to the call's XP
@@ -117,7 +117,8 @@ function optionIndex(it: Extract<Item, { kind: "choice" }>, given: string) {
 export const accepts = (it: Item, given: string) => (it.kind === "choice" ? optionIndex(it, given) >= 0 : it.kind === "bank" && !!normalize(given));
 
 /** Word tiles in an order other than the expected one: the AI decides whether it is right too (DECISIONS C4). */
-export const needsJudge = (it: Item, given: string) => it.kind === "bank" && accepts(it, given) && normalize(given) !== normalize(expected(it));
+export const needsJudge = (it: Item, given: string) =>
+  it.kind === "bank" && accepts(it, given) && normalize(given) !== normalize(expected(it)) && sameWords(given, expected(it));
 
 /** Grades the item on screen once; answers that are not gradable, or come after the first, change nothing. `judged`: the AI's verdict (needsJudge). */
 export function answer(st: PracticeState, given: string, judged?: boolean): PracticeState {

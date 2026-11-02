@@ -23,9 +23,10 @@ const STOP: Record<Lang, Set<string>> = {
   pl: new Set("w z na nie się jest że jak co ale tak czy ten ta jestem mam masz bardzo dla od po przez który która które jeśli bo już też tylko kiedy gdzie dlaczego zdanie słowo".split(" ")),
 };
 // Letters only one of these languages uses (ö and ü are shared by German, Turkish and Hungarian, ç by French and Turkish,
-// á, í, ó and ú by Spanish, Hungarian and Polish); Hungarian's sz, zs, gy and cs are letters of its alphabet, and sz is a
-// Polish one too, so it counts for both and their own letters and stopwords decide.
-const MARK: Record<Lang, RegExp> = { en: /(?!)/, de: /[ßä]/, es: /ñ/, fr: /[èêœàâùû]/, tr: /[ışğ]/, hu: /[őű]|sz|zs|gy|cs/, pl: /[ąćęłńśźż]|cz|sz/ };
+// á, í, ó and ú by Spanish, Hungarian and Polish); Hungarian's sz and zs are letters of its alphabet, and sz is a
+// Polish one too, so it counts for both and their own letters and stopwords decide. Not gy or cs: English has them too
+// (energy, physics).
+const MARK: Record<Lang, RegExp> = { en: /(?!)/, de: /[ßä]/, es: /ñ/, fr: /[èêœàâùû]/, tr: /[ışğ]/, hu: /[őű]|sz|zs/, pl: /[ąćęłńśźż]|cz|sz/ };
 
 /** The likeliest of LANGS (the course languages and Polish), or null for under 3 words or no clear winner. */
 export function guessLang(text: string): Lang | null {

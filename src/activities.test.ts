@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { REGISTRY, givesAway, hideAnswer, matchesAnswer, plannedActivities, lessonSchema, checkPrompt, rejected, solvePrompt, toItems, type Item } from "./activities.ts";
+import { REGISTRY, givesAway, hideAnswer, matchesAnswer, plannedActivities, lessonSchema, checkPrompt, rejected, sameWords, solvePrompt, toItems, type Item } from "./activities.ts";
 
 test("answer check ignores case, punctuation and curly quotes; accepts variants", () => {
   const item = { answer: "I'm fine, thank you.", accepted: ["I am fine, thanks"] };
@@ -119,6 +119,12 @@ test("speaking check names the words it didn't catch", async () => {
   assert.deepEqual(speechMisses("Jó napot kívánok!", "Jónapot kívánok."), [], "words the transcript joined still count");
   assert.deepEqual(speechMisses("Jó napot kívánok!", "Jónapot."), ["kívánok"]);
   assert.deepEqual(speechMisses("Guten Tag", "gutentag morgen"), []);
+});
+
+test("sameWords: the answer's words in any order, nothing more or less", () => {
+  assert.ok(sameWords("Anna a nevem", "A nevem Anna."));
+  assert.ok(!sameWords("A nevem Anna Anna", "A nevem Anna"));
+  assert.ok(!sameWords("A nevem Péter", "A nevem Anna"));
 });
 
 test("hideAnswer keeps only the meaning of a word-tile prompt", () => {

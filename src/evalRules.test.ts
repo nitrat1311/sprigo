@@ -16,6 +16,8 @@ test("guessLang names each course language and gives up on short or unclear text
   assert.equal(guessLang("Nie wiem, co to znaczy."), "pl");
   assert.equal(guessLang("Kiedy masz urodziny?"), "pl"); // sz is Hungarian too
   assert.equal(guessLang("Wpisz usłyszane zdanie."), "pl");
+  assert.equal(guessLang("Physics and economics need energy."), "en"); // gy and cs are English too
+  assert.notEqual(guessLang("Gymnastics classes start tomorrow morning."), "hu");
   assert.equal(guessLang("Hello there"), null); // under 3 words
   assert.equal(guessLang("Maria Paulo Tokyo"), null); // no stopword: no winner
 });
