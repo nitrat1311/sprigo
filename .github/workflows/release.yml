@@ -88,7 +88,7 @@ jobs:
       - name: Windows ARM compiler
         if: matrix.platform == 'windows-11-arm'
         shell: bash
-        run: printf 'CMAKE_GENERATOR=Ninja\nCC=clang-cl\nCXX=clang-cl\n' >> "$GITHUB_ENV"
+        run: printf 'CMAKE_GENERATOR=Ninja\nCC=clang-cl\nCXX=clang-cl\nCXXFLAGS=/EHsc\n' >> "$GITHUB_ENV" # cc's flags replace CMake's defaults, /EHsc included
 
       # RPM refuses the '-' in pre-release versions (1.12.0-1): betas ship .deb and AppImage only on Linux.
       - name: Linux pre-release bundles
