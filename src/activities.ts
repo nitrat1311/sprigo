@@ -306,3 +306,10 @@ export function shuffleAnswer(opts: string[], answer: number) {
   const options = shuffle(opts);
   return { options, answer: options.indexOf(opts[answer]) };
 }
+
+
+/** A translation is usable only when it is non-empty and not just the reply in the target language. */
+export function validTranslation(reply: string, translation: string) {
+  const a = reply.trim().toLocaleLowerCase(), b = translation.trim().toLocaleLowerCase();
+  return b !== "" && a !== b;
+}

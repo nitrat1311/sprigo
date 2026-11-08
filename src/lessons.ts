@@ -1,19 +1,19 @@
 // Lesson generation (DECISIONS C2, C3): cache → one call for the whole step → per-activity fallback.
-import { crossChecked, formsPrompt, formsSchema, fromTable, pickAsks } from "./conjugation";
+import { crossChecked, formsPrompt, formsSchema, fromTable, pickAsks } from "./conjugation.ts";
 import { z } from "zod";
-import { generate, generatePlain, generateStream } from "./ai";
-import { applyMemoryOps, cachedGuides, enrollmentProfile, getCached, listMemories, listMistakes, markMemoriesUsed, memoryOn, putCached } from "./db";
-import { REGISTRY, givesAway, langEn, lessonPrompt, mistakeLine, lessonSchema, plannedActivities, checkPrompt, checkSchema, rejected, reviewSystem, shuffleAnswer, solvePrompt, solveSchema, solveSystem, systemPrompt, toItems, type Item, type LessonContext } from "./activities";
-import { CHARACTERS, CHAT_MAX_TURNS, CHAT_MIN_TURNS, FREE_GOAL, type CharacterId } from "./characters";
-import { CEFR, levelsOf, storyId, type Course, type CourseLevel, type Cefr } from "./course";
-import { looseTutor, tutorPrompt, tutorSchema, tutorSystem, type TutorEvent, type TutorMsg } from "./tutor";
-import { cleanOps, looseMemory, memoryPrompt, memorySchema, memorySystem, pickMemories, type MemorySource } from "./memory";
-import { practicePrompt, practiceSchema, toPracticeSet, type PracticeSet } from "./practice";
-import { cleanDebrief, debriefPrompt, debriefSchema, debriefSystem, looseDebrief, looseRoleTurn, rehearsalSystem, roleTurnSchema, type RehearsalBrief } from "./rehearsal";
-import { avoidancePrompt, avoidanceSchema, looseAvoidance } from "./drills";
-import { fromGuides, lookupSchema, wordKey, type Lookup } from "./lookup";
-import { feedbackPrompt, feedbackSchema, looseFeedback, taskPrompt, taskSchema, writeId, type WritingTask } from "./writing";
-import { cleanNote, noteFor, noteFresh, notePrompt, noteSystem, NOTE_KEY, type GardenNote, type NoteInfo } from "./gardenNote";
+import { generate, generatePlain, generateStream } from "./ai.ts";
+import { applyMemoryOps, cachedGuides, enrollmentProfile, getCached, listMemories, listMistakes, markMemoriesUsed, memoryOn, putCached } from "./db.ts";
+import { REGISTRY, givesAway, langEn, lessonPrompt, mistakeLine, lessonSchema, plannedActivities, checkPrompt, checkSchema, rejected, reviewSystem, shuffleAnswer, solvePrompt, solveSchema, solveSystem, systemPrompt, toItems, type Item, type LessonContext, validTranslation } from "./activities.ts";
+import { CHARACTERS, CHAT_MAX_TURNS, CHAT_MIN_TURNS, FREE_GOAL, type CharacterId } from "./characters.ts";
+import { CEFR, levelsOf, storyId, type Course, type CourseLevel, type Cefr } from "./course.ts";
+import { looseTutor, tutorPrompt, tutorSchema, tutorSystem, type TutorEvent, type TutorMsg } from "./tutor.ts";
+import { cleanOps, looseMemory, memoryPrompt, memorySchema, memorySystem, pickMemories, type MemorySource } from "./memory.ts";
+import { practicePrompt, practiceSchema, toPracticeSet, type PracticeSet } from "./practice.ts";
+import { cleanDebrief, debriefPrompt, debriefSchema, debriefSystem, looseDebrief, looseRoleTurn, rehearsalSystem, roleTurnSchema, type RehearsalBrief } from "./rehearsal.ts";
+import { avoidancePrompt, avoidanceSchema, looseAvoidance } from "./drills.ts";
+import { fromGuides, lookupSchema, wordKey, type Lookup } from "./lookup.ts";
+import { feedbackPrompt, feedbackSchema, looseFeedback, taskPrompt, taskSchema, writeId, type WritingTask } from "./writing.ts";
+import { cleanNote, noteFor, noteFresh, notePrompt, noteSystem, NOTE_KEY, type GardenNote, type NoteInfo } from "./gardenNote.ts";
 
 /** `A1:checkpoint` (path node) and `A1:test` (skip-level test) share one flow (DECISIONS B8). */
 export const examLevel = (id: string) => /^([ABC][12]):(checkpoint|test)$/.exec(id)?.[1] as Cefr | undefined;
@@ -263,12 +263,13 @@ export const checkWriting = (c: Base, task: string, text: string) =>
 export type ChatMsg = { from: "ai" | "me"; text: string; translation?: string; correction?: string };
 
 const turnSchema = z.object({ correction: z.string(), reply: z.string(), translation: z.string(), goal_reached: z.boolean() });
+
 // Some models (glm on Ollama) drop goal_reached or correction every time, so retrying can't help; a missing one means "no".
 const looseTurn = turnSchema.extend({ correction: z.string().catch(""), goal_reached: z.boolean().catch(false) });
 
 /** The character's next turn; also corrects the learner's last message. Empty history = opening line.
  *  `opts.rules` add lines to the system prompt (drills); `opts.keep` caps how many past messages the prompt carries. */
-export function chatTurn(c: Base & { about?: string[] }, who: CharacterId, topic: { goal: string }, history: ChatMsg[], opts: { rules?: string[]; keep?: number } = {}) {
+export async function chatTurn(c: Base & { about?: string[] }, who: CharacterId, topic: { goal: string }, history: ChatMsg[], opts: { rules?: string[]; keep?: number } = {}) {
   const ch = CHARACTERS[who], native = langEn(c.native);
   const free = topic.goal.startsWith(FREE_GOAL);
   const sent = history.filter((m) => m.from === "me").length;
@@ -296,7 +297,15 @@ export function chatTurn(c: Base & { about?: string[] }, who: CharacterId, topic
       `Check only this last learner message for \`correction\` (earlier ones were already corrected): "${last.text}"\nThen write ${ch.name}'s next turn.`
     : free ? "Open the chat: a short, friendly greeting and a first question about the topic."
     : "Open the scene: a short greeting that leads straight into the goal and invites the learner to start.";
-  return generate(turnSchema, system, prompt, undefined, looseTurn);
+  const r = await generate(turnSchema, system, prompt, undefined, looseTurn);
+  if (validTranslation(r.reply, r.translation)) return r;
+  // The model sometimes echoes the target-language reply as its own translation; ask once more, explicitly.
+  try {
+    const r2 = await generate(turnSchema, system + `\n\nIMPORTANT: \`translation\` must be in ${native}, never in ${c.course.name}. If you cannot translate, return an empty string.`, prompt, undefined, looseTurn);
+    if (validTranslation(r2.reply, r2.translation)) return r2;
+  } catch { /* fall through to the failure state */ }
+  return { ...r, translation: "" };
+
 }
 
 /** Rehearsal: the next in-role turn as `brief.who`. No correction, no goal, and no learner facts: the brief is the whole context. */

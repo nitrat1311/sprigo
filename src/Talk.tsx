@@ -478,7 +478,7 @@ export function Chat({ talk }: { talk: Talk }) {
       <div className="chat">
         {msgs.map((m, i) => m.from === "ai" ? (
           <button key={i} className="bubble" lang={lang} aria-busy={voicing === i} onClick={() => { say(m.text, i); setOpen((s) => new Set(s).add(i)); }}>
-            <span>{m.text}</span>{open.has(i) && <small>{m.translation}</small>}
+            <span>{m.text}</span>{open.has(i) && <small>{m.translation || "—"}</small>}
             {voicing === i && <small className="voicing gen-pulse" role="status"><Icon name="headphones" /> {engine ? t("ai.speakingWith", { engine: t(`voice.engine.${engine}`) }) : t("ai.speaking")}</small>}
           </button>
         ) : (
