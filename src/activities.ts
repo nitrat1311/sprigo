@@ -213,7 +213,8 @@ export function rejected(items: Item[], checked: z.infer<typeof checkSchema> | n
 // ---- Answer checking (DECISIONS C4: normalized string match first, AI only if that fails) ----
 
 export const normalize = (t: string) =>
-  t.normalize("NFKC").toLocaleLowerCase().replace(/[’`]/g, "'").replace(/[\p{P}\p{S}]/gu, (ch) => (ch === "'" ? ch : " ")).replace(/\s+/g, " ").trim();
+  t.normalize("NFKC").toLocaleLowerCase().replace(/ş/g, "ș").replace(/ţ/g, "ț") // legacy cedilla forms, common in pre-Unicode-5.2 Romanian text (NFKC leaves them alone)
+    .replace(/[’`]/g, "'").replace(/[\p{P}\p{S}]/gu, (ch) => (ch === "'" ? ch : " ")).replace(/\s+/g, " ").trim();
 
 /** Whether `given` has exactly the words of `answer`, in any order: only then can word tiles in another order be right. */
 export const sameWords = (given: string, answer: string) => {

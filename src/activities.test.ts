@@ -10,6 +10,13 @@ test("answer check ignores case, punctuation and curly quotes; accepts variants"
   assert.ok(!matchesAnswer("I'm fine", item));
 });
 
+test("legacy cedilla ş/ţ of Romanian ș/ț compare equal, but diacritics still matter", () => {
+  const item = { answer: "Părintele citește ziarul.", accepted: [] };
+  assert.ok(matchesAnswer("Părintele citeşte ziarul.", item)); // legacy cedilla ş
+  assert.ok(matchesAnswer("ce ţară e?", { answer: "Ce țară e?", accepted: [] })); // legacy cedilla ţ
+  assert.ok(!matchesAnswer("Părintele citeste ziarul.", item)); // missing diacritics is still wrong
+});
+
 test("lesson plan skips v1-unsupported types, applies default count, validates and maps output", () => {
   const acts = plannedActivities([{ type: "video_call" }, { type: "word_select", count: 1 }, { type: "match" }]);
   assert.deepEqual(acts.map((a) => [a.key, a.type, a.count]), [["a0", "word_select", 1], ["a1", "match", 2]]);
