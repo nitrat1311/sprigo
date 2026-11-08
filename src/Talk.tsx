@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { Icon } from "./icons";
 import { useApp } from "./store";
 import { sfx, useStartLesson } from "./Lesson";
+import { mark } from "./latency";
 import { onTtsFallback, prewarm, resetTtsNotice, speak, speakingWith, stopSpeaking } from "./tts";
 import { MicButton } from "./Mic";
 import { Face, type FaceState } from "./face/Face";
@@ -317,7 +318,7 @@ export function Chat({ talk }: { talk: Talk }) {
   const [engine, setEngine] = useState<string | null>(null); // which voice engine is speaking it, once audio starts
   const say = (text: string, i: number) => {
     setVoicing(i); setEngine(null);
-    speak(text, lang, { gender: ch.gender, kokoro: ch.kokoroVoice }, () => setEngine(speakingWith())).finally(() => setVoicing((v) => v === i ? null : v));
+    speak(text, lang, { gender: ch.gender, kokoro: ch.kokoroVoice }, () => { mark("audio"); setEngine(speakingWith()); }).finally(() => setVoicing((v) => v === i ? null : v));
   };
   usePrewarm(lang, ch.gender);
   const [msgs, setMsgs] = useState<ChatMsg[]>([]);
@@ -362,10 +363,12 @@ export function Chat({ talk }: { talk: Talk }) {
     const myReq = ++req.current;
     setBusy(true); setErr(""); setStepping(false);
     try {
+      mark("req");
       if (rehearse) {
         const r = await rehearseTurn({ course, level: enrollment.level, native: profile.native_lang }, rehearse, history);
         if (ending.current) return; // the session ended while the reply was on its way (a drill's time ran out)
       if (req.current !== myReq) return; // a newer turn superseded this one
+        mark("llm");
         setMsgs([...history, { from: "ai", text: r.reply, translation: r.translation }]);
         say(r.reply, history.length);
         return;
@@ -374,6 +377,7 @@ export function Chat({ talk }: { talk: Talk }) {
         drill ? { rules: drillRules(drill), keep: DRILL_KEEP } : {});
       if (ending.current) return;
       if (req.current !== myReq) return;
+      mark("llm");
       const fixed = history.map((m, i) => i === history.length - 1 && m.from === "me" ? { ...m, correction: r.correction.trim() || undefined } : m);
       setMsgs([...fixed, { from: "ai", text: r.reply, translation: r.translation }]);
       say(r.reply, fixed.length);
