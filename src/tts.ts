@@ -224,6 +224,17 @@ const audioCtx = async (mine: number) => {
   return mine === seq ? ctx : null; // null: cut while waiting; `next` belongs to the newer speak now
 };
 
+/** Unlocks the Web Audio context on a user gesture (required by iOS Safari before any audio can play). */
+export function unlockAudio() {
+  const ctx = (actx ??= new AudioContext());
+  void ctx.resume();
+}
+if (typeof document !== "undefined") {
+  const unlock = () => { unlockAudio(); document.removeEventListener("pointerdown", unlock); document.removeEventListener("touchstart", unlock); };
+  document.addEventListener("pointerdown", unlock);
+  document.addEventListener("touchstart", unlock);
+}
+
 /** Plays local-engine audio for `text`; resolves once the first sentence plays, throws before that to fall back. */
 async function viaWorker(e: Engine, text: string, voice: string, mine: number, done: () => void, speed: number) {
   const key = `${e}:${voice}:${speed}\n${text}`;
