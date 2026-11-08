@@ -379,8 +379,8 @@ export function Chat({ talk }: { talk: Talk }) {
       say(r.reply, fixed.length);
       // The prompt holds the goal back too; this guards models that wrap up early anyway.
       if (r.goal_reached && history.filter((m) => m.from === "me").length >= CHAT_MIN_TURNS) setGoal(true);
-    } catch (e) { setErr((e as Error).message); setMsgs(history); }
-    finally { setBusy(false); }
+    } catch (e) { if (req.current === myReq) { setErr((e as Error).message); setMsgs(history); } }
+    finally { if (req.current === myReq) setBusy(false); }
   };
   const opened = useRef(false); // StrictMode runs effects twice; open the scene once
   useEffect(() => { if (talking && !opened.current) { opened.current = true; turn([]); } }, [talking]);
