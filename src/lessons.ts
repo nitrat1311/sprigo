@@ -3,7 +3,7 @@ import { crossChecked, formsPrompt, formsSchema, fromTable, pickAsks } from "./c
 import { z } from "zod";
 import { generate, generatePlain, generateStream } from "./ai.ts";
 import { applyMemoryOps, cachedGuides, enrollmentProfile, getCached, listMemories, listMistakes, markMemoriesUsed, memoryOn, putCached } from "./db.ts";
-import { REGISTRY, givesAway, langEn, lessonPrompt, mistakeLine, lessonSchema, plannedActivities, checkPrompt, checkSchema, rejected, reviewSystem, shuffleAnswer, solvePrompt, solveSchema, solveSystem, systemPrompt, toItems, type Item, type LessonContext, validTranslation } from "./activities.ts";
+import { REGISTRY, givesAway, langEn, lessonPrompt, mistakeLine, lessonSchema, plannedActivities, checkPrompt, checkSchema, rejected, reviewSystem, shuffleAnswer, solvePrompt, solveSchema, solveSystem, systemPrompt, toItems, type Item, type LessonContext, validTranslation, isEchoCorrection } from "./activities.ts";
 import { CHARACTERS, CHAT_MAX_TURNS, CHAT_MIN_TURNS, FREE_GOAL, type CharacterId } from "./characters.ts";
 import { CEFR, levelsOf, storyId, type Course, type CourseLevel, type Cefr } from "./course.ts";
 import { looseTutor, tutorPrompt, tutorSchema, tutorSystem, type TutorEvent, type TutorMsg } from "./tutor.ts";
@@ -298,13 +298,17 @@ export async function chatTurn(c: Base & { about?: string[] }, who: CharacterId,
     : free ? "Open the chat: a short, friendly greeting and a first question about the topic."
     : "Open the scene: a short greeting that leads straight into the goal and invites the learner to start.";
   const r = await generate(turnSchema, system, prompt, undefined, looseTurn);
-  if (validTranslation(r.reply, r.translation)) return r;
+  // Guard against false corrections: an exact echo of the learner's utterance is not a correction.
+  const guard = (x: typeof r) => (x.correction && isEchoCorrection(last?.text ?? "", x.correction) ? { ...x, correction: "" } : x);
+  let out = guard(r);
+  if (validTranslation(out.reply, out.translation)) return out;
   // The model sometimes echoes the target-language reply as its own translation; ask once more, explicitly.
   try {
     const r2 = await generate(turnSchema, system + `\n\nIMPORTANT: \`translation\` must be in ${native}, never in ${c.course.name}. If you cannot translate, return an empty string.`, prompt, undefined, looseTurn);
-    if (validTranslation(r2.reply, r2.translation)) return r2;
+    const out2 = guard(r2);
+    if (validTranslation(out2.reply, out2.translation)) return out2;
   } catch { /* fall through to the failure state */ }
-  return { ...r, translation: "" };
+  return { ...out, translation: "" };
 
 }
 

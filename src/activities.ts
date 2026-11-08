@@ -313,3 +313,10 @@ export function validTranslation(reply: string, translation: string) {
   const a = reply.trim().toLocaleLowerCase(), b = translation.trim().toLocaleLowerCase();
   return b !== "" && a !== b;
 }
+
+
+/** A correction that is just the learner's original utterance echoed back is not a real correction. */
+export function isEchoCorrection(original: string, correction: string) {
+  const a = normalize(original), b = normalize(correction);
+  return a !== "" && a === b;
+}
