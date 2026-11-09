@@ -23,7 +23,7 @@ levels:
         steps:
           - id: ro-basic-greetings
             title: Basic Greetings
-            description: Common ways to greet people, any time of day.
+            description: Common greetings and farewells for different times of day.
             vocabulary: [bună, "bună ziua", salut, "noapte bună", "la revedere", pa, "ne vedem"]
             grammar:
               - pattern: "Bună ziua!"
@@ -54,10 +54,11 @@ levels:
                 goal: Greet the person, introduce yourself, say where you are from and ask their name.
           - id: ro-how-are-you
             title: How Are You?
-            description: Ask and answer how someone is, informally and politely.
+            description: Ask and answer how someone is, using tu informally and dumneavoastră politely.
             vocabulary: [bine, "foarte bine", obosit, obosită, mulțumesc, "Și tu?", "Și dumneavoastră?"]
             grammar:
               - pattern: "Ce mai faci?"
+              - pattern: "Ce mai faceți?"
               - pattern: "Bine, mulțumesc. Și tu?"
             activities:
               - { type: learn, count: 2 }
@@ -102,10 +103,10 @@ levels:
           - id: ro-sunete
             title: The Five Diacritics
             description: The letters ă, â, î, ș and ț, and how they sound.
-            vocabulary: [masă, casă, pâine, copil, școală, țară, ceas]
+            vocabulary: [masă, casă, pâine, înger, școală, țară, ceas]
             grammar:
               - pattern: "În cuvântul «masă» este ă."
-              - pattern: "«Copil» și «pâine» au â."
+              - pattern: "«Pâine» are â, iar «înger» are î."
               - pattern: "«Școală» începe cu ș, «țară» începe cu ț."
             activities:
               - { type: learn, count: 2 }
@@ -130,11 +131,11 @@ levels:
           - id: ro-lectura
             title: Reading Simple Words
             description: Read short words out loud using Romanian sounds.
-            vocabulary: [lapte, caiet, femeie, cafea, munte, stație, prieten]
+            vocabulary: [lapte, caiet, femeie, cafea, seara, stație, prieten]
             grammar:
-              - pattern: "«Caiet» și «femeie» au ie."
-              - pattern: "«Cafea» și «munte» au ea."
-              - pattern: "Citește cu voce tare: lapte, munte, stație."
+              - pattern: "«Femeie» și «prieten» au ie."
+              - pattern: "«Cafea» și «seara» au ea."
+              - pattern: "Citește cu voce tare: lapte, seara, stație."
             activities:
               - { type: learn, count: 2 }
               - { type: listen_type, count: 2 }

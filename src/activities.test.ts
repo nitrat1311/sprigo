@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { REGISTRY, givesAway, hideAnswer, matchesAnswer, plannedActivities, lessonSchema, checkPrompt, rejected, sameWords, solvePrompt, toItems, type Item } from "./activities.ts";
+import { REGISTRY, givesAway, hideAnswer, matchesAnswer, plannedActivities, lessonSchema, checkPrompt, rejected, sameWords, speechMisses, solvePrompt, toItems, type Item } from "./activities.ts";
 
 test("answer check ignores case, punctuation and curly quotes; accepts variants", () => {
   const item = { answer: "I'm fine, thank you.", accepted: ["I am fine, thanks"] };
@@ -12,9 +12,16 @@ test("answer check ignores case, punctuation and curly quotes; accepts variants"
 
 test("legacy cedilla ş/ţ of Romanian ș/ț compare equal, but diacritics still matter", () => {
   const item = { answer: "Părintele citește ziarul.", accepted: [] };
-  assert.ok(matchesAnswer("Părintele citeşte ziarul.", item)); // legacy cedilla ş
-  assert.ok(matchesAnswer("ce ţară e?", { answer: "Ce țară e?", accepted: [] })); // legacy cedilla ţ
-  assert.ok(!matchesAnswer("Părintele citeste ziarul.", item)); // missing diacritics is still wrong
+  assert.ok(matchesAnswer("Părintele citeşte ziarul.", item, "ro")); // legacy cedilla ş
+  assert.ok(matchesAnswer("ce ţară e?", { answer: "Ce țară e?", accepted: [] }, "ro")); // legacy cedilla ţ
+  assert.ok(!matchesAnswer("Părintele citeste ziarul.", item, "ro")); // missing diacritics is still wrong
+});
+
+test("Romanian cedilla equivalence is not applied to Turkish", () => {
+  assert.equal(matchesAnswer("șey", { answer: "şey", accepted: [] }, "tr"), false);
+  assert.equal(matchesAnswer("șey", { answer: "şey", accepted: [] }), false);
+  assert.deepEqual(speechMisses("Ce țară?", "Ce ţară?", "ro"), []);
+  assert.deepEqual(speechMisses("şey", "șey", "tr"), ["şey"]);
 });
 
 test("lesson plan skips v1-unsupported types, applies default count, validates and maps output", () => {
