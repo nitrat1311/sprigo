@@ -1,6 +1,12 @@
 // Piper runs here for the same reason as Kokoro (src/kokoro.worker.ts): onnx inference would block the UI thread.
 // Same messages as the Kokoro worker, plus the voice id in "load"; one sentence per chunk.
-import { TtsSession } from "@mintplex-labs/piper-tts-web";
+import * as piper from "@mintplex-labs/piper-tts-web";
+const { TtsSession } = piper;
+
+// The library's catalog predates this Romanian voice. Its loader resolves the
+// path against the Hugging Face catalog URL and caches the resulting files.
+const paths = (piper as unknown as { PATH_MAP: Record<string, string> }).PATH_MAP;
+paths["ro_RO-raluca-high"] = "../../../../eduardem/piper-tts-romanian/resolve/main/voices/raluca/ro_RO-raluca-high.onnx";
 
 const post = (m: unknown, transfer: Transferable[] = []) => (self as unknown as Worker).postMessage(m, transfer);
 // Shipped with the app instead of the library's CDN defaults (~29 MB a cold start, #74). Only the voice model is downloaded.
@@ -10,7 +16,7 @@ const wasmPaths = {
   piperWasm: new URL("../node_modules/@diffusionstudio/piper-wasm/build/piper_phonemize.wasm", import.meta.url).href,
   piperData: new URL("../node_modules/@diffusionstudio/piper-wasm/build/piper_phonemize.data", import.meta.url).href,
 };
-const sessions = new Map<string, Promise<TtsSession>>();
+const sessions = new Map<string, Promise<InstanceType<typeof TtsSession>>>();
 let current = 0;
 
 function load(voice: string) {
