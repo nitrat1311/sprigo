@@ -58,6 +58,7 @@ export const MAX_RECORD_S = 15;
 export async function startRecording(lang: string, onAutoStop?: () => void, native?: string) {
   const stream = await navigator.mediaDevices.getUserMedia({ audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true } });
   const ctx = new AudioContext();
+  void ctx.resume(); // iOS Safari: the context starts suspended until a user gesture resumes it
   const src = ctx.createMediaStreamSource(stream);
   // ponytail: ScriptProcessor is deprecated but works everywhere without a worklet file
   const proc = ctx.createScriptProcessor(4096, 1, 1);
