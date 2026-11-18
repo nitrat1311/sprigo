@@ -223,15 +223,19 @@ const audioCtx = async (mine: number) => {
   return mine === seq ? ctx : null; // null: cut while waiting; `next` belongs to the newer speak now
 };
 
-/** Unlocks the Web Audio context on a user gesture (required by iOS Safari before any audio can play). */
-export function unlockAudio() {
+/** Unlocks Web Audio from a user activation on iOS. */
+function unlockAudio() {
   const ctx = (actx ??= new AudioContext());
-  void ctx.resume();
+  void ctx.resume().then(() => {
+    if (ctx.state === "running") {
+      document.removeEventListener("pointerup", unlockAudio);
+      document.removeEventListener("touchend", unlockAudio);
+    }
+  }).catch(() => {});
 }
 if (typeof document !== "undefined") {
-  const unlock = () => { unlockAudio(); document.removeEventListener("pointerdown", unlock); document.removeEventListener("touchstart", unlock); };
-  document.addEventListener("pointerdown", unlock);
-  document.addEventListener("touchstart", unlock);
+  document.addEventListener("pointerup", unlockAudio);
+  document.addEventListener("touchend", unlockAudio);
 }
 
 /** Plays local-engine audio for `text`; resolves once the first sentence plays, throws before that to fall back. */
