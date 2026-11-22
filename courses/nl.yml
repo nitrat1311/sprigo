@@ -4,9 +4,10 @@
 # A1–B1 follow the NT2 progression: A1 ≈ Basisexamen Inburgering Buitenland, A2 ≈ inburgeringsexamen,
 # B1 ≈ Staatsexamen NT2 Programma I (the B1 route of the 2021 civic integration law), B2 ≈ Staatsexamen NT2
 # Programma II and CNaVT STRT/PROF, C1 ≈ CNaVT EDUP (Nederlands op niveau / naar perfectie progression).
-# Voices: TTS uses Piper's Flemish nl_BE voices (nathalie, rdh). The nl_NL MLS voice has been reported to sound
-# unnatural (huggingface.co/rhasspy/piper-voices/discussions/13); not compared by ear, so a native speaker's check
-# is welcome. The course itself teaches Netherlands Dutch.
+# Voices: TTS uses Piper's Flemish nl_BE voices (nathalie, rdh). Of the Netherlands voices, the Piper library the
+# app bundles only lists nl_NL-mls, reported in 2024 to sound unnatural (huggingface.co/rhasspy/piper-voices/
+# discussions/13). Newer nl_NL voices (pim, ronnie, alex, Nov 2026) need Piper 1.5; updating the app's Piper
+# runtime to 1.5 should let the course switch to them. The course itself teaches Netherlands Dutch.
 name: Dutch
 native_name: Nederlands
 iso: nl
