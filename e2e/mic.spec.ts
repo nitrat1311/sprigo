@@ -83,7 +83,7 @@ test("a speaking exercise keeps one mic open and lets go of it in the background
   for (let i = 0; !(await speaking(lesson).isVisible()); i++) { expect(i).toBeLessThan(15); await answer(lesson); }
 
   await expect.poll(async () => (await mic(page)).live).toBe(1); // opened when the exercise appeared, not on the tap
-  const o = (await mic(page)).opens; // earlier typed answers had their own mic button
+  const o = (await mic(page)).opens; // dev mode (StrictMode) mounts the screen twice, so count from here
 
   await page.evaluate(() => window.dispatchEvent(new Event("blur"))); // window in the background
   await expect.poll(() => mic(page)).toEqual({ opens: o, live: 0 });
