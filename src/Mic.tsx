@@ -15,13 +15,16 @@ export function useSpeakBlock() {
 }
 
 /** Tap to talk, tap again to stop (design: round blue button + status line). Calls `onText` with the transcript.
- *  The mic opens when the button appears and closes when it goes away (see `openMic`), so a take has no dead start. */
+ *  The mic opens when the button appears and closes when it goes away (see `openMic`), so a take has no dead start.
+ *  It also closes while the window is hidden or in the background (keep-alive keeps the screen mounted), dropping a
+ *  take in progress, and opens again when the window comes back. */
 export function MicButton({ lang, onText, disabled, trigger = 0, native }: { lang: string; onText: (text: string, m?: Utterance) => void; disabled?: boolean; trigger?: number; native?: string }) {
   const { t } = useTranslation();
   const [state, setState] = useState<"idle" | "starting" | "rec" | "busy">("idle");
   const [err, setErr] = useState("");
   const mic = useRef<Promise<Mic> | undefined>(undefined);
   const gone = useRef(false);
+  const away = useRef(false); // window hidden or unfocused: the mic stays closed
   const rec = useRef<Recording | undefined>(undefined);
   /** The open mic, opened on first need; a failed open is forgotten so the next tap asks again. */
   const getMic = () => {
@@ -29,14 +32,36 @@ export function MicButton({ lang, onText, disabled, trigger = 0, native }: { lan
     const p: Promise<Mic> = openMic().catch((e) => { if (mic.current === p) mic.current = undefined; throw e; });
     return (mic.current = p);
   };
+  const release = () => {
+    rec.current?.stop(false); rec.current = undefined;
+    void mic.current?.then((m) => m.close(), () => {});
+    mic.current = undefined;
+  };
   useEffect(() => {
     gone.current = false;
-    getMic().catch(() => {}); // early, so it has settled by the first tap; a refusal shows on that tap
+    away.current = document.hidden || !document.hasFocus();
+    if (!away.current) getMic().catch(() => {}); // early, so it has settled by the first tap; a refusal shows on that tap
+    const leave = () => {
+      if (away.current) return;
+      away.current = true;
+      release();
+      setState((s) => (s === "rec" || s === "starting" ? "idle" : s)); // "busy": the take already stopped, let it finish
+    };
+    const back = () => {
+      if (document.hidden || !document.hasFocus() || !away.current) return;
+      away.current = false;
+      getMic().catch(() => {});
+    };
+    const vis = () => (document.hidden ? leave() : back());
+    document.addEventListener("visibilitychange", vis);
+    window.addEventListener("blur", leave);
+    window.addEventListener("focus", back);
     return () => {
       gone.current = true;
-      rec.current?.stop(false); rec.current = undefined;
-      void mic.current?.then((m) => m.close(), () => {});
-      mic.current = undefined;
+      document.removeEventListener("visibilitychange", vis);
+      window.removeEventListener("blur", leave);
+      window.removeEventListener("focus", back);
+      release();
     };
   }, []);
 
@@ -57,7 +82,7 @@ export function MicButton({ lang, onText, disabled, trigger = 0, native }: { lan
     try {
       let m = await getMic();
       if (!m.alive()) { void m.close(); mic.current = undefined; m = await getMic(); } // e.g. the mic was unplugged
-      if (gone.current) return;
+      if (gone.current || away.current) return; // left while the mic was opening: leave() already closed it
       rec.current = startRecording(m, lang, stop, native);
       setState("rec");
     }

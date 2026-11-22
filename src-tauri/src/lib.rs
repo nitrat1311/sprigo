@@ -371,6 +371,7 @@ pub fn run() {
             tauri::RunEvent::Exit => {
                 companion::stop();
                 release_stt();
+                release_vad();
                 data::release_lock();
             }
             _ => {}
@@ -380,6 +381,13 @@ pub fn run() {
 /// ggml-metal asserts at process exit if a model is still loaded (SIGABRT → "quit unexpectedly"); free it first.
 fn release_stt() {
     if let Ok(mut g) = STT.lock() {
+        g.take();
+    }
+}
+
+/// The speech detector too, for the same reason.
+fn release_vad() {
+    if let Ok(mut g) = VAD.lock() {
         g.take();
     }
 }

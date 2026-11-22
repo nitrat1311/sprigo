@@ -57,7 +57,8 @@ export const MAX_RECORD_S = 15;
  *  freshly opened mic is not usable straight away (measured in the macOS webview: ~0.7 s of digital silence, and up to
  *  ~4 s at -30 dB without voice processing), so opening it on each tap cut off the start of what the learner said. */
 export type Mic = { rate: number; alive(): boolean; start(): void; take(): Float32Array; close(): Promise<void> };
-/** Resolves once the mic delivers sound (at most ~1.5 s), so a take started after it has no dead opening. */
+/** Resolves once the mic delivers anything but digital silence (at most ~1.5 s), so a take started after it has no
+ *  dead opening. */
 export async function openMic(): Promise<Mic> {
   const stream = await navigator.mediaDevices.getUserMedia({ audio: { channelCount: { ideal: 1 }, echoCancellation: true, noiseSuppression: true } });
   let ctx: AudioContext;
@@ -72,12 +73,15 @@ export async function openMic(): Promise<Mic> {
   const src = ctx.createMediaStreamSource(stream);
   // ponytail: ScriptProcessor is deprecated but works everywhere without a worklet file
   const proc = ctx.createScriptProcessor(4096, 1, 1);
-  let chunks: Float32Array[] | null = null, live!: () => void;
+  // `last`: the newest buffer from before the tap (~85 ms at 48 kHz). The learner often starts speaking as they tap,
+  // so a take starts with it, the way listen() keeps its `pre` buffers; the detector trims what isn't speech.
+  let chunks: Float32Array[] | null = null, last: Float32Array | undefined, live!: () => void;
   const sounding = new Promise<void>((r) => (live = r));
   proc.onaudioprocess = (e) => {
-    const d = e.inputBuffer.getChannelData(0);
+    const d = new Float32Array(e.inputBuffer.getChannelData(0));
     if (d.some((x) => x !== 0)) live();
-    chunks?.push(new Float32Array(d));
+    if (chunks) chunks.push(d);
+    else last = d;
   };
   src.connect(proc);
   proc.connect(ctx.destination);
@@ -89,7 +93,7 @@ export async function openMic(): Promise<Mic> {
     rate: ctx.sampleRate,
     /** False once the device is gone (unplugged, switched, the OS took it): the caller opens a new one. */
     alive: () => !closed && ctx.state !== "closed" && stream.getAudioTracks().some((t) => t.readyState === "live"),
-    start() { wake(); chunks = []; },
+    start() { wake(); chunks = last ? [last] : []; },
     take() { const all = concat(chunks ?? []); chunks = null; return all; },
     async close() {
       if (closed) return;
