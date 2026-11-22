@@ -4,6 +4,8 @@
 # A1–B1 follow the NT2 progression: A1 ≈ Basisexamen Inburgering Buitenland, A2 ≈ inburgeringsexamen,
 # B1 ≈ Staatsexamen NT2 Programma I (the B1 route of the 2021 civic integration law), B2 ≈ Staatsexamen NT2
 # Programma II and CNaVT STRT/PROF, C1 ≈ CNaVT EDUP (Nederlands op niveau / naar perfectie progression).
+# Voices: Piper's Flemish nl_BE voices (nathalie, rdh) are used for TTS because the nl_NL MLS voices sound
+# noticeably worse; the course itself teaches Netherlands Dutch.
 name: Dutch
 native_name: Nederlands
 iso: nl
@@ -228,9 +230,6 @@ levels:
               - { type: learn, count: 3 }
               - { type: listen_select, count: 2 }
               - { type: multiple_choice, count: 2 }
-              - type: roleplay
-                scenario: market_stall
-                goal: Buy fruit at the weekly market, ask the prices, pay, and ask what time the market closes.
               - { type: word_bank, count: 2 }
               - { type: match }
 
@@ -427,7 +426,6 @@ levels:
               - { type: learn, count: 2 }
               - { type: image_select, count: 2 }
               - { type: sentence_complete, count: 2 }
-              - { type: story }
               - { type: speak }
               - { type: word_bank, count: 2 }
               - { type: listen_select }
@@ -516,9 +514,6 @@ levels:
               - { type: learn, count: 2 }
               - { type: listen_select, count: 2 }
               - { type: sentence_complete }
-              - type: roleplay
-                scenario: cafe_terrace
-                goal: Ask for a free table, order drinks and a snack, react when something is not available (geen), and pay by card.
               - { type: word_bank, count: 2 }
               - { type: match, count: 2 }
               - { type: fill_blank }
@@ -556,7 +551,6 @@ levels:
               - { type: learn, count: 2 }
               - { type: word_bank, count: 3 }
               - { type: error_correct, count: 2 }
-              - { type: story }
               - { type: speak }
               - { type: listen_select, count: 2 }
           - id: nl-a1-vrije-tijd
@@ -660,9 +654,6 @@ levels:
               - { type: learn, count: 2 }
               - { type: listen_select, count: 2 }
               - { type: sentence_complete }
-              - type: roleplay
-                scenario: train_station_ticket_desk
-                goal: Buy a ticket to another city, ask which platform and what time the train leaves, and whether you have to change trains.
               - { type: word_bank, count: 2 }
               - { type: match, count: 2 }
               - { type: fill_blank }
@@ -685,7 +676,6 @@ levels:
               - { type: learn, count: 3 }
               - { type: image_select, count: 2 }
               - { type: fill_blank, count: 2 }
-              - { type: story }
               - { type: speak }
               - { type: word_bank, count: 2 }
           - id: nl-a1-boodschappen
@@ -734,9 +724,6 @@ levels:
               - { type: image_select, count: 2 }
               - { type: sentence_complete, count: 2 }
               - { type: listen_type }
-              - type: roleplay
-                scenario: calling_the_gp
-                goal: Call the doctor's assistant, describe your symptoms and make an appointment for tomorrow.
               - { type: word_bank, count: 2 }
               - { type: listen_select }
 
@@ -825,7 +812,6 @@ levels:
               - pattern: "Daarna zijn we lekker thuisgebleven."
             activities:
               - { type: learn }
-              - { type: story }
               - { type: listen_type }
               - { type: translate, count: 2 }
               - type: dialogue
@@ -885,7 +871,6 @@ levels:
               - { type: learn, count: 2 }
               - { type: sentence_complete, count: 2 }
               - { type: multiple_choice }
-              - { type: story }
               - { type: error_correct }
               - { type: fill_blank, count: 2 }
               - { type: listen_type, count: 2 }
@@ -902,9 +887,6 @@ levels:
               - { type: learn }
               - { type: sentence_complete, count: 2 }
               - { type: listen_type }
-              - type: roleplay
-                scenario: job_interview
-                goal: Answer the interviewer's questions about your work experience and strengths, then ask about the working hours and when you can start.
               - { type: fill_blank, count: 2 }
               - { type: word_bank, count: 2 }
               - { type: translate, count: 2 }
@@ -944,9 +926,6 @@ levels:
               - { type: learn, count: 2 }
               - { type: listen_type, count: 2 }
               - { type: sentence_complete }
-              - type: roleplay
-                scenario: calling_the_doctors_assistant
-                goal: Explain your symptoms and how long you have had them, and agree on an appointment time.
               - { type: fill_blank, count: 2 }
               - { type: word_bank, count: 2 }
               - { type: translate }
@@ -980,9 +959,6 @@ levels:
               - { type: fill_blank, count: 2 }
               - { type: listen_select, count: 2 }
               - { type: error_correct }
-              - type: roleplay
-                scenario: calling_the_huisartsenpost
-                goal: On a Saturday night, explain that your child has had a high fever since this afternoon and understand the advice you get.
               - { type: listen_type }
 
       - id: nl-a2-wonen
@@ -1050,12 +1026,8 @@ levels:
               - pattern: "Mijn buren maken 's nachts veel lawaai."
             activities:
               - { type: learn }
-              - { type: story }
               - { type: listen_type }
               - { type: sentence_complete, count: 2 }
-              - type: roleplay
-                scenario: calling_the_landlord
-                goal: Report that the heating has been broken for two days, describe the problem and agree on a day for the repair.
               - { type: fill_blank, count: 2 }
               - { type: word_bank, count: 2 }
               - { type: translate }
@@ -1109,7 +1081,6 @@ levels:
               - pattern: "Ik begrijp deze brief niet. Kunt u mij helpen?"
             activities:
               - { type: learn }
-              - { type: story }
               - { type: multiple_choice, count: 2 }
               - { type: sentence_complete, count: 2 }
               - { type: fill_blank, count: 2 }
@@ -1123,15 +1094,12 @@ levels:
               - pattern: "Papier en glas moet je apart weggooien."
               - pattern: "Wanneer halen ze het afval op?"
               - pattern: "Je kunt grofvuil laten ophalen door de gemeente."
-              - pattern: "Je mag hier niet parkeren."
+              - pattern: "Na tien uur 's avonds mag je geen lawaai maken."
             activities:
               - { type: learn }
               - { type: multiple_choice }
               - { type: error_correct }
               - { type: translate }
-              - type: roleplay
-                scenario: gemeente_desk
-                goal: Tell the official at the counter that you have moved, politely ask which documents you need, and check the date your new address takes effect.
               - { type: fill_blank, count: 2 }
               - { type: listen_type, count: 2 }
               - { type: word_bank, count: 2 }
@@ -1202,7 +1170,6 @@ levels:
               - pattern: "Ik ben in 2019 naar Nederland gekomen."
             activities:
               - { type: learn }
-              - { type: story, count: 2 }
               - { type: word_bank, count: 2 }
               - type: dialogue
                 scenario: neighbour_asks_about_your_past
@@ -1278,10 +1245,6 @@ levels:
               - { type: learn }
               - { type: multiple_choice, count: 2 }
               - { type: sentence_complete }
-              - { type: story }
-              - type: roleplay
-                scenario: calling_school_sick_child
-                goal: Call the school to say your child is sick and will stay home, explain why, and ask what homework they should do.
               - { type: fill_blank, count: 2 }
               - { type: listen_type, count: 2 }
               - { type: word_bank }
@@ -1354,9 +1317,6 @@ levels:
               - { type: learn }
               - { type: sentence_complete, count: 2 }
               - { type: listen_type }
-              - type: roleplay
-                scenario: returning_a_broken_product
-                goal: Explain what is wrong with the kettle you bought, show your receipt and ask for your money back or a new one.
               - { type: fill_blank, count: 2 }
               - { type: word_bank, count: 2 }
               - { type: translate, count: 2 }
@@ -1430,9 +1390,6 @@ levels:
               - { type: learn }
               - { type: listen_type }
               - { type: sentence_complete }
-              - type: roleplay
-                scenario: moving_an_appointment_by_phone
-                goal: Call the dentist's office, give your name and date of birth, explain you cannot come on Tuesday and agree on a new time.
               - { type: fill_blank, count: 2 }
               - { type: word_bank, count: 2 }
               - { type: translate, count: 2 }
@@ -1486,7 +1443,6 @@ levels:
               - pattern: "Met oud en nieuw eten we oliebollen en kijken we naar het vuurwerk."
             activities:
               - { type: learn, count: 2 }
-              - { type: story }
               - { type: multiple_choice }
               - { type: sentence_complete, count: 2 }
               - { type: listen_select }
@@ -1518,7 +1474,6 @@ levels:
         - { type: sentence_complete, count: 2 }
         - { type: listen_type, count: 2 }
         - { type: translate, count: 2 }
-        - { type: roleplay }
 
   B1:
     title: Intermediate
@@ -1546,7 +1501,6 @@ levels:
               - { type: fill_blank, count: 2 }
               - { type: match }
               - { type: translate }
-              - { type: story }
               - { type: error_correct, count: 2 }
               - { type: listen_type, count: 2 }
           - id: nl-b1-plusquamperfectum
@@ -1590,12 +1544,8 @@ levels:
               - pattern: "Wat is er toen gebeurd?"
               - pattern: "Dat meen je niet! En wat deed je toen?"
             activities:
-              - { type: story }
               - { type: listen_select, count: 2 }
               - { type: multiple_choice }
-              - type: video_call
-                scenario: catching_up_with_a_friend
-                goal: Tell a friend what went wrong on your last trip using the imperfectum and plusquamperfectum, then react to their story.
               - { type: error_correct, count: 2 }
               - { type: translate, count: 2 }
               - { type: fill_blank, count: 2 }
@@ -1637,9 +1587,6 @@ levels:
               - { type: fill_blank }
               - { type: error_correct }
               - { type: listen_select }
-              - type: roleplay
-                scenario: phoning_your_manager
-                goal: Call your leidinggevende to report sick, say how long you expect to be away and what should happen with your tasks.
               - { type: translate, count: 2 }
               - { type: listen_type, count: 2 }
               - { type: sentence_complete }
@@ -1674,9 +1621,6 @@ levels:
               - { type: multiple_choice }
               - { type: sentence_complete, count: 2 }
               - { type: speak }
-              - type: video_call
-                scenario: performance_review
-                goal: In a performance review with your manager, say what went well, mention the high workload and ask to follow a training course.
               - { type: error_correct, count: 2 }
               - { type: translate, count: 2 }
               - { type: fill_blank }
@@ -1748,11 +1692,7 @@ levels:
             activities:
               - { type: learn }
               - { type: multiple_choice }
-              - { type: story }
               - { type: speak }
-              - type: roleplay
-                scenario: meeting_the_gemeente_klantmanager
-                goal: Discuss your leerroute with the klantmanager at the gemeente, explain your education and goals, and ask how long you have to finish the exams.
               - { type: error_correct, count: 2 }
               - { type: translate, count: 2 }
               - { type: fill_blank, count: 2 }
@@ -1824,11 +1764,7 @@ levels:
             activities:
               - { type: learn }
               - { type: multiple_choice }
-              - { type: story }
               - { type: speak }
-              - type: roleplay
-                scenario: complaint_to_housing_corporation
-                goal: Phone the woningcorporatie about mould and a leak you reported weeks ago, stay polite but firm, and get a concrete date for the repair.
               - { type: error_correct, count: 2 }
               - { type: translate, count: 2 }
               - { type: fill_blank, count: 2 }
@@ -1902,11 +1838,7 @@ levels:
             activities:
               - { type: learn }
               - { type: listen_type }
-              - { type: story }
               - { type: multiple_choice }
-              - type: video_call
-                scenario: video_consult_with_gp
-                goal: In a video consultation, describe your symptoms and how long you have had them, ask whether you need a referral and whether it falls under the eigen risico.
               - { type: error_correct, count: 2 }
               - { type: translate, count: 2 }
               - { type: fill_blank, count: 2 }
@@ -1979,11 +1911,7 @@ levels:
             activities:
               - { type: learn }
               - { type: multiple_choice }
-              - { type: story }
               - { type: speak }
-              - type: roleplay
-                scenario: payment_arrangement_call
-                goal: Call the energy company about a late bill, explain why you could not pay on time and agree on a payment plan in monthly instalments.
               - { type: error_correct, count: 2 }
               - { type: translate, count: 2 }
               - { type: fill_blank, count: 2 }
@@ -2026,7 +1954,6 @@ levels:
               - { type: fill_blank, count: 2 }
               - { type: listen_select, count: 2 }
               - { type: translate }
-              - { type: story }
           - id: nl-b1-normen-waarden
             title: Norms and Values
             description: Discuss directness, appointments, equality and freedom of speech in Dutch society.
@@ -2038,7 +1965,6 @@ levels:
               - pattern: "Als je te laat komt, wordt dat niet altijd gewaardeerd."
             activities:
               - { type: learn }
-              - { type: story }
               - { type: multiple_choice }
               - { type: sentence_complete }
               - { type: translate }
@@ -2059,9 +1985,6 @@ levels:
               - { type: fill_blank }
               - { type: error_correct }
               - { type: listen_type }
-              - type: roleplay
-                scenario: neighbourhood_inspraakavond
-                goal: At an inspraakavond of the gemeente, give your opinion about a plan for a new apartment block in your street and ask the wethouder a question about it.
               - { type: translate, count: 2 }
               - { type: sentence_complete, count: 2 }
 
@@ -2133,11 +2056,7 @@ levels:
             activities:
               - { type: learn }
               - { type: multiple_choice }
-              - { type: story }
               - { type: listen_type }
-              - type: video_call
-                scenario: discussing_the_news
-                goal: Discuss a news item about rising rents with a friend, summarise what the article said, give your opinion with arguments and react with nuance to theirs.
               - { type: error_correct, count: 2 }
               - { type: translate, count: 2 }
               - { type: fill_blank, count: 2 }
@@ -2198,9 +2117,6 @@ levels:
               - { type: fill_blank, count: 2 }
               - { type: error_correct, count: 2 }
               - { type: listen_type }
-              - type: roleplay
-                scenario: calling_the_energy_supplier
-                goal: Call your energy supplier because your monthly advance payment went up, ask why, and agree on a lower amount.
               - { type: translate }
           - id: nl-b1-klimaatdebat
             title: The Climate Debate
@@ -2215,9 +2131,6 @@ levels:
               - { type: listen_select }
               - { type: multiple_choice }
               - { type: speak }
-              - type: roleplay
-                scenario: debating_a_car_free_centre
-                goal: With a colleague, discuss whether the gemeente should make the city centre car-free, give arguments for and against using zou/zouden, and reach a nuanced conclusion.
               - { type: error_correct, count: 2 }
               - { type: translate, count: 2 }
               - { type: fill_blank, count: 2 }
@@ -2289,12 +2202,8 @@ levels:
               - pattern: "Ik vind het belangrijk om contact te houden met mijn familie in het buitenland."
             activities:
               - { type: learn }
-              - { type: story }
               - { type: listen_type }
               - { type: multiple_choice }
-              - type: video_call
-                scenario: video_call_with_a_dutch_friend
-                goal: Video-call a Dutch friend, congratulate them on moving in with their partner, apologise for cancelling last week's dinner and suggest a new date.
               - { type: error_correct, count: 2 }
               - { type: translate, count: 2 }
               - { type: fill_blank, count: 2 }
@@ -2308,10 +2217,6 @@ levels:
         - { type: error_correct, count: 2 }
         - { type: listen_select, count: 2 }
         - { type: translate, count: 3 }
-        - { type: story }
-        - type: roleplay
-          scenario: formal_phone_call
-          goal: Phone a government office or landlord about a problem, explain what happened, ask indirect questions and agree on next steps politely.
 
   B2:
     title: Upper Intermediate
@@ -2377,7 +2282,6 @@ levels:
               - { type: fill_blank, count: 2 }
               - { type: listen_select, count: 2 }
               - { type: error_correct }
-              - { type: story }
               - { type: translate }
           - id: nl-b2-zou-hebben
             title: Would Have and Future in the Past
@@ -2435,7 +2339,6 @@ levels:
               - { type: sentence_complete }
               - { type: listen_select }
               - { type: translate, count: 2 }
-              - { type: story }
           - id: nl-b2-er-passief
             title: Er in the Passive
             description: "Use the impersonal er-passive for activities without a subject (er wordt vergaderd) and with indefinite subjects."
@@ -2545,9 +2448,6 @@ levels:
               - { type: error_correct }
               - { type: translate }
               - { type: listen_select }
-              - type: roleplay
-                scenario: work_from_home_discussion
-                goal: Discuss with your manager whether to work from home three days a week, weighing pros and cons with enerzijds/anderzijds and ending with a conclusion.
 
       - id: nl-b2-er-voorzetsel
         title: Er + Preposition
@@ -2576,7 +2476,7 @@ levels:
             description: "Put daar first for emphasis and split pronominal adverbs: daar ben ik het niet mee eens, waar heb je het over?"
             vocabulary: ["het eens zijn met", "zin hebben in", "denken aan", "praten over", "bang zijn voor", "houden van", "waar … over", "daar … mee"]
             grammar:
-              - pattern: "Daar ben ik het helemaal niet mee eens."
+              - pattern: "Daar maak ik me geen zorgen over."
               - pattern: "Daar heb ik nooit aan gedacht."
               - pattern: "Waar heb je het eigenlijk over?"
               - pattern: "Daar heb ik nu even geen zin in."
@@ -2700,9 +2600,6 @@ levels:
               - { type: listen_type, count: 2 }
               - { type: multiple_choice }
               - { type: translate }
-              - type: roleplay
-                scenario: persuading_a_shy_colleague
-                goal: Persuade a hesitant colleague to come to the team outing, using stacked particles to sound friendly rather than pushy.
 
       - id: nl-b2-werkvloer
         title: Working Life in Depth
@@ -2725,9 +2622,6 @@ levels:
               - { type: listen_select, count: 2 }
               - { type: sentence_complete }
               - { type: translate }
-              - type: roleplay
-                scenario: chairing_a_team_meeting
-                goal: Chair a short team meeting, go through two agenda points, give a colleague the floor and close with action points and the rondvraag.
           - id: nl-b2-feedback
             title: Feedback and Dutch Directness
             description: "Give and receive direct but respectful feedback: start positive, be concrete, use ik-boodschappen."
@@ -2780,9 +2674,6 @@ levels:
               - { type: error_correct, count: 2 }
               - { type: translate }
               - { type: listen_type }
-              - type: roleplay
-                scenario: salary_negotiation
-                goal: Negotiate your starting salary with HR, justify a higher amount, react to their counter-offer and agree on secondary terms.
 
       - id: nl-b2-studie
         title: Study & Presenting
@@ -2842,7 +2733,6 @@ levels:
               - { type: multiple_choice, count: 2 }
               - { type: error_correct }
               - { type: fill_blank }
-              - { type: story }
           - id: nl-b2-hoorcollege
             title: Following a Lecture
             description: "Catch the key points of a lecture and talk about it afterwards with verb clusters (heb niet kunnen volgen)."
@@ -2881,9 +2771,6 @@ levels:
               - { type: multiple_choice, count: 2 }
               - { type: listen_type }
               - { type: translate }
-              - type: roleplay
-                scenario: mortgage_advisor_meeting
-                goal: Meet a mortgage advisor, explain your income and situation, ask how much you can borrow and what costs come on top of the price.
           - id: nl-b2-huurcommissie
             title: Rent Disputes and the Huurcommissie
             description: "Object to a rent increase, have your rent checked against the puntensysteem and report defects."
@@ -2900,7 +2787,6 @@ levels:
               - { type: listen_select }
               - { type: translate, count: 2 }
               - { type: word_bank }
-              - { type: story }
           - id: nl-b2-energiecontract
             title: Energy Contracts in Detail
             description: "Compare fixed, variable and dynamic contracts, know your bedenktijd and cancellation fees, and ask about feed-in costs."
@@ -2954,7 +2840,6 @@ levels:
               - pattern: "Je zou bijna denken dat de trein nooit op tijd rijdt."
             activities:
               - { type: learn, count: 2 }
-              - { type: story }
               - { type: multiple_choice, count: 3 }
               - { type: match }
               - { type: translate }
@@ -3010,9 +2895,6 @@ levels:
               - { type: sentence_complete }
               - { type: translate }
               - { type: listen_select }
-              - type: roleplay
-                scenario: debate_on_a_statement
-                goal: "Debate the statement 'Auto's moeten uit de binnenstad worden geweerd': take a side, give two arguments, concede one point and respond to a counter-argument."
 
       - id: nl-b2-identiteit
         title: History & Identity
@@ -3030,7 +2912,6 @@ levels:
               - pattern: "Het is belangrijk dat we blijven herdenken, zodat zoiets nooit meer gebeurt."
             activities:
               - { type: learn, count: 2 }
-              - { type: story }
               - { type: multiple_choice, count: 2 }
               - { type: fill_blank, count: 2 }
               - { type: match }
@@ -3070,7 +2951,6 @@ levels:
               - { type: listen_type }
               - { type: translate }
               - { type: error_correct }
-              - { type: story }
           - id: nl-b2-grondwet
             title: The Constitution and Equality
             description: "Discuss article 1, freedom of expression, self-determination and the role of the king under ministerial responsibility."
@@ -3100,10 +2980,6 @@ levels:
         - { type: error_correct, count: 3 }
         - { type: listen_select, count: 2 }
         - { type: translate, count: 3 }
-        - { type: story }
-        - type: roleplay
-          scenario: argued_discussion
-          goal: Discuss a social issue (housing, work from home or energy) with a critical colleague, state and defend your position with arguments, concede a point and conclude.
 
   C1:
     title: Advanced
@@ -3154,7 +3030,6 @@ levels:
               - { type: match }
               - { type: listen_select }
               - { type: translate }
-              - { type: story }
           - id: nl-c1-vooropplaatsing
             title: Fronting for Emphasis
             description: "Put the object, a contrast or a framing phrase first to set the topic or add emphasis."
@@ -3216,7 +3091,6 @@ levels:
               - { type: translate }
               - { type: listen_type }
               - { type: error_correct }
-              - { type: story }
           - id: nl-c1-achtervoegsels
             title: "Suffixes: -baar, -ling, -heid, -ing"
             description: "Form adjectives and nouns with -baar, -ling, -heid, -ing and -schap and choose the right article."
@@ -3252,7 +3126,6 @@ levels:
               - { type: match }
               - { type: multiple_choice }
               - { type: translate }
-              - { type: story }
           - id: nl-c1-nominalisering
             title: From Verb to Noun
             description: "Rewrite verbal sentences in the nominal style of reports and official letters, and back again."
@@ -3294,7 +3167,6 @@ levels:
               - { type: translate }
               - { type: error_correct }
               - { type: listen_select }
-              - { type: story }
           - id: nl-c1-bezwaarschrift
             title: Writing an Objection
             description: "Write a bezwaarschrift against a decision by the gemeente, Belastingdienst or IND: reference, grounds and request."
@@ -3312,9 +3184,6 @@ levels:
               - { type: sentence_complete }
               - { type: translate }
               - { type: listen_type }
-              - type: roleplay
-                scenario: objection_hearing
-                goal: At a hoorzitting, explain why the gemeente's decision on your parking permit is wrong and what you ask them to do instead.
           - id: nl-c1-toon
             title: Finding the Right Tone
             description: "Choose between u and je, soften requests and complaints, and open and close emails at the right level."
@@ -3376,9 +3245,6 @@ levels:
               - { type: sentence_complete }
               - { type: translate }
               - { type: error_correct }
-              - type: roleplay
-                scenario: chairing_a_team_meeting
-                goal: Chair a team meeting where two colleagues keep interrupting; keep to the agenda, give everyone the floor and close with clear action points.
           - id: nl-c1-onderhandelen
             title: Negotiating a Deal
             description: "Make conditional offers, counter-proposals and concessions, and steer towards a compromise."
@@ -3396,9 +3262,6 @@ levels:
               - { type: listen_type }
               - { type: translate }
               - { type: error_correct }
-              - type: roleplay
-                scenario: negotiating_with_a_supplier
-                goal: Negotiate a better price with a supplier by offering a longer contract, and reach a compromise you can both accept.
           - id: nl-c1-conflict
             title: Handling Conflict & Complaints
             description: "Name a problem without blaming, acknowledge feelings, apologise on behalf of the team and de-escalate."
@@ -3460,7 +3323,6 @@ levels:
               - { type: error_correct }
               - { type: translate }
               - { type: match }
-              - { type: story }
           - id: nl-c1-notulen
             title: Taking Minutes
             description: "Write notulen in the impersonal style: attendance, decisions, action points and the passive with er."
@@ -3478,7 +3340,6 @@ levels:
               - { type: multiple_choice }
               - { type: translate }
               - { type: listen_select }
-              - { type: story }
           - id: nl-c1-persbericht
             title: Press Release
             description: "Write a press release with a dateline, a strong lead, a quote with aldus and a note for the editors."
@@ -3496,9 +3357,6 @@ levels:
               - { type: word_bank }
               - { type: translate }
               - { type: listen_select }
-              - type: roleplay
-                scenario: briefing_the_press_officer
-                goal: Brief the press officer on your team's new product, agree on the key message and dictate a quote for the press release.
           - id: nl-c1-samenvatten
             title: Summarising & Paraphrasing
             description: "Capture the core of an argument in your own words and attribute claims with volgens, stelt and aldus."
@@ -3540,7 +3398,6 @@ levels:
               - { type: multiple_choice }
               - { type: translate }
               - { type: error_correct }
-              - { type: story }
           - id: nl-c1-strafrecht
             title: Offences & Penalties
             description: "Report a crime, tell an overtreding from a misdrijf, and understand penalties and the VOG."
@@ -3558,9 +3415,6 @@ levels:
               - { type: listen_type }
               - { type: translate }
               - { type: match }
-              - type: roleplay
-                scenario: reporting_a_crime_at_the_police_station
-                goal: Report a burglary at the police station, describe exactly what happened and when, and ask what happens next with your aangifte.
           - id: nl-c1-gedoogbeleid
             title: Gedoogbeleid
             description: "Discuss the Dutch policy of tolerance: what is illegal but tolerated, why, and its contradictions."
@@ -3640,7 +3494,6 @@ levels:
               - { type: multiple_choice }
               - { type: translate }
               - { type: error_correct }
-              - { type: story }
           - id: nl-c1-dierproeven
             title: Animal Testing
             description: "Weigh interests in a debate on animal testing and argue with men zou kunnen stellen and de afweging."
@@ -3702,9 +3555,6 @@ levels:
               - { type: listen_select }
               - { type: translate }
               - { type: error_correct }
-              - type: roleplay
-                scenario: meeting_an_accountant
-                goal: Ask an accountant what you must arrange to start as a zzp'er, including KvK registration, btw and the urencriterium.
           - id: nl-c1-cao-onderhandelingen
             title: Collective Bargaining
             description: "Follow news about cao talks: unions' demands, ultimatums, strikes and the vote of the members."
@@ -3722,7 +3572,6 @@ levels:
               - { type: fill_blank }
               - { type: translate }
               - { type: error_correct }
-              - { type: story }
           - id: nl-c1-circulaire-economie
             title: The Circular Economy
             description: "Discuss how businesses reuse raw materials, extend product life and cut waste streams."
@@ -3784,7 +3633,6 @@ levels:
               - { type: listen_select }
               - { type: translate }
               - { type: error_correct }
-              - { type: story }
           - id: nl-c1-lichaam-dieren
             title: Body & Animal Idioms
             description: "Learn idioms built on body parts and animals, and when they sound natural or overdone."
@@ -3863,7 +3711,6 @@ levels:
               - { type: multiple_choice }
               - { type: translate }
               - { type: match }
-              - { type: story }
           - id: nl-c1-vlaams
             title: Flemish & Regional Dutch
             description: "Recognise Belgian Dutch words and the soft g of the south, and know the Netherlands equivalents."
@@ -3919,7 +3766,6 @@ levels:
               - { type: fill_blank }
               - { type: translate }
               - { type: error_correct }
-              - { type: story }
 
     checkpoint:
       title: C1 Checkpoint
@@ -3930,7 +3776,3 @@ levels:
         - { type: error_correct, count: 2 }
         - { type: listen_select, count: 2 }
         - { type: translate, count: 3 }
-        - { type: story }
-        - type: roleplay
-          scenario: objection_hearing
-          goal: At a hoorzitting about your bezwaarschrift, explain formally and precisely why the decision is wrong, respond to the official's counter-arguments and negotiate a solution.

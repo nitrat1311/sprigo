@@ -28,6 +28,8 @@ const STOP: Record<Lang, Set<string>> = {
 // á, í, ó and ú by Spanish, Hungarian and Polish); Hungarian's sz and zs are letters of its alphabet, and sz is a
 // Polish one too, so it counts for both and their own letters and stopwords decide. Not gy or cs: English has them too
 // (energy, physics).
+// Dutch has no letter of its own; ij (mij, tijd, bijna) is a digraph that the other languages here hardly ever
+// write, so it marks Dutch the way sz and zs mark Hungarian.
 const MARK: Record<Lang, RegExp> = { en: /(?!)/, de: /[ßä]/, es: /ñ/, fr: /[èêœàâùû]/, tr: /[ışğ]/, hu: /[őű]|sz|zs/, pl: /[ąćęłńśźż]|cz|sz/, ro: /[ăîșț]/, nl: /ij/ };
 
 /** The likeliest of LANGS (the course languages and Polish), or null for under 3 words or no clear winner. */
