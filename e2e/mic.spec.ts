@@ -99,9 +99,11 @@ test("a speaking exercise keeps one mic open and lets go of it in the background
   await page.evaluate(() => window.dispatchEvent(new Event("focus")));
   await expect.poll(() => mic(page)).toEqual({ opens: o + 2, live: 1 });
 
+  await page.evaluate(() => window.dispatchEvent(new Event("blur"))); // no focus event follows: the tap alone must do
+  await expect.poll(() => mic(page)).toEqual({ opens: o + 2, live: 0 });
   await take(page, lesson);
   expect(posts[0]).toBeGreaterThan(44 + 16000 * 2 * 0.8); // the whole take reached the recognizer (16 kHz 16-bit WAV)
-  expect(await mic(page)).toEqual({ opens: o + 2, live: 1 }); // the take did not reopen it
+  expect(await mic(page)).toEqual({ opens: o + 3, live: 1 });
 });
 
 test("speaking practice keeps the same mic across phrases", async ({ page }) => {
