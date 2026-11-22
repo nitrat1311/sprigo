@@ -65,3 +65,15 @@ export function concat(parts: Float32Array[]): Float32Array {
   parts.reduce((o, c) => (all.set(c, o), o + c.length), 0);
   return all;
 }
+
+const FADE_S = 0.01;
+/** `x` cut to `span` (seconds) widened by `before`/`after` and kept inside the take, with 10 ms fades so neither cut
+ *  clicks. A null span keeps the whole take (still faded). */
+export function cutTo(x: Float32Array, rate: number, span: [number, number] | null, before = 0.15, after = 0.3): Float32Array {
+  const from = span ? Math.max(0, Math.floor((span[0] - before) * rate)) : 0;
+  const to = span ? Math.min(x.length, Math.ceil((span[1] + after) * rate)) : x.length;
+  const y = x.slice(from, Math.max(from, to));
+  const f = Math.min(Math.round(FADE_S * rate), Math.floor(y.length / 2));
+  for (let i = 0; i < f; i++) { const g = i / f; y[i] *= g; y[y.length - 1 - i] *= g; }
+  return y;
+}

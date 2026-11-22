@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { VAD_IDLE, concat, mouthBright, mouthLevel, remember, resample, rms, vadStep, zcr, type VadEvent } from "./audio.ts";
+import { VAD_IDLE, concat, cutTo, mouthBright, mouthLevel, remember, resample, rms, vadStep, zcr, type VadEvent } from "./audio.ts";
 
 test("resample keeps duration and interpolates", () => {
   const one = new Float32Array(48000).map((_, i) => i / 48000);
@@ -59,4 +59,16 @@ test("rms and concat", () => {
   assert.equal(rms(Float32Array.of(0.5, -0.5)), 0.5);
   assert.equal(rms(new Float32Array(0)), 0);
   assert.deepEqual([...concat([Float32Array.of(1, 2), Float32Array.of(3)])], [1, 2, 3]);
+});
+
+test("cutTo keeps the speech plus its margins, inside the take, and fades both cuts", () => {
+  const x = new Float32Array(5000).fill(0.5); // 5 s at 1 kHz
+  const y = cutTo(x, 1000, [2, 3]);
+  assert.equal(y.length, 1450); // 1.85 s .. 3.3 s
+  assert.equal(y[0], 0);
+  assert.ok(Math.abs(y[y.length - 1]) < 0.06);
+  assert.equal(y[700], 0.5);
+  assert.equal(cutTo(x, 1000, [0.05, 4.9]).length, 5000); // margins clipped to the take
+  assert.equal(cutTo(x, 1000, null).length, 5000); // nothing detected: the whole take
+  assert.equal(cutTo(new Float32Array(0), 1000, null).length, 0);
 });

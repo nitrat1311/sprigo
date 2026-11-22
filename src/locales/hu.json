@@ -740,6 +740,7 @@
   },
   "stt": {
     "idle": "Koppints, és beszélj",
+    "starting": "Előkészítés…",
     "rec": "Figyelek… koppints újra, ha végeztél",
     "busy": "Szöveggé alakítás…",
     "record": "Felvétel",

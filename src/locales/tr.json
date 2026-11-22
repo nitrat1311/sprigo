@@ -734,6 +734,7 @@
   },
   "stt": {
     "idle": "Konuşmak için dokun",
+    "starting": "Hazırlanıyor…",
     "rec": "Dinleniyor… bitince tekrar dokun",
     "busy": "Yazıya dökülüyor…",
     "record": "Kaydet",
