@@ -76,7 +76,7 @@ async function take(page: Page, lesson: Locator) {
   await expect.poll(() => posts.length).toBe(n + 1);
 }
 
-test("a speaking exercise keeps one mic open and lets go of it in the background", async ({ page }) => {
+test("a speaking exercise keeps one mic open, plays the take back, and lets go of the mic in the background", async ({ page }) => {
   await page.getByRole("button", { name: "Learn" }).click();
   await page.getByRole("button", { name: /Basic Greetings/ }).click();
   const lesson = page.getByRole("dialog", { name: "Lesson" });
@@ -84,6 +84,7 @@ test("a speaking exercise keeps one mic open and lets go of it in the background
 
   await expect.poll(async () => (await mic(page)).live).toBe(1); // opened when the exercise appeared, not on the tap
   const o = (await mic(page)).opens; // dev mode (StrictMode) mounts the screen twice, so count from here
+  await expect(lesson.getByRole("button", { name: "Play my recording" })).toBeHidden();
 
   await page.evaluate(() => window.dispatchEvent(new Event("blur"))); // window in the background
   await expect.poll(() => mic(page)).toEqual({ opens: o, live: 0 });
@@ -103,10 +104,38 @@ test("a speaking exercise keeps one mic open and lets go of it in the background
   await expect.poll(() => mic(page)).toEqual({ opens: o + 2, live: 0 });
   await take(page, lesson);
   expect(posts[0]).toBeGreaterThan(44 + 16000 * 2 * 0.8); // the whole take reached the recognizer (16 kHz 16-bit WAV)
+  await expect(lesson.getByRole("button", { name: "Play my recording" })).toBeVisible();
   expect(await mic(page)).toEqual({ opens: o + 3, live: 1 });
 });
 
-test("speaking practice keeps the same mic across phrases", async ({ page }) => {
+/** Runs a lesson to the end, skipping speaking exercises. */
+async function finish(page: Page, step: RegExp) {
+  await page.getByRole("button", { name: step }).click();
+  const lesson = page.getByRole("dialog", { name: "Lesson" });
+  for (let i = 0; i < 40; i++) {
+    if (await speaking(lesson).isVisible()) { await lesson.getByRole("button", { name: "Can't speak now" }).click(); continue; }
+    if (!(await answer(lesson))) break;
+  }
+  await lesson.getByRole("button", { name: "Done" }).click();
+  await expect(lesson).toBeHidden();
+}
+
+test("a typed answer's mic offers no playback", async ({ page }) => {
+  await page.getByRole("button", { name: "Learn" }).click();
+  await finish(page, /Basic Greetings/);
+  await page.getByRole("button", { name: /Introduce Yourself/ }).click();
+  const lesson = page.getByRole("dialog", { name: "Lesson" });
+  for (let i = 0; !(await lesson.getByLabel("Your answer").isVisible()); i++) {
+    expect(i).toBeLessThan(30);
+    if (await speaking(lesson).isVisible()) await lesson.getByRole("button", { name: "Can't speak now" }).click();
+    else await answer(lesson);
+  }
+  await take(page, lesson);
+  await expect(lesson.getByRole("button", { name: "Record", exact: true })).toBeEnabled();
+  await expect(lesson.getByRole("button", { name: "Play my recording" })).toBeHidden();
+});
+
+test("speaking practice keeps the same mic across phrases and drops the last take with each new phrase", async ({ page }) => {
   await page.getByRole("button", { name: "Learn" }).click();
   await page.getByRole("button", { name: /Basic Greetings/ }).click();
   const lesson = page.getByRole("dialog", { name: "Lesson" });
@@ -132,9 +161,11 @@ test("speaking practice keeps the same mic across phrases", async ({ page }) => 
   for (let k = 0; k < 2; k++) {
     const said = await phrase();
     await take(page, practice);
+    await expect(practice.getByRole("button", { name: "Play my recording" })).toBeVisible();
     await practice.getByRole("button", { name: "Continue", exact: true }).click();
     await expect(speaking(practice)).toBeVisible();
     await expect.poll(phrase).not.toBe(said); // a new phrase...
+    await expect(practice.getByRole("button", { name: "Play my recording" })).toBeHidden(); // ...without the old take
     expect(await mic(page)).toEqual({ opens: o, live: 1 }); // ...on the same mic
   }
 });
