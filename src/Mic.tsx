@@ -18,7 +18,9 @@ export function useSpeakBlock() {
  *  The mic opens when the button appears and closes when it goes away (see `openMic`), so a take has no dead start.
  *  It also closes while the window is hidden or in the background (keep-alive keeps the screen mounted), dropping a
  *  take in progress, and opens again when the window comes back. */
-export function MicButton({ lang, onText, disabled, trigger = 0, native }: { lang: string; onText: (text: string, m?: Utterance) => void; disabled?: boolean; trigger?: number; native?: string }) {
+/** `item`: what is being answered. When it changes, a take in progress and any error are dropped, without reopening
+ *  the mic (remounting the button per item would reopen it every time). */
+export function MicButton({ lang, onText, disabled, trigger = 0, native, item }: { lang: string; onText: (text: string, m?: Utterance) => void; disabled?: boolean; trigger?: number; native?: string; item?: unknown }) {
   const { t } = useTranslation();
   const [state, setState] = useState<"idle" | "starting" | "rec" | "busy">("idle");
   const [err, setErr] = useState("");
@@ -26,6 +28,14 @@ export function MicButton({ lang, onText, disabled, trigger = 0, native }: { lan
   const gone = useRef(false);
   const away = useRef(false); // window hidden or unfocused: the mic stays closed
   const rec = useRef<Recording | undefined>(undefined);
+  const shown = useRef(item);
+  useEffect(() => {
+    if (item === shown.current) return;
+    shown.current = item;
+    rec.current?.stop(false); rec.current = undefined;
+    setErr("");
+    setState((s) => (s === "rec" ? "idle" : s)); // "starting"/"busy" finish on their own and see the new item
+  }, [item]);
   /** The open mic, opened on first need; a failed open is forgotten so the next tap asks again. */
   const getMic = () => {
     if (mic.current) return mic.current;
@@ -70,7 +80,8 @@ export function MicButton({ lang, onText, disabled, trigger = 0, native }: { lan
     if (!r) return;
     rec.current = undefined;
     setState("busy");
-    try { const r2 = await r.stop(); if (!gone.current) onText(r2.text, r2.m); }
+    const asked = shown.current;
+    try { const r2 = await r.stop(); if (!gone.current && asked === shown.current) onText(r2.text, r2.m); } // not for a newer item
     catch (e) { if (!gone.current) setErr(`${t("stt.failed")}: ${(e as Error).message ?? e}`); }
     finally { if (!gone.current) setState("idle"); }
   };
@@ -79,10 +90,16 @@ export function MicButton({ lang, onText, disabled, trigger = 0, native }: { lan
     if (state !== "idle") return;
     setErr("");
     setState("starting");
+    const asked = shown.current;
     try {
       let m = await getMic();
       if (!m.alive()) { void m.close(); mic.current = undefined; m = await getMic(); } // e.g. the mic was unplugged
-      if (gone.current || away.current) return; // left while the mic was opening: leave() already closed it
+      if (gone.current) return;
+      if (away.current || asked !== shown.current) { // the window went away, or the item changed, while it opened
+        if (away.current) release(); // the mic may have been opened after leave() ran
+        setState("idle");
+        return;
+      }
       rec.current = startRecording(m, lang, stop, native);
       setState("rec");
     }
