@@ -417,11 +417,13 @@ button[aria-busy="true"]{cursor:progress}
   .unit-head{bottom:calc(76px + env(safe-area-inset-bottom))}
   .ex-title{font-size:20px}
 }
+/* One iteration too: an infinite animation at .01ms loops thousands of times a second and flickers
+   (GNOME with animations off reports reduced motion, so Linux hit it first). */
 @media(prefers-reduced-motion:reduce){
-  *,*::before,*::after{animation-duration:.01ms !important;transition-duration:.01ms !important}
+  *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important}
 }
 /* Settings → Reduce motion (same rule, opt-in per profile) */
-:root[data-motion="reduce"] *,:root[data-motion="reduce"] *::before,:root[data-motion="reduce"] *::after{animation-duration:.01ms !important;transition-duration:.01ms !important}
+:root[data-motion="reduce"] *,:root[data-motion="reduce"] *::before,:root[data-motion="reduce"] *::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important}
 
 /* ===== additions (not in design export) ===== */
 /* Design bug: icons outside nav/node/stat had no size and rendered 0×0 (guidebook, quests, chest, result, cards). */

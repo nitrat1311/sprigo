@@ -56,7 +56,7 @@ export const MAX_RECORD_S = 15;
 /** Starts recording; `stop()` returns the transcript (`stop(false)` just releases the mic). Auto-stops after MAX_RECORD_S (onAutoStop fires).
  *  With `native` the transcript also gets its speech signals; there is no tutor turn to time, so `latencyMs` is null. */
 export async function startRecording(lang: string, onAutoStop?: () => void, native?: string) {
-  const stream = await navigator.mediaDevices.getUserMedia({ audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true } });
+  const stream = await navigator.mediaDevices.getUserMedia({ audio: { channelCount: { ideal: 1 }, echoCancellation: true, noiseSuppression: true } });
   const ctx = new AudioContext();
   const src = ctx.createMediaStreamSource(stream);
   // ponytail: ScriptProcessor is deprecated but works everywhere without a worklet file
@@ -105,7 +105,7 @@ const STRICT = { ...VAD, threshold: VAD.threshold * 3, startMs: 300 };
 /** Hands-free listening (tutor call): the voice detector cuts the mic stream into utterances and each one is transcribed.
  *  With `native` each utterance also gets its speech signals (SPR-25), measured here so the phone companion gets them too. */
 export async function listen(lang: string, on: { utterance: (text: string, m?: Utterance) => void; speech?: () => void; level?: (rms: number) => void; error?: (e: Error) => void }, native?: string): Promise<Listener> {
-  const stream = await navigator.mediaDevices.getUserMedia({ audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true } });
+  const stream = await navigator.mediaDevices.getUserMedia({ audio: { channelCount: { ideal: 1 }, echoCancellation: true, noiseSuppression: true } });
   const ctx = new AudioContext();
   void ctx.resume(); // created after an await, so it may start suspended
   const src = ctx.createMediaStreamSource(stream);

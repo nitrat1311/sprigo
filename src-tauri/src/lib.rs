@@ -264,6 +264,24 @@ fn show_main(app: &tauri::AppHandle) {
     }
 }
 
+/// WebKitGTK denies getUserMedia unless the app answers its permission request, and Tauri doesn't (#138).
+/// Allow microphone requests only; anything else keeps WebKit's default (deny).
+#[cfg(target_os = "linux")]
+fn allow_linux_mic(app: &tauri::AppHandle) {
+    use webkit2gtk::{glib::prelude::*, PermissionRequestExt, SettingsExt, UserMediaPermissionRequest, UserMediaPermissionRequestExt, WebViewExt};
+    let Some(w) = app.get_webview_window("main") else { return };
+    let _ = w.with_webview(|wv| {
+        let view = wv.inner();
+        if let Some(s) = WebViewExt::settings(&view) {
+            s.set_enable_media_stream(true);
+        }
+        view.connect_permission_request(|_, req| match req.downcast_ref::<UserMediaPermissionRequest>() {
+            Some(m) if m.is_for_audio_device() && !m.is_for_video_device() => { req.allow(); true }
+            _ => false,
+        });
+    });
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -280,6 +298,8 @@ pub fn run() {
             if !std::env::args().any(|a| a == HIDDEN_ARG) {
                 show_main(app.handle());
             }
+            #[cfg(target_os = "linux")]
+            allow_linux_mic(app.handle());
             Ok(())
         })
         .on_window_event(|w, e| {
