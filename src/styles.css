@@ -516,6 +516,8 @@ button.bubble:hover{border-color:var(--blue)}
 .league-row.cut-down{border-bottom:2px dashed var(--red);border-radius:var(--r) var(--r) 0 0}
 /* Speaking: round mic button */
 .mic-wrap{display:flex;flex-direction:column;align-items:center;gap:12px;margin:26px 0}
+/* "Play my recording" under the mic: a quiet text control, not a pill (44px tall for touch). */
+.mic-playback{display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:0 10px;color:var(--blue);font-weight:700;font-size:14px}
 .mic-btn{width:84px;height:84px;border-radius:50%;background:var(--blue);color:var(--on-accent);box-shadow:0 5px 0 var(--blue-dark);display:flex;align-items:center;justify-content:center}
 .mic-btn svg{width:34px;height:34px}
 .mic-btn.rec{background:var(--red);box-shadow:0 5px 0 var(--red-dark);animation:pulse 1.2s infinite;outline:4px solid var(--red-tint)}

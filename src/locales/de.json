@@ -748,7 +748,8 @@
     "noMic": "Kein Zugriff auf das Mikrofon. Erlaube ihn unter Systemeinstellungen → Datenschutz → Mikrofon.",
     "failed": "Spracherkennung fehlgeschlagen",
     "unavailable": "Sprechen benötigt die Desktop-App mit dem Sprachmodell.",
-    "off": "Sprechübungen sind in den Einstellungen ausgeschaltet."
+    "off": "Sprechübungen sind in den Einstellungen ausgeschaltet.",
+    "playback": "Meine Aufnahme abspielen"
   },
   "update": {
     "section": "Updates",

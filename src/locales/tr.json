@@ -742,7 +742,8 @@
     "noMic": "Mikrofon izni yok. Sistem Ayarları → Gizlilik → Mikrofon'dan izin ver.",
     "failed": "Ses tanıma başarısız",
     "unavailable": "Konuşma, ses modeli olan masaüstü uygulamasında çalışır.",
-    "off": "Konuşma egzersizleri Ayarlar'da kapalı."
+    "off": "Konuşma egzersizleri Ayarlar'da kapalı.",
+    "playback": "Kaydımı dinle"
   },
   "update": {
     "section": "Güncellemeler",

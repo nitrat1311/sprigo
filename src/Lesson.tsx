@@ -380,7 +380,7 @@ export function Lesson({ id }: { id: string }) {
         <p className="muted" style={{ fontWeight: 700, margin: "4px 0 12px" }}>{it.translation}</p>
         {listenBtn(it.phrase)}
       </div>
-      <MicButton item={i} lang={lang} disabled={!!fb} trigger={micPress} onText={(txt) => {
+      <MicButton item={i} playback lang={lang} disabled={!!fb} trigger={micPress} onText={(txt) => {
         setHeard(txt);
         const miss = speechMisses(it.phrase, txt, lang);
         if (txt) grade(speechScore(it.phrase, txt, lang) >= SPEECH_PASS, it.phrase, txt,
