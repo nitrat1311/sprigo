@@ -759,6 +759,7 @@
   },
   "stt": {
     "idle": "Tocca per parlare",
+    "starting": "Preparazione…",
     "rec": "Ascolto… tocca ancora quando hai finito",
     "busy": "Trascrizione in corso…",
     "record": "Registra",
