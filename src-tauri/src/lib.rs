@@ -197,7 +197,11 @@ fn vad_span(model: &std::path::Path, samples: &[f32]) -> Result<Option<(f32, f32
     let mut guard = VAD.lock().map_err(|e| e.to_string())?;
     if guard.is_none() {
         let path = model.to_str().ok_or("bad model path")?;
-        *guard = Some(whisper_rs::WhisperVadContext::new(path, whisper_rs::WhisperVadContextParams::default()).map_err(|e| e.to_string())?);
+        // One thread: with the default four, the detector never finished on speech on Windows (x64, whisper-rs 0.16).
+        // The model is 0.9 MB; a 7 s take takes ~40 ms on one thread.
+        let mut params = whisper_rs::WhisperVadContextParams::default();
+        params.set_n_threads(1);
+        *guard = Some(whisper_rs::WhisperVadContext::new(path, params).map_err(|e| e.to_string())?);
     }
     let segs: Vec<_> = guard.as_mut().unwrap().segments_from_samples(whisper_rs::WhisperVadParams::default(), samples).map_err(|e| e.to_string())?.collect();
     // Segment times are in centiseconds.
