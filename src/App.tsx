@@ -28,10 +28,14 @@ import { Practice, League, Shop, Profile, Stories, Roleplay, Friends, Notificati
 
 const NAV: { id: Route; icon: IconName }[] = [
   { id: "learn", icon: "home" }, { id: "practice", icon: "dumbbell" }, { id: "league", icon: "trophy" },
-  { id: "shop", icon: "shop" }, { id: "profile", icon: "user" },
+  { id: "profile", icon: "user" },
 ];
 const MORE: { id: Route; icon: IconName }[] = [
-  { id: "stories", icon: "story" }, { id: "roleplay", icon: "masks" }, { id: "friends", icon: "users" }, { id: "grammar", icon: "book" },
+  { id: "shop", icon: "shop" }, { id: "grammar", icon: "book" }, { id: "stories", icon: "story" },
+  { id: "roleplay", icon: "masks" }, { id: "friends", icon: "users" },
+];
+/** Not navigation targets of their own: the desktop profile menu and the mobile "More" sheet. */
+const AUX: { id: Route; icon: IconName }[] = [
   { id: "notifications", icon: "bell" }, { id: "settings", icon: "gear" },
 ];
 const SCREENS: Record<Route, () => React.ReactNode> = {
@@ -58,7 +62,7 @@ function NavBtn({ id, icon, onGo }: { id: Route; icon: IconName; onGo?: () => vo
   );
 }
 
-/** Phone bottom bar: the main tabs, then "…" opening profile and the rest upwards. */
+/** Phone bottom bar: the main tabs, then "…" opening the rest upwards. */
 function BottomNav({ inert }: { inert: boolean }) {
   const { t } = useTranslation();
   const { route } = useApp();
@@ -69,20 +73,76 @@ function BottomNav({ inert }: { inert: boolean }) {
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
   }, [open]);
-  const tabs = NAV.filter((n) => n.id !== "profile"), rest = [...NAV.filter((n) => n.id === "profile"), ...MORE];
+  const rest = [...MORE, ...AUX];
   const inMore = rest.some((n) => n.id === route);
   return (
     <>
       {open && <div className="more-backdrop" onClick={() => setOpen(false)} />}
       {open && <div className="more-menu" id="more-menu" inert={inert}>{rest.map((n) => <NavBtn key={n.id} {...n} onGo={() => setOpen(false)} />)}</div>}
       <nav className="bottom-nav" aria-label={t("nav.bottom")} inert={inert}>
-        {tabs.map((n) => <NavBtn key={n.id} {...n} onGo={() => setOpen(false)} />)}
+        {NAV.map((n) => <NavBtn key={n.id} {...n} onGo={() => setOpen(false)} />)}
         <button className={`nav-item ${inMore || open ? "active" : ""}`} onClick={() => setOpen((o) => !o)}
           aria-expanded={open} aria-controls="more-menu">
           <Icon name="dots" /><span>{t("nav.more")}</span>
         </button>
       </nav>
     </>
+  );
+}
+
+/** Desktop footer: the learner chip opens account actions (notifications, settings, switch profile). */
+function ProfileMenu() {
+  const { t } = useTranslation();
+  const { profile, go, logout } = useApp();
+  const [open, setOpen] = useState(false);
+  const [pos, setPos] = useState<{ left: number; bottom: number } | null>(null);
+  const wrap = useRef<HTMLDivElement>(null);
+  const btn = useRef<HTMLButtonElement>(null);
+  const menu = useRef<HTMLDivElement>(null);
+
+  const close = (back = false) => {
+    setOpen(false);
+    if (back) requestAnimationFrame(() => btn.current?.focus({ preventScroll: true }));
+  };
+  const toggle = () => {
+    if (open) return close();
+    // The sidebar scrolls (large text, short windows), so a fixed popover sits above the chip instead of inside the scroll box.
+    const r = btn.current!.getBoundingClientRect();
+    setPos({ left: r.left, bottom: window.innerHeight - r.top + 8 });
+    setOpen(true);
+  };
+  useEffect(() => {
+    if (!open) return;
+    menu.current?.querySelector<HTMLElement>('[role="menuitem"]')?.focus();
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") close(true); };
+    const onDown = (e: PointerEvent) => { if (!wrap.current?.contains(e.target as Node)) setOpen(false); };
+    document.addEventListener("keydown", onKey);
+    document.addEventListener("pointerdown", onDown);
+    return () => { document.removeEventListener("keydown", onKey); document.removeEventListener("pointerdown", onDown); };
+  }, [open]);
+  const action = (f: () => void) => () => { f(); close(true); };
+  if (!profile) return null;
+
+  return (
+    <div className="sidebar-foot" ref={wrap}>
+      <button ref={btn} className="nav-item profile-switch" aria-haspopup="menu" aria-expanded={open}
+        aria-controls={open ? "account-menu" : undefined} title={t("nav.account")} onClick={toggle}>
+        <Avatar p={profile} size={30} /><span className="od-fill">{profile.name}</span><Icon name="dots" />
+      </button>
+      {open && pos && (
+        <div className="account-menu" id="account-menu" role="menu" aria-label={t("nav.account")} ref={menu}
+          style={{ left: pos.left, bottom: pos.bottom }}>
+          {AUX.map((n) => (
+            <button key={n.id} role="menuitem" className="nav-item" onClick={action(() => go(n.id))}>
+              <Icon name={n.icon} /><span className="od-fill">{t(`nav.${n.id}`)}</span>
+            </button>
+          ))}
+          <button role="menuitem" className="nav-item" onClick={action(logout)}>
+            <Icon name="swap" /><span className="od-fill">{t("settings.logout")}</span>
+          </button>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -137,7 +197,7 @@ function FutureOrFailed({ e, future }: { e: BootError; future: boolean }) {
 
 export default function App() {
   const { t, i18n } = useTranslation();
-  const { ready, bootError, profile, route, sheet, openSheet, closeSheet, toastMsg, toastOn, lessonId, endLesson, s, setS, course, logout, tutors } = useApp();
+  const { ready, bootError, profile, route, sheet, openSheet, closeSheet, toastMsg, toastOn, lessonId, endLesson, s, setS, course, tutors } = useApp();
   const langName = useLangName();
   const Screen = SCREENS[route];
   const resolve = (id: CharacterId) => characterOf(id, tutors);
@@ -246,9 +306,7 @@ export default function App() {
             </div>
             {MORE.map((n) => <NavBtn key={n.id} {...n} />)}
           </nav>
-          <button className="nav-item nav-more profile-switch" onClick={logout} title={t("settings.logout")}>
-            <Avatar p={profile} size={30} /><span className="od-fill">{profile.name}</span><Icon name="swap" />
-          </button>
+          <ProfileMenu />
         </aside>
         <main className="main">
           <div className="main-inner">
