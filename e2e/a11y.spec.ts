@@ -103,3 +103,15 @@ for (const theme of ["light", "dark"]) test(`high contrast passes axe colour con
   await expect(lesson.getByRole("button", { name: "Check" })).toBeVisible();
   expect(await axe(page, true)).toEqual([]);
 });
+
+test("the tutor list and form are labelled and have no serious axe findings", async ({ page }) => {
+  await onboard(page);
+  await page.getByRole("button", { name: "Roleplay", exact: true }).click();
+  await page.getByRole("button", { name: /My tutors/ }).click();
+  const list = page.getByRole("dialog", { name: "My tutors" });
+  await expect(list).toBeVisible();
+  expect(await axe(page)).toEqual([]);
+  await list.getByRole("button", { name: "Create tutor" }).click();
+  await expect(page.getByRole("dialog", { name: "New tutor" }).getByLabel("Persona")).toBeVisible();
+  expect(await axe(page)).toEqual([]);
+});

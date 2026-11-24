@@ -194,20 +194,24 @@ test("the grammar reference searches every pattern and drills one", async ({ pag
   await expect(lesson).toBeHidden();
 });
 
-test("a saved custom tutor is listed and can hold a chat", async ({ page }) => {
+test("a custom tutor is created through the UI, listed and can hold a chat", async ({ page }) => {
   await onboard(page);
-  // No create UI yet (#167 M4): seed through the dev build's db layer, then boot again so the store loads it.
-  await page.evaluate(async () => {
-    const db = await import("/src/db.ts");
-    const profile = (await db.listProfiles())[0];
-    await db.createTutor(profile.id, {
-      name: "Ada", gender: "f", color: "#2f80ed", kokoroVoice: "af_heart",
-      persona: "A patient neighbour who chats over tea.",
-      topics: [{ id: "intro", goal: "introduce yourself" }],
-    });
-  });
-  await page.reload();
+  await page.getByRole("button", { name: "Roleplay", exact: true }).click();
+  await page.getByRole("button", { name: /My tutors/ }).click();
+  const list = page.getByRole("dialog", { name: "My tutors" });
+  await expect(list.getByText("No tutors of your own yet.")).toBeVisible();
+  await list.getByRole("button", { name: "Create tutor" }).click();
 
+  const form = page.getByRole("dialog", { name: "New tutor" });
+  await form.getByLabel("Name").fill("Ada");
+  await form.getByLabel("Kokoro voice").selectOption("af_heart");
+  await form.getByLabel("Persona").fill("A patient neighbour who chats over tea.");
+  await form.getByLabel(/Topic 1/).fill("introduce yourself");
+  await form.getByRole("button", { name: "Create tutor" }).click();
+  await expect(list.getByText("Ada", { exact: true })).toBeVisible();
+  await list.getByRole("button", { name: "Close" }).click();
+
+  await page.reload(); // the tutor comes back from the database, not from this session
   await page.getByRole("button", { name: "Live lesson" }).click();
   const picker = page.getByRole("dialog");
   await expect(picker.getByRole("heading", { name: "Who should teach you today?" })).toBeVisible();
@@ -223,6 +227,36 @@ test("a saved custom tutor is listed and can hold a chat", async ({ page }) => {
   const chat = page.getByRole("dialog", { name: "Ada" });
   await expect(chat.getByText("introduce yourself")).toBeVisible();
   await expect(chat.locator(".bubble", { hasText: "ok" })).toBeVisible(); // the mock's structured turn
+});
+
+test("a tutor package is imported, edited and deleted from the tutor list", async ({ page }) => {
+  await onboard(page);
+  await page.getByRole("button", { name: "Roleplay", exact: true }).click();
+  await page.getByRole("button", { name: /My tutors/ }).click();
+  await page.getByRole("dialog", { name: "My tutors" }).getByRole("button", { name: "Import a tutor" }).click();
+  await page.getByRole("dialog").locator('input[type="file"]').setInputFiles("e2e/fixtures/boris-tutor.json");
+
+  const imported = page.getByRole("dialog", { name: "Import a tutor" });
+  await expect(imported.getByText("introduce yourself")).toBeVisible();
+  const confirm = imported.getByLabel("I am responsible for this content");
+  const action = imported.getByRole("button", { name: "Import tutor" });
+  await expect(action).toBeDisabled();
+  await confirm.check();
+  await action.click();
+
+  const list = page.getByRole("dialog", { name: "My tutors" });
+  await expect(list.getByText("Boris", { exact: true })).toBeVisible();
+  await expect(list.getByText("Imported")).toBeVisible();
+
+  await list.getByRole("button", { name: "Edit Boris" }).click();
+  const form = page.getByRole("dialog", { name: "Edit tutor" });
+  await form.getByLabel("Name").fill("Boris Petrov");
+  await form.getByRole("button", { name: "Save tutor" }).click();
+  await expect(list.getByText("Boris Petrov", { exact: true })).toBeVisible();
+
+  await list.getByRole("button", { name: "Delete Boris Petrov" }).click();
+  await page.getByRole("dialog", { name: "Delete Boris Petrov?" }).getByRole("button", { name: "Delete", exact: true }).click();
+  await expect(list.getByText("No tutors of your own yet.")).toBeVisible();
 });
 
 test("readable font and text size apply at once and stay after a reload", async ({ page }) => {
