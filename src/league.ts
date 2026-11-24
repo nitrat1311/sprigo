@@ -11,6 +11,8 @@ export const PROMOTE = 3, DEMOTE = 3;
 export const zones = (tier: number) => ({ up: tier < TIERS - 1 ? PROMOTE : 0, down: tier > 0 ? DEMOTE : 0 });
 /** 10 names per UI language; about half of a league comes from the learner's own. */
 export const NAMES: Record<string, string[]> = {
+  ro: ["Ana", "Andrei", "Maria", "Alexandru", "Elena", "Mihai", "Ioana", "Vlad", "Sofia", "Radu"],
+  nl: ["Sanne", "Daan", "Lotte", "Bram", "Fleur", "Thijs", "Noor", "Sem", "Lieke", "Ruben"],
   tr: ["Aylin", "Mert", "Zeynep", "Kaan", "Elif", "Deniz", "Baran", "Selin", "Umut", "Ece"],
   en: ["Liam", "Chloe", "Noah", "Emma", "Oliver", "Grace", "Jack", "Ava", "Harry", "Mia"],
   de: ["Lena", "Jonas", "Felix", "Hannah", "Lukas", "Marie", "Paul", "Clara", "Finn", "Greta"],
