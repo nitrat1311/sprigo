@@ -194,6 +194,37 @@ test("the grammar reference searches every pattern and drills one", async ({ pag
   await expect(lesson).toBeHidden();
 });
 
+test("a saved custom tutor is listed and can hold a chat", async ({ page }) => {
+  await onboard(page);
+  // No create UI yet (#167 M4): seed through the dev build's db layer, then boot again so the store loads it.
+  await page.evaluate(async () => {
+    const db = await import("/src/db.ts");
+    const profile = (await db.listProfiles())[0];
+    await db.createTutor(profile.id, {
+      name: "Ada", gender: "f", color: "#2f80ed", kokoroVoice: "af_heart",
+      persona: "A patient neighbour who chats over tea.",
+      topics: [{ id: "intro", goal: "introduce yourself" }],
+    });
+  });
+  await page.reload();
+
+  await page.getByRole("button", { name: "Live lesson" }).click();
+  const picker = page.getByRole("dialog");
+  await expect(picker.getByRole("heading", { name: "Who should teach you today?" })).toBeVisible();
+  await expect(picker.getByRole("button", { name: /Ada/ })).toBeVisible();
+  await picker.getByRole("button", { name: "Cancel" }).click();
+
+  await page.getByRole("button", { name: "Roleplay", exact: true }).click();
+  const card = page.locator(".rp-card", { hasText: "Ada" });
+  await expect(card).toBeVisible();
+  await expect(card.getByText("introduce yourself")).toBeVisible(); // a custom topic has no i18n key
+  await card.getByRole("button", { name: "Chat" }).click();
+  await page.getByRole("dialog").getByRole("button", { name: "introduce yourself" }).click();
+  const chat = page.getByRole("dialog", { name: "Ada" });
+  await expect(chat.getByText("introduce yourself")).toBeVisible();
+  await expect(chat.locator(".bubble", { hasText: "ok" })).toBeVisible(); // the mock's structured turn
+});
+
 test("readable font and text size apply at once and stay after a reload", async ({ page }) => {
   await onboard(page);
   await page.getByRole("tab", { name: "Preferences" }).click();

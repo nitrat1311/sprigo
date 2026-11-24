@@ -95,6 +95,8 @@ test("characterOf resolves built-ins, and a saved tutor as a character", () => {
   assert.deepEqual(characterOf("custom:ada", [ada]), toCharacter(ada));
   assert.deepEqual(Object.keys(toCharacter(ada)).sort(), ["color", "face", "gender", "kokoroVoice", "name", "persona", "topics"]);
   assert.deepEqual(toCharacter(ada).face, TUTOR_FACE, "an avatar-only tutor gets the neutral face");
+  const withImages = toCharacter({ ...ada, avatar: png(), scene: webp() });
+  assert.deepEqual([withImages.avatar, withImages.scene], [png(), webp()], "a custom tutor's images travel to the face");
   assert.deepEqual(toCharacter({ ...ada, face: { ...TUTOR_FACE, hair: "bun" } }).face.hair, "bun");
   assert.equal(characterOf("custom:ada"), undefined, "nothing to resolve against");
   assert.equal(characterOf("custom:ada", [{ ...ada, id: "custom:bo" }]), undefined);
