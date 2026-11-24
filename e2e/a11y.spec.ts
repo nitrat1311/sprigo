@@ -103,3 +103,28 @@ for (const theme of ["light", "dark"]) test(`high contrast passes axe colour con
   await expect(lesson.getByRole("button", { name: "Check" })).toBeVisible();
   expect(await axe(page, true)).toEqual([]);
 });
+
+test("the tutor list and form are labelled and have no serious axe findings", async ({ page }) => {
+  await onboard(page);
+  await page.getByRole("button", { name: "Roleplay", exact: true }).click();
+  await page.getByRole("button", { name: /My tutors/ }).click();
+  const list = page.getByRole("dialog", { name: "My tutors" });
+  await expect(list).toBeVisible();
+  expect(await axe(page)).toEqual([]);
+  await list.getByRole("button", { name: "Create tutor" }).click();
+  const form = page.getByRole("dialog", { name: "New tutor" });
+  await form.getByLabel("Name").fill("Ada");
+  await form.getByLabel("Kokoro voice").selectOption("af_heart");
+  await form.getByLabel("Persona").fill("A patient neighbour who chats over tea.");
+  await form.getByLabel(/Topic 1/).fill("introduce yourself");
+  await expect(form.getByLabel("Persona")).toBeVisible();
+  expect(await axe(page)).toEqual([]);
+  await form.getByRole("button", { name: "Create tutor" }).click();
+  await expect(list.getByText("Ada", { exact: true })).toBeVisible();
+  await list.getByRole("button", { name: "Options for Ada" }).click();
+  await expect(list.getByRole("menu")).toBeVisible();
+  expect(await axe(page)).toEqual([]);
+  await page.keyboard.press("Escape");
+  await expect(list.getByRole("menu")).toBeHidden();
+  await expect(list).toBeVisible(); // Escape closed the menu, not the sheet
+});

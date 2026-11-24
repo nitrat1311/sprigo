@@ -11,6 +11,7 @@
   .od-stat, .od-field, .od-cell { --od-gap: 2px; display: grid; gap: var(--od-gap); } /* own default: a row's gap must not leak into its title/description */
   :where(.od-stat,.od-field,.od-cell) > :where(*) { display: block; }
   datalist { display: none; } /* the rule above would draw it as an empty box */
+  [hidden] { display: none !important; } /* and a hidden file input as a native picker */
   .od-tile { display: grid; grid-template-rows: auto 1fr; }
   :where(.od-tile) > :where(*) { display: block; }
   .od-media { display: block; width: 100%; height: auto; aspect-ratio: var(--od-ratio, auto); }
@@ -532,6 +533,8 @@ button.bubble:hover{border-color:var(--blue)}
 .face{position:relative}
 .face svg{position:relative;display:block;width:100%;height:100%}
 .face .scene{position:absolute;inset:0}
+.face .scene-img,.face .face-img{width:100%;height:100%;object-fit:cover}
+.face .face-img{position:absolute;inset:0}
 html[data-theme="dark"] .face .scene{filter:brightness(.6) saturate(.8)}
 .face .lid{transform-box:fill-box;transform-origin:50% 0}
 .face .lid{transform:scaleY(var(--blink));transition:transform 60ms}
