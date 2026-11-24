@@ -73,7 +73,7 @@ for (const [key, bench] of benches) {
   }
   // The two reports must agree on the machine: latency and quality are hardware-specific, and an unrecorded machine
   // (reports before scripts/eval.ts wrote one) cannot be claimed to be the bench's.
-  if (!report) { skipped.push(`${row.model}: no eval report`); continue; }
+  if (!report) { skipped.push(`${row.model}: no usable eval report`); continue; }
   if (report.meta.hardware !== bench.meta.hardware) {
     skipped.push(`${row.model}: eval ran on "${report.meta.hardware}", bench on "${bench.meta.hardware}" — re-run pnpm eval`);
     continue;
@@ -89,7 +89,7 @@ for (const [key, bench] of benches) {
     measured: bench.meta.date.slice(0, 10), evaluated: report.meta.date.slice(0, 10),
   });
 }
-for (const [key, report] of evals) if (!benches.has(key)) skipped.push(`${report.meta.model}: no bench report`);
+for (const [key, report] of evals) if (!benches.has(key)) skipped.push(`${report.meta.model}: no usable bench report`);
 
 rows.sort((a, b) => a.model.localeCompare(b.model));
 for (const s of skipped) console.error(`skipped ${s}`);
