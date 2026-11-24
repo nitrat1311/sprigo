@@ -7,7 +7,7 @@ import { CHARACTERS, type BuiltinId, type Character, type FaceSpec } from "./cha
 export const TUTOR_SOURCES = ["local", "imported"] as const;
 export type TutorSource = (typeof TUTOR_SOURCES)[number];
 
-/** Kokoro-82M's English voices, for the tutor form's picker. A package may still name any `[ab][fm]_…` id. */
+/** Kokoro-82M's English voices, the only ones the app can speak: the tutor form's picker and the package check below. */
 // ponytail: hardcoded Kokoro-82M English voice ids; read them from kokoro-js metadata if more languages arrive.
 export const KOKORO_VOICES = [
   "af_alloy", "af_aoede", "af_bella", "af_heart", "af_jessica", "af_kore", "af_nicole", "af_nova", "af_river", "af_sarah", "af_sky",
@@ -87,8 +87,10 @@ const fields = z.object({
   topics: z.array(topicSchema).min(1).max(TUTOR_TOPICS_MAX),
 });
 
-/** Rules JSON Schema cannot state: the voice must match the gender, topic ids are unique. */
+/** Rules JSON Schema cannot state: the voice must be one we speak and match the gender, topic ids are unique. */
 function checks(t: z.infer<typeof fields>, ctx: z.RefinementCtx) {
+  if (!KOKORO_VOICES.includes(t.kokoroVoice as (typeof KOKORO_VOICES)[number]))
+    ctx.addIssue({ code: "custom", path: ["kokoroVoice"], message: "is not one of the app's Kokoro voices" });
   if (t.kokoroVoice[1] !== t.gender)
     ctx.addIssue({ code: "custom", path: ["kokoroVoice"], message: `is not a ${t.gender === "f" ? "female" : "male"} voice` });
   const ids = new Set<string>();
@@ -193,8 +195,12 @@ export const personaInPrompt = (ch: Prompted & { persona: string }, prefix = "")
 /** The topic goal of a roleplay prompt: the learner's own words for a custom tutor, so bounded the same way. */
 export const goalInPrompt = (ch: Prompted, goal: string) => (ch.custom ? tutorData("goal", goal) : goal);
 
-/** The name a prompt addresses: one line and within its cap for a custom tutor, the cast's name otherwise. */
+/** The name in a prompt: the cast's name as written, or a custom tutor's as a bounded data block. */
 export const nameInPrompt = (ch: Prompted & { name: string }) =>
+  ch.custom ? tutorData("name", ch.name) : ch.name;
+
+/** The name where a prompt or a stored title uses it inline (history labels, "write X's next turn", memory): one safe line. */
+export const inlineName = (ch: Prompted & { name: string }) =>
   ch.custom ? sanitizeTutorText(ch.name, TUTOR_NAME_MAX) : ch.name;
 
 /** Imported tutor packages never write learner memory (M5); the built-in cast and local tutors do. */

@@ -14,7 +14,7 @@ import { avoidancePrompt, avoidanceSchema, looseAvoidance } from "./drills";
 import { fromGuides, lookupSchema, wordKey, type Lookup } from "./lookup";
 import { feedbackPrompt, feedbackSchema, looseFeedback, taskPrompt, taskSchema, writeId, type WritingTask } from "./writing";
 import { cleanNote, noteFor, noteFresh, notePrompt, noteSystem, NOTE_KEY, type GardenNote, type NoteInfo } from "./gardenNote";
-import { goalInPrompt, nameInPrompt, personaInPrompt } from "./tutors";
+import { goalInPrompt, inlineName, nameInPrompt, personaInPrompt } from "./tutors";
 
 /** `A1:checkpoint` (path node) and `A1:test` (skip-level test) share one flow (DECISIONS B8). */
 export const examLevel = (id: string) => /^([ABC][12]):(checkpoint|test)$/.exec(id)?.[1] as Cefr | undefined;
@@ -275,9 +275,11 @@ export function chatTurn(c: Base & { about?: string[] }, ch: Character, topic: {
   const native = langEn(c.native);
   const free = topic.goal.startsWith(FREE_GOAL);
   const sent = history.filter((m) => m.from === "me").length;
-  const name = nameInPrompt(ch);
+  const name = inlineName(ch);
+  const intro = `in a roleplay inside a language-learning app. The learner is a native ${native} speaker learning ${c.course.name} at CEFR level ${c.level}.`;
   const system = [
-    `You are ${name} in a roleplay inside a language-learning app. The learner is a native ${native} speaker learning ${c.course.name} at CEFR level ${c.level}.`,
+    // A custom tutor's name is a data block, so it follows the sentence; history and prompts below use the plain name.
+    ch.custom ? `You are a character ${intro}\n${nameInPrompt(ch)}` : `You are ${name} ${intro}`,
     free
       // A free topic is the learner's own; the job in the persona must not pull it back into a work scene (a landlord asking about rent in a football chat).
       ? `${personaInPrompt(ch, "Your personality: ")} The learner picked the topic, so this is a casual chat between two people, not a scene from your job. Keep your personality and manner, but never bring up your work, customers, place or tasks unless the learner does. Topic: ${goalInPrompt(ch, topic.goal.slice(FREE_GOAL.length))}.`
@@ -380,7 +382,7 @@ export function tutorTurn(c: Base & { about?: string[]; coach?: string }, ch: Ch
     name: ch.name, persona: ch.persona, target: c.course.name, native: langEn(c.native), level: c.level,
     unit: unit.title, words: unitWords(unit), grammar: unitGrammar(unit), about: c.about ?? [], custom: ch.custom,
   });
-  const prompt = tutorPrompt(nameInPrompt(ch), history, notes, event, screen, c.coach);
+  const prompt = tutorPrompt(inlineName(ch), history, notes, event, screen, c.coach);
   return onText ? generateStream(tutorSchema, system, prompt, "tutor", onText, looseTutor) : generate(tutorSchema, system, prompt, "tutor", undefined, looseTutor);
 }
 

@@ -63,7 +63,7 @@ export function Face({ spec, color, size, label, state = "idle", scene, image, s
     <span ref={ref} className={`face ${state}`} role="img" aria-label={label} style={{ width: size, height: size, "--c": color } as React.CSSProperties}>
       {sceneImage ? <img className="scene scene-img" src={sceneImage} alt="" /> : scene && <Scene who={scene} />}
       {image
-        ? <img className="face-img" src={image} alt={label} />
+        ? <img className="face-img" src={image} alt="" />
         : <svg viewBox="0 0 200 200" preserveAspectRatio="xMidYMax meet" aria-hidden="true"><FaceArt spec={spec} /></svg>}
     </span>
   );

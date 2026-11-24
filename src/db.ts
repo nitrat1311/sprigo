@@ -356,10 +356,13 @@ export async function applyMemoryOps(profileId: number, source: MemorySource, op
 
 export type Tutor = CustomTutor & { profile_id: number; source: TutorSource; created_at: string };
 const TUTOR_COLS = "id, profile_id, data, avatar, scene, source, created_at";
-function toTutor(r: Row): Tutor {
+function toTutor(r: Row): Tutor | null {
   const { data, avatar, scene, ...rest } = r;
-  // Rows only ever hold a parsed package (createTutor/updateTutor validate), so a plain parse is enough here.
-  return { ...(JSON.parse(data) as TutorProfile), ...(avatar ? { avatar } : {}), ...(scene ? { scene } : {}), ...rest } as Tutor;
+  // A row only ever holds a package we wrote, but a corrupt one is skipped rather than breaking the whole list.
+  let pkg: unknown;
+  try { pkg = JSON.parse(data); } catch { return null; }
+  if (!pkg || typeof pkg !== "object") return null;
+  return { ...(pkg as TutorProfile), ...(avatar ? { avatar } : {}), ...(scene ? { scene } : {}), ...rest } as Tutor;
 }
 /** The package written by us and checked again on its way in; throws with the same readable lines the import screen shows. */
 function checkedTutor(pkg: TutorPackage) {
@@ -369,11 +372,8 @@ function checkedTutor(pkg: TutorPackage) {
 }
 
 export async function listTutors(profileId: number) {
-  return (await (await db()).select<Row>(`SELECT ${TUTOR_COLS} FROM tutors WHERE profile_id = $1 ORDER BY created_at, id`, [profileId])).map(toTutor);
-}
-export async function getTutor(id: string) {
-  const r = await (await db()).select<Row>(`SELECT ${TUTOR_COLS} FROM tutors WHERE id = $1`, [id]);
-  return r[0] ? toTutor(r[0]) : null;
+  return (await (await db()).select<Row>(`SELECT ${TUTOR_COLS} FROM tutors WHERE profile_id = $1 ORDER BY created_at, id`, [profileId]))
+    .flatMap((r) => { const t = toTutor(r); return t ? [t] : []; });
 }
 /** A new `custom:<uuid>` tutor; `source` says whether it was written here or imported. */
 export async function createTutor(profileId: number, pkg: TutorPackage, source: TutorSource = "local") {
@@ -383,14 +383,14 @@ export async function createTutor(profileId: number, pkg: TutorPackage, source: 
     [id, profileId, JSON.stringify(profile), avatar ?? null, scene ?? null, source]);
   return id;
 }
-/** Replaces the whole package: leave avatar or scene out to remove it. */
-export async function updateTutor(id: string, pkg: TutorPackage) {
+/** Replaces the whole package: leave avatar or scene out to remove it. Scoped to the profile that owns the row. */
+export async function updateTutor(profileId: number, id: string, pkg: TutorPackage) {
   const { avatar, scene, ...profile } = checkedTutor(pkg);
-  await (await db()).execute("UPDATE tutors SET data = $1, avatar = $2, scene = $3 WHERE id = $4",
-    [JSON.stringify(profile), avatar ?? null, scene ?? null, id]);
+  await (await db()).execute("UPDATE tutors SET data = $1, avatar = $2, scene = $3 WHERE id = $4 AND profile_id = $5",
+    [JSON.stringify(profile), avatar ?? null, scene ?? null, id, profileId]);
 }
-export async function deleteTutor(id: string) {
-  await (await db()).execute("DELETE FROM tutors WHERE id = $1", [id]);
+export async function deleteTutor(profileId: number, id: string) {
+  await (await db()).execute("DELETE FROM tutors WHERE id = $1 AND profile_id = $2", [id, profileId]);
 }
 
 // ---- Speech signals (SPR-25, src/speech.ts) ----

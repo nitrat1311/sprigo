@@ -8,7 +8,7 @@ import { onTtsFallback, prewarm, resetTtsNotice, speak, speakingWith, stopSpeaki
 import { MicButton } from "./Mic";
 import { Face, type FaceState } from "./face/Face";
 import { CHAT_MAX_TURNS as CHAT_TURNS, CHAT_MIN_TURNS, FREE_GOAL, type Character, type Talk } from "./characters";
-import { isTutorId, nameInPrompt, remembersLearner } from "./tutors";
+import { inlineName, isTutorId, remembersLearner } from "./tutors";
 import { avoidancePass, chatTurn, debrief, learnerFacts, loadStory, rehearseTurn, rememberSession, type ChatMsg, type Story as StoryData } from "./lessons";
 import { REHEARSE_LONG, type Debrief } from "./rehearsal";
 import * as db from "./db";
@@ -402,7 +402,7 @@ export function Chat({ talk, ch }: { talk: Talk; ch: Character }) {
   const remember = () => {
     // ponytail: only free-topic chats and rehearsals, never drills; in a scene the learner plays a role, so "I'm a doctor" is not about them.
     // An imported tutor's package is not the learner's: it must not write their memory (M5).
-    if (profile && !drill && remembersLearner(ch) && (rehearse || topic.goal.startsWith(FREE_GOAL))) void rememberSession(profile.id, profile.native_lang, "chat", rehearse ? name : nameInPrompt(ch), msgs.map((m) => ({ from: m.from === "me" ? "me" : "other", text: m.text })))
+    if (profile && !drill && remembersLearner(ch) && (rehearse || topic.goal.startsWith(FREE_GOAL))) void rememberSession(profile.id, profile.native_lang, "chat", rehearse ? name : inlineName(ch), msgs.map((m) => ({ from: m.from === "me" ? "me" : "other", text: m.text })))
       .then((n) => { if (n) toast(t("memory.saved", { count: n })); });
   };
   const turns = msgs.filter((m) => m.from === "me").map((m) => m.text);
@@ -467,7 +467,7 @@ export function Chat({ talk, ch }: { talk: Talk; ch: Character }) {
     body = <>
       {voice ? (
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, marginBottom: 16, textAlign: "center" }}>
-          <Face spec={ch.face} color={ch.color} size={220} label={name} state={faceState} scene={rehearse ? undefined : who} image={ch.avatar} sceneImage={ch.scene} />
+          <Face spec={ch.face} color={ch.color} size={220} label={name} state={faceState} scene={rehearse ? undefined : who} image={ch.avatar} sceneImage={rehearse ? undefined : ch.scene} />
           <b>{rehearse ? t("roleplay.rehearseWith", { who: name }) : name}</b><span className="muted small">{topicLabel}</span>
         </div>
       ) : (

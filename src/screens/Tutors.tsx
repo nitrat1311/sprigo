@@ -114,7 +114,7 @@ function TutorForm({ initial }: { initial?: db.Tutor }) {
     const parsed = parseTutorPackage(pkg);
     if (!parsed.ok) { setErrors(parsed.errors); setBusy(false); return; }
     try {
-      if (initial) await db.updateTutor(initial.id, parsed.tutor);
+      if (initial) await db.updateTutor(profile.id, initial.id, parsed.tutor);
       else await db.createTutor(profile.id, parsed.tutor, "local");
       await reloadTutors();
       openSheet(<TutorsSheet />);
@@ -180,8 +180,8 @@ function TutorForm({ initial }: { initial?: db.Tutor }) {
           <button type="button" className="btn btn-ghost" onClick={() => setRows((rs) => [...rs, { id: null, goal: "" }])}>+ {t("tutorManage.addTopic")}</button>
         )}
       </div>
-      <ImageField label={t("tutorManage.avatar")} max={TUTOR_AVATAR_MAX} value={avatar} onChange={setAvatar} onProblem={(m) => setErrors([m])} />
-      <ImageField label={t("tutorManage.scene")} max={TUTOR_SCENE_MAX} value={scene} onChange={setScene} onProblem={(m) => setErrors([m])} />
+      <ImageField label={t("tutorManage.avatar")} max={TUTOR_AVATAR_MAX} value={avatar} onChange={setAvatar} onProblem={(m) => setErrors((es) => [...es, m])} />
+      <ImageField label={t("tutorManage.scene")} max={TUTOR_SCENE_MAX} value={scene} onChange={setScene} onProblem={(m) => setErrors((es) => [...es, m])} />
       <Errors errors={errors} />
       <button className="btn btn-primary btn-block" disabled={busy} onClick={() => save()}>{t(initial ? "tutorManage.save" : "tutorManage.create")}</button>
       <button className="btn btn-ghost btn-block" onClick={closeSheet}>{t("sheet.cancel")}</button>
@@ -191,13 +191,13 @@ function TutorForm({ initial }: { initial?: db.Tutor }) {
 
 function DeleteTutorSheet({ tutor }: { tutor: db.Tutor }) {
   const { t } = useTranslation();
-  const { closeSheet, openSheet, reloadTutors, toast } = useApp();
+  const { profile, closeSheet, openSheet, reloadTutors, toast } = useApp();
   const [busy, setBusy] = useState(false);
   const remove = async () => {
-    if (busy) return;
+    if (!profile || busy) return;
     setBusy(true);
     try {
-      await db.deleteTutor(tutor.id);
+      await db.deleteTutor(profile.id, tutor.id);
       await reloadTutors();
       openSheet(<TutorsSheet />);
       toast(t("tutorManage.deleted", { name: tutor.name }));

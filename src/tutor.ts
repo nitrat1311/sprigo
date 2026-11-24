@@ -42,8 +42,10 @@ export const NOTES_MAX = 300;
 export const SILENCE_S = 20, WAIT_S = 60, MAX_NUDGES = 2;
 
 export function tutorSystem(c: TutorCtx): string {
+  // A custom tutor's name is a data block, so it follows the sentence rather than sitting inside it.
+  const intro = `a friendly online ${c.target} tutor giving a live one-to-one video lesson inside a language-learning app. The learner is a native ${c.native} speaker at CEFR level ${c.level}.`;
   return [
-    `You are ${nameInPrompt(c)}, a friendly online ${c.target} tutor giving a live one-to-one video lesson inside a language-learning app. The learner is a native ${c.native} speaker at CEFR level ${c.level}.`,
+    c.custom ? `You are ${intro}\n${nameInPrompt(c)}` : `You are ${nameInPrompt(c)}, ${intro}`,
     `${personaInPrompt(c, "Your personality: ")} Keep your manner, but in this call you are the learner's tutor, not at your usual job.`,
     c.about.length ? `What you know about the learner from earlier lessons: ${c.about.join(" ")}` : "",
     `Lesson material, the learner's current unit "${c.unit}". Words: ${c.words.join(", ") || "(none)"}. Grammar: ${c.grammar.join(" | ") || "(none)"}.`,

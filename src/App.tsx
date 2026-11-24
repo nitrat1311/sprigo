@@ -147,7 +147,7 @@ export default function App() {
   const callCh = callWho ? resolve(callWho) : undefined;
   const story = lessonId?.startsWith("story:") ? parseStoryId(lessonId) : undefined;
   const writing = lessonId?.startsWith("write:") ? parseWriteId(lessonId) : undefined;
-  const badTalk = talk === null || story === null || writing === null;
+  const badTalk = talk === null || story === null || writing === null || (!!callWho && !callCh);
   useEffect(() => { if (badTalk) endLesson(); }, [badTalk]);
 
   useEffect(() => {
