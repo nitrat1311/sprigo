@@ -18,9 +18,11 @@ type Msg = { type: string; id?: number; p?: number; message?: string; voice?: st
 
 // The phone shares the desktop's database but has its own voice: Kokoro runs out of memory in iOS Safari (docs/MOBILE.md §3).
 export const TTS_KEY = isCompanion ? "tts.phone" : "tts";
+// Linux's WebKitGTK (Ubuntu's build at least) has no speechSynthesis at all; there Piper is the default instead of silence.
+const synth: SpeechSynthesis | undefined = typeof speechSynthesis === "undefined" ? undefined : speechSynthesis;
 export const ttsProvider = async (): Promise<TtsProvider> => {
   const v = await getSetting(TTS_KEY);
-  return ((v === "kokoro" || v === "elevenlabs" || v === "local") && !isCompanion) || v === "piper" ? v : "system";
+  return ((v === "kokoro" || v === "elevenlabs" || v === "local") && !isCompanion) || v === "piper" ? v : synth ? "system" : "piper";
 };
 
 // ponytail: the dev browser preview has no keychain, so it keeps the key in localStorage. Never used in the app.
@@ -44,6 +46,10 @@ const PIPER: Record<string, Record<"f" | "m", string>> = {
   es: { f: "es_ES-sharvard-medium", m: "es_ES-davefx-medium" },
   tr: { f: "tr_TR-dfki-medium", m: "tr_TR-fahrettin-medium" },
   hu: { f: "hu_HU-anna-medium", m: "hu_HU-imre-medium" },
+  ro: { f: "ro_RO-mihai-medium", m: "ro_RO-mihai-medium" },
+  // Flemish voices: the bundled library's only nl_NL voice (MLS) was reported to sound unnatural; the newer nl_NL
+  // voices (pim, ronnie, alex) need Piper 1.5, so switch to one of them once the Piper runtime is updated.
+  nl: { f: "nl_BE-nathalie-medium", m: "nl_BE-rdh-medium" },
 };
 // Accents (#35): where an engine has a voice for one, it is used; elsewhere the language's default voice speaks.
 const PIPER_ACCENT: Record<string, Record<"f" | "m", string>> = { "en-GB": { f: "en_GB-cori-medium", m: "en_GB-alan-medium" } };
@@ -150,7 +156,7 @@ const cache = new Map<string, Chunk[]>();
 /** Silences whatever is speaking (and drops local-engine sentences still being generated). */
 export function stopSpeaking() {
   seq++;
-  speechSynthesis.cancel();
+  synth?.cancel();
   for (const s of sources) try { s.stop(); } catch { /* already ended */ }
   sources = [];
   prep(null);
@@ -160,12 +166,13 @@ export function stopSpeaking() {
 
 /** The system voice list, which browsers fill in after startup: an empty first answer would mean the default (often female) voice. */
 function systemVoices(): Promise<SpeechSynthesisVoice[]> {
-  const now = speechSynthesis.getVoices();
+  if (!synth) return Promise.resolve([]);
+  const now = synth.getVoices();
   if (now.length) return Promise.resolve(now);
   return new Promise((ok) => {
-    const got = () => { clearTimeout(t); speechSynthesis.removeEventListener("voiceschanged", got); ok(speechSynthesis.getVoices()); };
+    const got = () => { clearTimeout(t); synth.removeEventListener("voiceschanged", got); ok(synth.getVoices()); };
     const t = setTimeout(got, 1500);
-    speechSynthesis.addEventListener("voiceschanged", got);
+    synth.addEventListener("voiceschanged", got);
   });
 }
 
@@ -181,6 +188,7 @@ export const useTtsPreparing = (text: string) =>
   useSyncExternalStore((f) => { prepSubs.add(f); return () => { prepSubs.delete(f); }; }, () => preparing) === text;
 
 async function system(text: string, lang: string, gender: "f" | "m" | undefined, mine: number, done: () => void, speed: number, accent?: string) {
+  if (!synth) return done(); // no system voice in this webview: nothing to say it with
   const voices = await systemVoices();
   if (mine !== seq) return; // cut while waiting
   const u = new SpeechSynthesisUtterance(text);
@@ -191,7 +199,7 @@ async function system(text: string, lang: string, gender: "f" | "m" | undefined,
   u.rate = speed;
   u.onstart = () => begun();
   u.onend = u.onerror = done;
-  speechSynthesis.speak(u);
+  synth.speak(u);
 }
 
 /** Queues chunks back to back through the analyser; `end()` once no more will come, then `done` runs when the last one has played. */
@@ -308,6 +316,13 @@ export async function sayWithEleven(text: string, lang: string, key: string, voi
   await viaBytes(`test:${voice}\n${text}`, elevenLine(text, lang, voice, key), seq, () => {});
 }
 
+/** The tutor form's preview: this Kokoro voice whatever the device's provider or accent is; no fallback, so a missing model throws. */
+export async function sayWithKokoro(text: string, voice: string) {
+  const speed = await ttsSpeed();
+  stopSpeaking();
+  await viaWorker("kokoro", text, voice, seq, () => {}, speed);
+}
+
 // ---- Which engine spoke, and one notice per session when the chosen one fell back to the system voice ----
 let lastEngine: TtsProvider | null = null; // null: nothing spoken yet
 export const speakingWith = () => lastEngine;
@@ -360,7 +375,7 @@ function tick(t: number) {
   lastT = t;
   let rms = 0, rate = 0;
   // The system voice gives no audio to measure: uneven pseudo-syllables (three beats that drift in and out of step) instead of a metronome.
-  if (speechSynthesis.speaking) {
+  if (synth?.speaking) {
     const s = t / 1000, beat = Math.sin(2 * Math.PI * 3.1 * s) * 0.6 + Math.sin(2 * Math.PI * 4.7 * s) * 0.4;
     rms = 0.02 + 0.2 * Math.max(0, beat) * (0.6 + 0.4 * Math.sin(2 * Math.PI * 0.7 * s));
     rate = 0.03 + 0.07 * (0.5 + 0.5 * Math.sin(2 * Math.PI * 1.9 * s));

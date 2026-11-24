@@ -34,3 +34,7 @@ eval/
 # Playwright (pnpm test:e2e)
 test-results/
 playwright-report/
+
+# Local scratch output
+brag-output/
+.playwright-mcp/
