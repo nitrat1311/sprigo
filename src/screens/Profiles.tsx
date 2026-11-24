@@ -56,15 +56,15 @@ export function ProfileForm({ initial, onDone }: { initial?: Profile; onDone?: (
   };
 
   return (
-    <form className="od-stack" style={gap("14px")} onSubmit={submit}>
-      <div className="od-row" style={gap("14px")}>
+    <form className="od-stack" style={gap("var(--s-4)")} onSubmit={submit}>
+      <div className="od-row" style={gap("var(--s-4)")}>
         <Avatar p={{ name, color }} size={56} />
         <label className="od-field od-fill"><b>{t("profiles.name")}</b>
           <input className="input" value={name} maxLength={24} autoFocus required onChange={(e) => setName(e.target.value)} placeholder={t("profiles.namePlaceholder")} />
         </label>
       </div>
       <div className="od-field"><b>{t("profiles.color")}</b>
-        <div className="od-cluster" role="radiogroup" aria-label={t("profiles.color")} style={gap("8px")}>
+        <div className="od-cluster" role="radiogroup" aria-label={t("profiles.color")} style={gap("var(--s-3)")}>
           {COLORS.map((c) => (
             <button type="button" key={c} role="radio" aria-checked={c === color} aria-label={c} className="swatch" style={{ background: c }} onClick={() => setColor(c)} />
           ))}
@@ -121,9 +121,9 @@ function PinSheet({ p, onOk }: { p: Profile; onOk?: () => void }) {
     else { setWrong(true); setPin(""); }
   };
   return <>
-    <div className="od-row" style={gap("12px")}><Avatar p={p} /><h3>{t("profiles.enterPin", { name: p.name })}</h3></div>
+    <div className="od-row" style={gap("var(--s-4)")}><Avatar p={p} /><h3>{t("profiles.enterPin", { name: p.name })}</h3></div>
     <input className="input" type="password" inputMode="numeric" autoComplete="off" autoFocus maxLength={4} value={pin} aria-label={t("profiles.pin")}
-      onChange={(e) => change(e.target.value)} placeholder="••••" style={{ margin: "16px 0 8px", width: "100%", textAlign: "center", fontSize: 24, letterSpacing: 12 }} />
+      onChange={(e) => change(e.target.value)} placeholder="••••" style={{ margin: "var(--s-5) 0 var(--s-3)", width: "100%", textAlign: "center", fontSize: "var(--fs-24)", letterSpacing: 12 }} />
     <p className="small" role="alert" style={{ color: "var(--red)", minHeight: 20 }}>{wrong ? t("profiles.pinWrong") : ""}</p>
     <button className="btn btn-ghost btn-block" onClick={closeSheet}>{t("sheet.cancel")}</button>
   </>;
@@ -141,12 +141,12 @@ function DeleteSheet({ p, onDeleted }: { p: Profile; onDeleted: () => void }) {
     finally { setBusy(false); }
   };
   return <>
-    <div className="od-row" style={gap("12px")}><Avatar p={p} /><h3>{t("profiles.deleteTitle", { name: p.name })}</h3></div>
-    <p style={{ margin: "14px 0" }}>{t("profiles.deleteWarn", { name: p.name })}</p>
+    <div className="od-row" style={gap("var(--s-4)")}><Avatar p={p} /><h3>{t("profiles.deleteTitle", { name: p.name })}</h3></div>
+    <p style={{ margin: "var(--s-4) 0" }}>{t("profiles.deleteWarn", { name: p.name })}</p>
     <label className="od-field"><b>{t("profiles.deleteType", { name: p.name })}</b>
       <input className="input" value={typed} autoFocus autoComplete="off" spellCheck={false} onChange={(e) => setTyped(e.target.value)} />
     </label>
-    <div className="od-stack" style={{ ...gap("10px"), marginTop: 16 }}>
+    <div className="od-stack" style={{ ...gap("var(--s-4)"), marginTop: "var(--s-5)" }}>
       <button className="btn btn-danger btn-block" disabled={busy || typed !== p.name} onClick={remove}>{t("profiles.delete")}</button>
       <button className="btn btn-ghost btn-block" onClick={closeSheet}>{t("sheet.cancel")}</button>
     </div>
@@ -170,15 +170,15 @@ export function ProfileGate() {
   };
   const create = creating || profiles.length === 0;
   return (
-    <main style={{ maxWidth: 480, margin: "0 auto", padding: "48px 16px" }}>
-      <div className="logo" style={{ textAlign: "center", marginBottom: 12 }}>sprigo</div>
+    <main style={{ maxWidth: 480, margin: "0 auto", padding: "var(--s-8) var(--s-5)" }}>
+      <div className="logo" style={{ textAlign: "center", marginBottom: "var(--s-4)" }}>sprigo</div>
       <h1 className="section-title" style={{ textAlign: "center", marginTop: 0 }}>{t(create ? (profiles.length ? "profiles.newTitle" : "profiles.welcome") : "profiles.who")}</h1>
       {create ? (
         <div className="card"><ProfileForm onDone={profiles.length ? () => setCreating(false) : undefined} /></div>
       ) : (
-        <div className="od-stack" style={gap("12px")}>
+        <div className="od-stack" style={gap("var(--s-4)")}>
           {profiles.map((p) => (
-            <div key={p.id} className="card od-row" style={{ ...gap("4px"), padding: 4 }}>
+            <div key={p.id} className="card od-row" style={{ ...gap("var(--s-2)"), padding: "var(--s-2)" }}>
               <button className="row-item od-fill" onClick={() => p.pin_hash ? openSheet(<PinSheet p={p} />) : login(p)}>
                 <Avatar p={p} />
                 <span className="od-field od-fill"><b>{p.name}</b></span>
@@ -213,20 +213,20 @@ export function CourseSheet() {
   const others = courses.filter((c) => !enrollments.some((e) => e.course_iso === c.iso));
   return <>
     <h3>{t("profiles.myCourses")}</h3>
-    <div className="od-stack" style={{ ...gap("10px"), margin: "12px 0 18px" }}>
+    <div className="od-stack" style={{ ...gap("var(--s-4)"), margin: "var(--s-4) 0 var(--s-5)" }}>
       {enrolled.map(({ e, c }) => (
         <button key={e.id} className="card row-item" onClick={() => pick(c!)} aria-current={e.id === enrollment?.id}>
-          <span style={{ fontSize: 28 }}><CourseFlag c={c!} /></span>
+          <span style={{ fontSize: "var(--fs-24)" }}><CourseFlag c={c!} /></span>
           <span className="od-field od-fill"><b>{langName(c!.iso)}</b><span className="muted small">{e.level} · {e.xp} XP</span></span>
           {e.id === enrollment?.id && <span style={{ color: "var(--green)", width: 24, height: 24, display: "inline-flex" }}><Icon name="check" size={24} /></span>}
         </button>
       ))}
     </div>
     <h3>{t("profiles.addCourse")}</h3>
-    <div className="od-stack" style={{ ...gap("10px"), margin: "12px 0 18px" }}>
+    <div className="od-stack" style={{ ...gap("var(--s-4)"), margin: "var(--s-4) 0 var(--s-5)" }}>
       {others.length ? others.map((c) => (
         <button key={c.iso} className="card row-item" onClick={() => pick(c)}>
-          <span style={{ fontSize: 28 }}><CourseFlag c={c} /></span>
+          <span style={{ fontSize: "var(--fs-24)" }}><CourseFlag c={c} /></span>
           <span className="od-field od-fill"><b>{langName(c.iso)}</b><span className="muted small">{c.native_name} · {levelRange(c)}</span></span>
           <span className="btn btn-ghost" style={{ pointerEvents: "none" }}>{t("profiles.start")}</span>
         </button>

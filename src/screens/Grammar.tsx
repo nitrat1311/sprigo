@@ -20,11 +20,11 @@ export function Grammar() {
   return (
     <>
       <h1 className="section-title">{t("grammar.title")}</h1>
-      <p className="muted" style={{ marginBottom: 14 }}>{t("grammar.subtitle")}</p>
-      <input className="input" type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("grammar.search")} aria-label={t("grammar.search")} style={{ marginBottom: 18 }} />
+      <p className="muted" style={{ marginBottom: "var(--s-5)" }}>{t("grammar.subtitle")}</p>
+      <input className="input" type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("grammar.search")} aria-label={t("grammar.search")} style={{ marginBottom: "var(--s-5)" }} />
       {!shown.length && <p className="muted">{t("grammar.none")}</p>}
       {shown.map((l) => (
-        <section key={l.level} aria-label={`${l.level} · ${l.title}`} style={{ marginBottom: 22 }}>
+        <section key={l.level} aria-label={`${l.level} · ${l.title}`} style={{ marginBottom: "var(--s-6)" }}>
           <h2 className="section-title">{l.level} · {l.title}</h2>
           {l.units.map((u) => {
             // Like Stories: earlier levels are open, and in the current level the first unit and every started one.
@@ -32,9 +32,9 @@ export function Grammar() {
             const lv = CEFR.indexOf(l.level);
             const reached = lv < cur || (lv === cur && (ui === 0 || units[ui].steps.some((st) => done.has(st.id))));
             return (
-              <div key={u.id} style={{ marginBottom: 14 }}>
-                <h3 style={{ margin: "0 0 8px" }}>{u.title} {!reached && <span className="muted small">· {t("grammar.later")}</span>}</h3>
-                <div className="od-stack" style={{ "--od-gap": "8px" } as React.CSSProperties}>
+              <div key={u.id} style={{ marginBottom: "var(--s-5)" }}>
+                <h3 style={{ margin: "0 0 var(--s-3)" }}>{u.title} {!reached && <span className="muted small">· {t("grammar.later")}</span>}</h3>
+                <div className="od-stack" style={{ "--od-gap": "var(--s-3)" } as React.CSSProperties}>
                   {u.patterns.map((e) => (
                     <button key={e.pattern} className="card row-item" lang={course!.iso} onClick={() => openSheet(<GrammarSheet entry={e} />)}>
                       <span className="od-fill"><b>{e.pattern}</b></span><Icon name="book" />
@@ -73,8 +73,8 @@ function GrammarSheet({ entry }: { entry: GrammarEntry }) {
     <h3 lang={lang}>{entry.pattern}</h3>
     <p className="muted small">{t("grammar.from", { level: first.level, unit: first.title })}</p>
     {g ? (
-      <div className="card" style={{ marginBottom: 10 }}>
-        <p className="small" style={{ margin: "0 0 6px" }}>{g.explanation}</p>
+      <div className="card" style={{ marginBottom: "var(--s-4)" }}>
+        <p className="small" style={{ margin: "0 0 var(--s-3)" }}>{g.explanation}</p>
         {g.example && <SpeakButton className="prompt-word" text={g.example} lang={lang}><Icon name="headphones" /> {g.example}</SpeakButton>}
       </div>
     ) : !ai ? <p className="small">{t("learn.guideNoAi")}</p> : (
@@ -84,7 +84,7 @@ function GrammarSheet({ entry }: { entry: GrammarEntry }) {
       </>
     )}
     {entry.units.length > 1 && <p className="muted small">{t("grammar.alsoIn", { units: entry.units.slice(1).map((u) => `${u.level} ${u.title}`).join(", ") })}</p>}
-    <button className="btn btn-primary btn-block" style={{ marginTop: 12 }} onClick={() => { closeSheet(); start(`grammar:${entry.pattern}`); }}>{t("grammar.practise")}</button>
+    <button className="btn btn-primary btn-block" style={{ marginTop: "var(--s-4)" }} onClick={() => { closeSheet(); start(`grammar:${entry.pattern}`); }}>{t("grammar.practise")}</button>
     <button className="btn btn-ghost btn-block" onClick={closeSheet}>{t("sheet.close")}</button>
   </div>;
 }

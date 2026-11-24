@@ -96,7 +96,7 @@ function UnitSection({ u, level }: { u: PathUnit; level: Cefr }) {
       <div className="unit-head">
         <div className="uh-row">
           <div><span className="uh-kicker">{t("learn.kicker", { level, unit: u.index })}</span><h2>{u.title}</h2></div>
-          <div className="od-row" style={{ "--od-gap": "8px" } as React.CSSProperties}>
+          <div className="od-row" style={{ "--od-gap": "var(--s-3)" } as React.CSSProperties}>
             <BookmarkButton kind="unit" target={unitRef(level, u.id)} title={u.title} />
             <button className="guidebook" onClick={() => openSheet(<GuideSheet unitId={u.id} level={level} />)}><Icon name="book" /><span>{t("learn.guidebook")}</span></button>
           </div>
@@ -146,7 +146,7 @@ export function GuideSheet({ unitId, level }: { unitId: string; level: Cefr }) {
   const words = guide?.vocabulary ?? unitWords(unit).map((word) => ({ word, translation: "", example: "", example_translation: "" }));
   const grammar = guide?.grammar ?? unitGrammar(unit).map((pattern) => ({ pattern, explanation: "", example: "" }));
   return <div className="guide">
-    <div className="od-row" style={{ "--od-gap": "8px" } as React.CSSProperties}>
+    <div className="od-row" style={{ "--od-gap": "var(--s-3)" } as React.CSSProperties}>
       <h3 className="od-fill">{t("learn.guidebook")} · {unit.title}</h3>
       <BookmarkButton kind="guide" target={unitRef(level, unitId)} title={`${t("learn.guidebook")} · ${unit.title}`} />
     </div>
@@ -170,13 +170,13 @@ export function GuideSheet({ unitId, level }: { unitId: string; level: Cefr }) {
     </div>
     {grammar.length > 0 && <h4>{t("learn.guideGrammar")}</h4>}
     {grammar.map((g) => (
-      <div key={g.pattern} className="card" style={{ marginBottom: 10 }}>
+      <div key={g.pattern} className="card" style={{ marginBottom: "var(--s-4)" }}>
         <b lang={lang}>{g.pattern}</b>
-        {g.explanation && <p className="small" style={{ margin: "4px 0" }}>{g.explanation}</p>}
+        {g.explanation && <p className="small" style={{ margin: "var(--s-2) 0" }}>{g.explanation}</p>}
         {g.example && <SpeakButton className="prompt-word" text={g.example} lang={lang}><Icon name="headphones" /> {g.example}</SpeakButton>}
       </div>
     ))}
-    <button className="btn btn-primary btn-block" style={{ marginTop: 12 }} onClick={closeSheet}>{t("lesson.gotIt")}</button>
+    <button className="btn btn-primary btn-block" style={{ marginTop: "var(--s-4)" }} onClick={closeSheet}>{t("lesson.gotIt")}</button>
   </div>;
 }
 
@@ -187,7 +187,7 @@ function LevelSheet() {
   const cur = levels.indexOf(enrollment!.level);
   return <>
     <h3>{t("learn.levels")}</h3>
-    <div className="od-stack" style={{ "--od-gap": "10px", marginTop: 12 } as React.CSSProperties}>
+    <div className="od-stack" style={{ "--od-gap": "var(--s-4)", marginTop: "var(--s-4)" } as React.CSSProperties}>
       {levels.map((l, i) => (
         <button key={l} className="card row-item" onClick={() => {
           if (i > cur) return toast(t("learn.finishFirst", { level: enrollment!.level }));
@@ -211,8 +211,8 @@ function LevelCard({ level, remaining, total }: { level: Cefr; remaining: number
   const next = levels[levels.indexOf(level) + 1];
   const hasExam = !!course!.levels[level]!.checkpoint;
   if (!next && (done.has(checkpointId(level)) || (!hasExam && remaining === 0))) return (
-    <div className="card" style={{ margin: "8px 0 24px", textAlign: "center" }}>
-      <h3 style={{ fontWeight: 900, fontSize: 18 }}>{t("learn.courseDone", { level })}</h3>
+    <div className="card" style={{ margin: "var(--s-3) 0 var(--s-6)", textAlign: "center" }}>
+      <h3 style={{ fontWeight: 900, fontSize: "var(--fs-20)" }}>{t("learn.courseDone", { level })}</h3>
       <p className="muted small">{t("learn.courseDoneDesc")}</p>
     </div>
   );
@@ -221,8 +221,8 @@ function LevelCard({ level, remaining, total }: { level: Cefr; remaining: number
   return (
     <div className="card level-card">
       <div className="biome-band" dangerouslySetInnerHTML={{ __html: biomeScene(level, 70) }} />
-      <h3 style={{ fontWeight: 900, fontSize: 18 }}>{title}</h3>
-      <div className="progress-track" style={{ margin: "12px 0 14px" }}><div className="progress-fill green" style={{ width: `${((total - remaining) / total) * 100}%` }} /></div>
+      <h3 style={{ fontWeight: 900, fontSize: "var(--fs-20)" }}>{title}</h3>
+      <div className="progress-track" style={{ margin: "var(--s-4) 0 var(--s-4)" }}><div className="progress-fill green" style={{ width: `${((total - remaining) / total) * 100}%` }} /></div>
       {hasExam && remaining > 0 && <button className="btn btn-ghost btn-block" onClick={() => start(`${level}:test`)}>{t("learn.skipLevel", { level })}</button>}
     </div>
   );
@@ -278,7 +278,7 @@ export function Learn() {
         {courseErrors.map((e) => <pre key={e} className="small" style={{ whiteSpace: "pre-wrap", overflowWrap: "anywhere", font: "inherit" }}>{e}</pre>)}</span>
     </div>
   );
-  if (!course || !enrollment) return <>{errors}<p className="muted" style={{ marginTop: 24 }}>{t("learn.noCourse")}</p></>;
+  if (!course || !enrollment) return <>{errors}<p className="muted" style={{ marginTop: "var(--s-6)" }}>{t("learn.noCourse")}</p></>;
   const level = viewLevel ?? enrollment.level;
   const { units, remaining } = buildPath(course.levels[level]!, level, done);
   const total = course.levels[level]!.units.reduce((a, u) => a + u.steps.length, 0);
@@ -286,8 +286,8 @@ export function Learn() {
     <>
       <LiveButton className="mobile-only" />
       {setup}{errors}
-      <button className="btn btn-ghost" style={{ marginTop: 20 }} onClick={() => openSheet(<LevelSheet />)} aria-haspopup="dialog">
-        {level} · {course.levels[level]!.title} ▾
+      <button className="btn btn-ghost" style={{ marginTop: "var(--s-6)" }} onClick={() => openSheet(<LevelSheet />)} aria-haspopup="dialog">
+        {level} · {course.levels[level]!.title} <Icon name="down" />
       </button>
       {level === enrollment.level && <LevelCard level={level} remaining={remaining} total={total} />}
       <div className="path-stack" style={biomeVars(level)}>

@@ -25,7 +25,7 @@ export function ToggleRow({ k, initial, onChange }: { k: string; initial: boolea
   const [on, setOnState] = useState(initial);
   const setOn = (v: boolean) => { setOnState(v); onChange?.(v); };
   return (
-    <div className="card od-row" style={gap("12px")}>
+    <div className="card od-row" style={gap("var(--s-4)")}>
       <b className="od-fill">{t(`settings.${k}`)}</b>
       <InfoTip label={t("voice.about", { name: t(`settings.${k}`) })}>{t(`settings.${k}Desc`)}</InfoTip>
       <button className={`btn ${on ? "btn-primary" : "btn-ghost"}`} style={{ minWidth: 84 }} aria-pressed={on} onClick={() => setOn(!on)}>
@@ -68,7 +68,7 @@ function PhoneRow() {
   };
   const note = !ts.installed ? "settings.phoneMissing" : "settings.phoneSignIn"; // ready: the ⓘ sheet explains it
   return (
-    <div className="card od-row" style={gap("12px")}>
+    <div className="card od-row" style={gap("var(--s-4)")}>
       <span className="od-field od-fill"><b>{t("settings.phone")}</b>{!ready && <span className="muted small">{t(note)}</span>}</span>
       <button className="icon-btn" aria-label={t("settings.phoneAbout")} onClick={() => openSheet(<PhoneInfoSheet />)}><Icon name="info" /></button>
       {on && ready && <button className="icon-btn" aria-label={t("settings.phoneShowQr")} disabled={busy} onClick={() => turn(true)}><Icon name="qr" /></button>}
@@ -84,15 +84,15 @@ function PhoneInfoSheet() {
   const { t } = useTranslation();
   const { closeSheet } = useApp();
   return (
-    <div className="od-stack" style={gap("12px")}>
-      <div className="od-row" style={gap("4px")}><h3>{t("settings.phone")}</h3><HelpButton topic="phone" /></div>
+    <div className="od-stack" style={gap("var(--s-4)")}>
+      <div className="od-row" style={gap("var(--s-2)")}><h3>{t("settings.phone")}</h3><HelpButton topic="phone" /></div>
       <p className="muted">{t("settings.phoneDesc")}</p>
-      <ol className="od-stack small" style={{ ...gap("8px"), paddingLeft: 20 }}>
+      <ol className="od-stack small" style={{ ...gap("var(--s-3)"), paddingLeft: "var(--s-6)" }}>
         <li>{t("settings.phoneHow1")}</li>
         <li>{t("settings.phoneHow2")}</li>
         <li>{t("settings.phoneHow3")}</li>
       </ol>
-      <div className="od-stack sheet-actions" style={gap("8px")}>
+      <div className="od-stack sheet-actions" style={gap("var(--s-3)")}>
         <button className="btn btn-blue btn-block" onClick={() => openLink(TAILSCALE_DOWNLOAD)}>{t("settings.phoneGetTailscale")}</button>
         <button className="btn btn-ghost btn-block" onClick={closeSheet}>{t("settings.phoneOk")}</button>
       </div>
@@ -104,13 +104,13 @@ function PhoneQrSheet({ url, qr }: { url: string; qr: string }) {
   const { t } = useTranslation();
   const { closeSheet } = useApp();
   return (
-    <div className="od-stack" style={{ ...gap("12px"), alignItems: "center", textAlign: "center" }}>
+    <div className="od-stack" style={{ ...gap("var(--s-4)"), alignItems: "center", textAlign: "center" }}>
       <h3>{t("settings.phoneScan")}</h3>
       <p className="muted small">{t("settings.phoneScanDesc")}</p>
       {/* SVG made by our own Rust side from the tailnet address; white behind it so dark mode still scans. */}
-      <div style={{ background: "#fff", padding: 8, borderRadius: 12, lineHeight: 0 }} dangerouslySetInnerHTML={{ __html: qr }} />
+      <div style={{ background: "#fff", padding: "var(--s-3)", borderRadius: "var(--r)", lineHeight: 0 }} dangerouslySetInnerHTML={{ __html: qr }} />
       <code className="small" style={{ userSelect: "all", overflowWrap: "anywhere" }}>{url}</code>
-      <div className="od-stack sheet-actions" style={{ ...gap("8px"), alignSelf: "stretch" }}>
+      <div className="od-stack sheet-actions" style={{ ...gap("var(--s-3)"), alignSelf: "stretch" }}>
         <button className="btn btn-ghost btn-block" onClick={closeSheet}>{t("settings.phoneOk")}</button>
       </div>
     </div>
@@ -121,10 +121,10 @@ function PhoneApproveSheet({ url }: { url: string }) {
   const { t } = useTranslation();
   const { closeSheet } = useApp();
   return (
-    <div className="od-stack" style={gap("12px")}>
+    <div className="od-stack" style={gap("var(--s-4)")}>
       <h3>{t("settings.phoneApprove")}</h3>
       <p className="muted">{t("settings.phoneApproveDesc")}</p>
-      <div className="od-stack sheet-actions" style={gap("8px")}>
+      <div className="od-stack sheet-actions" style={gap("var(--s-3)")}>
         <button className="btn btn-blue btn-block" onClick={() => openLink(url)}>{t("settings.phoneApproveOpen")}</button>
         <button className="btn btn-ghost btn-block" onClick={closeSheet}>{t("sheet.cancel")}</button>
       </div>
@@ -160,8 +160,8 @@ function LocalSetup({ onPick }: { onPick: (p: ProviderId, models: string[]) => v
   const name = found.ollama?.length ? "Ollama" : found.lmstudio?.length ? "LM Studio" : null;
   if (name) return <p className="small" role="status" style={{ color: "var(--green)" }}>{t("ai.foundLocal", { name })}</p>;
   return (
-    <div className="card od-stack" style={gap("10px")} role="status">
-      <div className="od-row" style={{ ...gap("8px"), justifyContent: "flex-end" }}>
+    <div className="card od-stack" style={gap("var(--s-4)")} role="status">
+      <div className="od-row" style={{ ...gap("var(--s-3)"), justifyContent: "flex-end" }}>
         <HelpButton topic="aiConnect" />
       </div>
       {found.ollama ? <>
@@ -169,7 +169,7 @@ function LocalSetup({ onPick }: { onPick: (p: ProviderId, models: string[]) => v
         <span className="muted small">{t("ai.pullDesc", RECOMMENDED_OLLAMA)}</span>
         {pull === null
           ? <button className="btn btn-blue" onClick={download}>{t("ai.pull", RECOMMENDED_OLLAMA)}</button>
-          : <div className="od-stack" style={gap("6px")}>
+          : <div className="od-stack" style={gap("var(--s-3)")}>
               <div className="progress-track"><div className="progress-fill green" style={{ width: `${Math.round(pull * 100)}%` }} /></div>
               <span className="muted small">{t("ai.pulling", { pct: Math.round(pull * 100) })}</span>
             </div>}
@@ -213,8 +213,8 @@ function UsageCard() {
   const data = summarize(rows, month);
   const cost = (priced: boolean, unpriced: boolean, v: number) => priced ? `${usd(v)}${unpriced ? "*" : ""}` : t("settings.usage.noPrice");
   return (
-    <div className="card od-stack" style={gap("10px")}>
-      <div className="od-row" style={gap("8px")}>
+    <div className="card od-stack" style={gap("var(--s-4)")}>
+      <div className="od-row" style={gap("var(--s-3)")}>
         <span className="od-field od-fill"><b>{t("settings.usage.title")}</b><span className="muted small">{t("settings.usage.desc")}</span></span>
         <select className="select" aria-label={t("settings.usage.month")} value={month} onChange={(e) => setMonth(e.target.value)}>
           {months.map((m) => <option key={m} value={m}>{monthName(m)}</option>)}
@@ -223,17 +223,17 @@ function UsageCard() {
       {!data.features.length
         ? <p className="muted small">{t("settings.usage.empty")}</p>
         : <>
-            <div className="od-row" style={gap("12px")}>
+            <div className="od-row" style={gap("var(--s-4)")}>
               <span className="od-field od-fill"><b>{t("settings.usage.total")}</b>
                 <span className="muted small">{t("settings.usage.tokens", { input: num(data.input), output: num(data.output) })}</span></span>
               <span className="od-field" style={{ textAlign: "end" }}><b>{cost(data.priced, data.unpriced, data.usd)}</b>
                 <span className="muted small">{t("settings.usage.estimate")}</span></span>
             </div>
             {data.features.map((f) => (
-              <div key={f.feature} className="od-row" style={gap("12px")}>
+              <div key={f.feature} className="od-row" style={gap("var(--s-4)")}>
                 <span className="od-field od-fill"><b>{t(`settings.usage.features.${f.feature}`)}</b>
                   <span className="muted small">{t("settings.usage.tokens", { input: num(f.input), output: num(f.output) })}</span>
-                  <span className="muted small" style={{ overflowWrap: "anywhere" }}>
+                  <span className="muted small od-anywhere">
                     {f.models.map((m) => `${PROVIDERS[m.provider as ProviderId]?.label ?? m.provider} · ${m.model}`).join(", ")}
                   </span></span>
                 <b className="small">{cost(f.priced, f.unpriced, f.usd)}</b>
@@ -252,11 +252,11 @@ export function AiSheet() {
   const [found, setFound] = useState<{ p: ProviderId; models: string[] } | null>(null); // first run: a local server with models
   const configure = (p: ProviderId) => openSheet(<AiConfigSheet provider={p} models={found?.p === p ? found.models : []} />);
   return (
-    <div className="od-stack" style={{ ...gap("14px"), textAlign: "left" }}>
-      <div className="od-row" style={{ ...gap("4px"), justifyContent: "center" }}><h3>{t("ai.title")}</h3><HelpButton topic="ai" /></div>
+    <div className="od-stack" style={{ ...gap("var(--s-5)"), textAlign: "left" }}>
+      <div className="od-row" style={{ ...gap("var(--s-2)"), justifyContent: "center" }}><h3>{t("ai.title")}</h3><HelpButton topic="ai" /></div>
       {ai && <p className="muted small">{t("ai.backupDesc")}</p>}
       {!ai && <LocalSetup onPick={(p, models) => setFound({ p, models })} />}
-      <div className="od-stack" style={gap("8px")} role="radiogroup" aria-label={t("ai.provider")}>
+      <div className="od-stack" style={gap("var(--s-3)")} role="radiogroup" aria-label={t("ai.provider")}>
         {AI_ROWS.map(({ p, icon, color }) => (
           <div key={p} className={`voice-option${ai?.provider === p ? " on" : ""}`}>
             <button role="radio" aria-checked={ai?.provider === p} onClick={() => ai?.provider !== p && configure(p)}>
@@ -314,8 +314,8 @@ function AiConfigSheet({ provider, models: found }: { provider: ProviderId; mode
   const unsetBackup = async () => { await setAiBackup(null); toast(t("ai.backupRemoved")); back(); };
 
   return (
-    <div className="od-stack" style={{ ...gap("14px"), textAlign: "left" }}>
-      <h3 style={{ textAlign: "center" }}>{PROVIDERS[provider].label}</h3>
+    <div className="od-stack" style={{ ...gap("var(--s-5)"), textAlign: "left" }}>
+      <h3 className="od-center">{PROVIDERS[provider].label}</h3>
       <p className="small">{t(`ai.${provider}Info`)}</p>
       <label className="od-field"><b>{t("ai.baseURL")}</b>
         <input className="input" value={baseURL} spellCheck={false} onChange={(e) => setBaseURL(e.target.value)} placeholder={PROVIDERS[provider].baseURL} />
@@ -331,8 +331,8 @@ function AiConfigSheet({ provider, models: found }: { provider: ProviderId; mode
         {!needsKey && isSmallModel(cfg.model) && <span className="small" role="note" style={{ color: "var(--orange)" }}>{t("ai.smallModel", { min: `${SMALL_MODEL_B}B` })}</span>}
       </label>
       {status && <p className="small" role="status" style={{ color: status.ok ? "var(--green)" : "var(--red)", overflowWrap: "anywhere" }}>{status.msg}</p>}
-      <div className="od-stack sheet-actions" style={gap("8px")}>
-        <div className="od-row" style={gap("8px")}>
+      <div className="od-stack sheet-actions" style={gap("var(--s-3)")}>
+        <div className="od-row" style={gap("var(--s-3)")}>
           <button className="btn btn-ghost" disabled={busy || (needsKey && !key.trim())} onClick={test}>{t("ai.test")}</button>
           <button className="btn btn-primary od-fill" disabled={busy || !cfg.model || (needsKey && !key.trim())} onClick={() => save()}>{t("ai.save")}</button>
         </div>
@@ -359,7 +359,7 @@ function VersionRow() {
     u ? openSheet(<UpdateSheet update={u} />) : toast(t("update.none"));
   };
   return (<>
-    <div className="card od-row" style={gap("12px")}>
+    <div className="card od-row" style={gap("var(--s-4)")}>
       <b className="od-fill">{t("update.version", { version })}</b>
       <InfoTip label={t("voice.about", { name: t("update.section") })}>{t("update.desc")}</InfoTip>
       <button className="btn btn-ghost" disabled={busy} onClick={check}>{t("update.check")}</button>
@@ -382,7 +382,7 @@ export function Settings() {
   const [tab, setTab] = useState<Tab>(ai || isCompanion ? "profile" : "ai"); // AI not set up yet → its tab, so the warning shows
   return (
     <>
-      <h1 className="section-title" style={{ marginTop: 24 }}>{t("settings.title")}</h1>
+      <h1 className="section-title" style={{ marginTop: "var(--s-6)" }}>{t("settings.title")}</h1>
       <div className="tabs" role="tablist" aria-label={t("settings.title")}>
         {tabs.map((k) => (
           <button key={k} role="tab" id={`set-tab-${k}`} aria-selected={tab === k} aria-controls="set-panel" onClick={() => setTab(k)}>
@@ -391,23 +391,23 @@ export function Settings() {
         ))}
       </div>
 
-      <div id="set-panel" role="tabpanel" aria-labelledby={`set-tab-${tab}`} className="od-stack" style={gap("12px")}>
+      <div id="set-panel" role="tabpanel" aria-labelledby={`set-tab-${tab}`} className="od-stack" style={gap("var(--s-4)")}>
         {tab === "profile" && <>
           <div className="card od-row">
-            <span style={{ fontSize: 28 }}>{course && <CourseFlag c={course} />}</span>
+            <span style={{ fontSize: "var(--fs-24)" }}>{course && <CourseFlag c={course} />}</span>
             <span className="od-field od-fill"><b>{course ? langName(course.iso) : "—"}</b>
               <span className="muted small">{t("settings.courseDesc", { level: enrollment?.level, native: langName(profile!.native_lang) })}</span></span>
             <button className="btn btn-ghost" onClick={() => openSheet(<CourseSheet />)}>{t("settings.change")}</button>
           </div>
-          <div className="card od-row" style={gap("12px")}>
+          <div className="card od-row" style={gap("var(--s-4)")}>
             <label className="od-field od-fill" htmlFor="native-lang"><b>{t("profiles.native")}</b><span className="muted small">{t("profiles.nativeDesc")}</span></label>
             <select id="native-lang" className="select" value={profile!.native_lang} onChange={(e) => updateProfile({ native_lang: e.target.value })}>
               {NATIVE.map((l) => <option key={l} value={l}>{langName(l)}</option>)}
             </select>
           </div>
-          <div className="card od-row" style={gap("12px")}>
+          <div className="card od-row" style={gap("var(--s-4)")}>
             <span className="od-field od-fill"><b>{profile!.name}</b><span className="muted small">{t("settings.profileDesc")}</span></span>
-            <button className="btn btn-ghost" onClick={() => openSheet(<><h3 style={{ marginBottom: 14 }}>{t("settings.editProfile")}</h3><ProfileForm initial={profile!} onDone={closeSheet} /></>)}>{t("settings.edit")}</button>
+            <button className="btn btn-ghost" onClick={() => openSheet(<><h3 style={{ marginBottom: "var(--s-5)" }}>{t("settings.editProfile")}</h3><ProfileForm initial={profile!} onDone={closeSheet} /></>)}>{t("settings.edit")}</button>
           </div>
           <button className="btn btn-ghost btn-block mobile-only" onClick={logout}>{t("settings.logout")}</button>
         </>}
@@ -424,7 +424,7 @@ export function Settings() {
           <ToggleRow k="reduceMotion" initial={s.reduceMotion} onChange={(reduceMotion) => setS((s) => ({ ...s, reduceMotion }))} />
           {isCompanion && <TtsRow />}
           <h2 className="section-title">{t("settings.appearance")}</h2>
-          <div className="card od-row" style={{ ...gap("12px"), flexWrap: "wrap" }}>
+          <div className="card od-row" style={{ ...gap("var(--s-4)"), flexWrap: "wrap" }}>
             <b className="od-fill">{t("settings.theme")}</b>
             <div className="seg" role="radiogroup" aria-label={t("settings.theme")}>
               {themes.map((th) => (
@@ -434,7 +434,7 @@ export function Settings() {
               ))}
             </div>
           </div>
-          <div className="card od-row" style={{ ...gap("12px"), flexWrap: "wrap" }}>
+          <div className="card od-row" style={{ ...gap("var(--s-4)"), flexWrap: "wrap" }}>
             <b className="od-fill">{t("settings.textSize")}</b>
             <div className="seg" role="radiogroup" aria-label={t("settings.textSize")}>
               {TEXT_SIZES.map((f) => (
@@ -446,7 +446,7 @@ export function Settings() {
           </div>
           <ToggleRow k="readableFont" initial={s.readableFont} onChange={(readableFont) => setS((s) => ({ ...s, readableFont }))} />
           <ToggleRow k="highContrast" initial={s.highContrast} onChange={(highContrast) => setS((s) => ({ ...s, highContrast }))} />
-          <div className="card od-row" style={gap("12px")}>
+          <div className="card od-row" style={gap("var(--s-4)")}>
             <label className="od-fill" htmlFor="ui-lang"><b>{t("settings.language")}</b></label>
             <select id="ui-lang" className="select" value={i18n.resolvedLanguage} onChange={(e) => { i18n.changeLanguage(e.target.value); updateProfile({ ui_lang: e.target.value }); }}>
               {languages.map((l) => <option key={l.code} value={l.code}>{l.name}</option>)}
@@ -455,9 +455,9 @@ export function Settings() {
         </>}
 
         {tab === "ai" && <>
-          <div className="card od-row" style={gap("12px")}>
+          <div className="card od-row" style={gap("var(--s-4)")}>
             <span className="od-field od-fill"><b>{t("ai.title")}</b>
-              {ai ? <span className="muted small" style={{ overflowWrap: "anywhere" }}>{PROVIDERS[ai.provider].label} · {ai.model}</span>
+              {ai ? <span className="muted small od-anywhere">{PROVIDERS[ai.provider].label} · {ai.model}</span>
                 : <span className="small" style={{ color: "var(--orange)", fontWeight: 800 }}>{t("ai.notSet")}</span>}</span>
             <button className={`btn ${ai ? "btn-ghost" : "btn-primary"}`} onClick={() => openSheet(<AiSheet />)}>{t(ai ? "settings.change" : "ai.setUp")}</button>
           </div>
@@ -474,14 +474,14 @@ export function Settings() {
         </>}
       </div>
 
-      <div className="od-stack" style={{ marginTop: 28, ...gap("10px") }}>
-        <div className="card od-row" style={gap("12px")}>
+      <div className="od-stack" style={{ marginTop: "var(--s-7)", ...gap("var(--s-4)") }}>
+        <div className="card od-row" style={gap("var(--s-4)")}>
           <span className="od-field od-fill"><b>{t("help.title")}</b><span className="muted small">{t("help.tagline")}</span></span>
           <button className="btn btn-ghost" onClick={() => openSheet(<HelpSheet />)}>{t("help.view")}</button>
         </div>
         {!isCompanion && <VersionRow />}
       </div>
-      <p className="muted small" style={{ textAlign: "center", marginTop: 8 }}>
+      <p className="muted small" style={{ textAlign: "center", marginTop: "var(--s-3)" }}>
         {t("update.madeBy")} <a href={AUTHOR_URL} onClick={(e) => { e.preventDefault(); void openLink(AUTHOR_URL); }}>mehmetozer.dev</a>
       </p>
     </>

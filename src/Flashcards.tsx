@@ -77,7 +77,7 @@ export function Flashcards({ deck }: { deck: string }) {
       </button>
     );
     footer = flipped
-      ? <div className="od-grid flashcard-grades" style={{ "--od-cols": 4, "--od-gap": "8px" } as React.CSSProperties}>
+      ? <div className="od-grid flashcard-grades" style={{ "--od-cols": 4, "--od-gap": "var(--s-3)" } as React.CSSProperties}>
         {GRADES.map(([g, k], i) => (
           <button key={g} className={`btn ${g === 1 ? "btn-danger" : g === 3 ? "btn-primary" : "btn-ghost"}`} onClick={() => rate(g)}>
             <span>{g} · {t(`cards.${k}`)}</span><small className="flashcard-days">{t("cards.days", { count: days![i] })}</small>
@@ -116,19 +116,19 @@ export function CardsSheet({ onAdded }: { onAdded: () => void }) {
     toast(t("cards.added")); setWord(""); setMeaning(""); load(); onAdded();
   };
   return (
-    <div className="od-stack" style={{ "--od-gap": "14px", textAlign: "left" } as React.CSSProperties}>
-      <h3 style={{ textAlign: "center" }}>{t("cards.title")}</h3>
+    <div className="od-stack" style={{ "--od-gap": "var(--s-5)", textAlign: "left" } as React.CSSProperties}>
+      <h3 className="od-center">{t("cards.title")}</h3>
       <p className="muted small">{t("cards.keys")}</p>
-      <div className="od-stack" style={{ "--od-gap": "8px" } as React.CSSProperties}>
+      <div className="od-stack" style={{ "--od-gap": "var(--s-3)" } as React.CSSProperties}>
         {decks.map((d) => (
           <button key={d.id} className="card row-item" disabled={!d.n} onClick={() => go(d.id)}>
             <span className="od-fill"><b>{d.label}</b></span><span className="muted small">{t("cards.count", { count: d.n })}</span>
           </button>
         ))}
       </div>
-      <form className="od-stack" style={{ "--od-gap": "8px" } as React.CSSProperties} onSubmit={(e) => { e.preventDefault(); add(); }}>
+      <form className="od-stack" style={{ "--od-gap": "var(--s-3)" } as React.CSSProperties} onSubmit={(e) => { e.preventDefault(); add(); }}>
         <b>{t("cards.addTitle")}</b>
-        <div className="od-row" style={{ "--od-gap": "8px" } as React.CSSProperties}>
+        <div className="od-row" style={{ "--od-gap": "var(--s-3)" } as React.CSSProperties}>
           <input className="input od-fill" lang={course?.iso} value={word} onChange={(e) => setWord(e.target.value)} placeholder={t("cards.word")} aria-label={t("cards.word")} />
           <input className="input od-fill" value={meaning} onChange={(e) => setMeaning(e.target.value)} placeholder={t("cards.meaning")} aria-label={t("cards.meaning")} />
         </div>

@@ -391,7 +391,7 @@ export function TutorCall({ who, ch }: { who: CharacterId; ch: Character }) {
             {typed.length ? typed.map((m, i) => <div key={i} className="bubble me" lang={lang}><span>{m.text}</span></div>)
               : <p className="small muted">{t("tutor.noMessages")}</p>}
           </div>
-          <form className="od-row" style={{ "--od-gap": "8px" } as React.CSSProperties} onSubmit={(e) => { e.preventDefault(); send(); }}>
+          <form className="od-row" style={{ "--od-gap": "var(--s-3)" } as React.CSSProperties} onSubmit={(e) => { e.preventDefault(); send(); }}>
             <input className="input od-fill" lang={lang} value={text} autoFocus aria-label={t("roleplay.message")} placeholder={t("tutor.placeholder")}
               onChange={(e) => setText(e.target.value)} />
             <button className="btn btn-primary" type="submit" disabled={!text.trim()} aria-label={t("tutor.send")} data-tip={t("tutor.send")}><Icon name="send" /></button>

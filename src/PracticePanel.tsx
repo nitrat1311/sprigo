@@ -59,7 +59,7 @@ function Exercise({ it, last, lang, onAnswer, onHint }: { it: Item; last: Answer
   const hint = !last && <button className="btn" onClick={onHint}>{t("tutor.hint")}</button>;
   if (it.kind === "choice") return <>
     <h2 className="ex-title">{it.prompt}</h2>
-    {it.context && <div className="card" lang={lang} style={{ whiteSpace: "pre-wrap", fontWeight: 700, fontSize: 18 }}>{it.context}</div>}
+    {it.context && <div className="card" lang={lang} style={{ whiteSpace: "pre-wrap", fontWeight: 700, fontSize: "var(--fs-20)" }}>{it.context}</div>}
     <div className="opt-grid">
       {it.options.map((o, oi) => {
         const state = last ? (oi === it.answer ? "correct" : o === last.given ? "wrong" : "") : "";

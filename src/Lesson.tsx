@@ -332,15 +332,15 @@ export function Lesson({ id }: { id: string }) {
   if (load.state === "loading") body = (
     <div className="result-wrap" role="status">
       <div className="result-badge gen-pulse" style={{ background: "var(--blue)", boxShadow: "0 6px 0 var(--blue-dark)", color: "var(--on-accent)" }}><Icon name="spark" /></div>
-      <h2 style={{ fontSize: 22, fontWeight: 900 }}>{t("ai.preparing")}</h2>
+      <h2 style={{ fontSize: "var(--fs-24)", fontWeight: 900 }}>{t("ai.preparing")}</h2>
       <p className="muted small">{ctx?.step.title} · {ai?.model}</p>
     </div>
   );
   else if (load.state === "error") body = (
     <div className="result-wrap" role="alert">
-      <h2 style={{ fontSize: 22, fontWeight: 900 }}>{t("ai.failed")}</h2>
+      <h2 style={{ fontSize: "var(--fs-24)", fontWeight: 900 }}>{t("ai.failed")}</h2>
       <p className="muted small" style={{ maxWidth: 480, overflowWrap: "anywhere" }}>{load.msg}</p>
-      <div className="od-row" style={gap("10px")}>
+      <div className="od-row" style={gap("var(--s-4)")}>
         <button className="btn btn-primary" onClick={() => setGen((g) => g + 1)}>{t("ai.retry")}</button>
         <button className="btn btn-ghost" onClick={() => { quit(); go("settings"); }}>{t("ai.openSettings")}</button>
       </div>
@@ -351,7 +351,7 @@ export function Lesson({ id }: { id: string }) {
       <div className="result-badge" style={{ color: result.passed === false ? "var(--on-accent)" : "var(--on-gold)", ...(result.passed === false && { background: "var(--red)", boxShadow: "0 6px 0 var(--red-dark)" }) }}>
         <Icon name={result.passed === false ? "refresh" : "trophy"} />
       </div>
-      <h2 style={{ fontSize: 26, fontWeight: 900 }}>
+      <h2 style={{ fontSize: "var(--fs-24)", fontWeight: 900 }}>
         {result.passed === undefined ? t("lesson.done") : result.passed ? (legend ? t("lesson.legendPassed") : unitTest ? t("lesson.unitPassed") : t("lesson.examPassed", { level: exam })) : t("lesson.examFailed")}
       </h2>
       {result.passed === false && <p className="muted">{t("lesson.examNeed", { score: result.required })}</p>}
@@ -366,11 +366,11 @@ export function Lesson({ id }: { id: string }) {
   else if (it.kind === "learn") body = (
     <>
       <h2 className="ex-title">{t("lesson.newPhrase")}</h2>
-      <div className="card" style={{ textAlign: "center", padding: 28 }}>
-        <p lang={lang} style={{ fontSize: 30, fontWeight: 900 }}><Words text={it.phrase} lang={lang} /></p>
-        <p className="muted" style={{ fontSize: 18, fontWeight: 700, margin: "6px 0 14px" }}>{it.translation}</p>
+      <div className="card" style={{ textAlign: "center", padding: "var(--s-7)" }}>
+        <p lang={lang} style={{ fontSize: "var(--fs-34)", fontWeight: 900 }}><Words text={it.phrase} lang={lang} /></p>
+        <p className="muted" style={{ fontSize: "var(--fs-20)", fontWeight: 700, margin: "var(--s-3) 0 var(--s-5)" }}>{it.translation}</p>
         {listenBtn(it.phrase)}
-        {it.note && <p className="small" style={{ marginTop: 14 }}>{it.note}</p>}
+        {it.note && <p className="small" style={{ marginTop: "var(--s-5)" }}>{it.note}</p>}
       </div>
     </>
   );
@@ -378,9 +378,9 @@ export function Lesson({ id }: { id: string }) {
     <>
       <h2 className="ex-title">{t("lesson.speakTitle")}</h2>
       <p className="ex-sub">{t("lesson.speakSub")}</p>
-      <div className="card" style={{ textAlign: "center", padding: 22 }}>
-        <p lang={lang} style={{ fontSize: 26, fontWeight: 900 }}><Words text={it.phrase} lang={lang} missed={heard ? speechMisses(it.phrase, heard, lang) : undefined} /></p>
-        <p className="muted" style={{ fontWeight: 700, margin: "4px 0 12px" }}>{it.translation}</p>
+      <div className="card" style={{ textAlign: "center", padding: "var(--s-6)" }}>
+        <p lang={lang} style={{ fontSize: "var(--fs-24)", fontWeight: 900 }}><Words text={it.phrase} lang={lang} missed={heard ? speechMisses(it.phrase, heard, lang) : undefined} /></p>
+        <p className="muted" style={{ fontWeight: 700, margin: "var(--s-2) 0 var(--s-4)" }}>{it.translation}</p>
         {listenBtn(it.phrase)}
       </div>
       <MicButton item={i} playback lang={lang} disabled={!!fb} trigger={micPress} onText={(txt) => {
@@ -397,8 +397,8 @@ export function Lesson({ id }: { id: string }) {
       <h2 className="ex-title">{it.prompt}</h2>
       {it.listen && listenBtn(it.listen)}
       {it.context && (it.big
-        ? <div aria-hidden="true" style={{ fontSize: 72, textAlign: "center", margin: "8px 0 16px" }}>{it.context}</div>
-        : <div className="card" lang={lang} style={{ whiteSpace: "pre-wrap", fontWeight: 700, fontSize: 18, marginBottom: 16 }}><Words text={it.context} lang={lang} off={!fb} /></div>)}
+        ? <div aria-hidden="true" style={{ fontSize: 72, textAlign: "center", margin: "var(--s-3) 0 var(--s-5)" }}>{it.context}</div>
+        : <div className="card" lang={lang} style={{ whiteSpace: "pre-wrap", fontWeight: 700, fontSize: "var(--fs-20)", marginBottom: "var(--s-5)" }}><Words text={it.context} lang={lang} off={!fb} /></div>)}
       <div className="opt-grid">
         {it.options.map((o, oi) => {
           const state = fb ? (oi === it.answer ? "correct" : oi === sel ? "wrong" : "") : oi === sel ? "sel" : "";
@@ -436,9 +436,9 @@ export function Lesson({ id }: { id: string }) {
       <h2 className="ex-title">{it.prompt}</h2>
       {it.listen && listenBtn(it.listen)}
       {it.cells ? <div className="card ctx-cells">{it.cells.map((c, n) => <span key={n}>{c}<small className="muted">{t(`conjugate.cells.${n}`)}</small></span>)}</div>
-        : it.context && <div className="card" style={{ fontWeight: 700, fontSize: 18, marginBottom: 16 }}>{it.context}</div>}
+        : it.context && <div className="card" style={{ fontWeight: 700, fontSize: "var(--fs-20)", marginBottom: "var(--s-5)" }}>{it.context}</div>}
       <textarea key={i} className="input" rows={3} value={text} disabled={!!fb || checking} autoFocus aria-label={t("lesson.yourAnswer")} placeholder={t("lesson.typeHere")}
-        style={{ width: "100%", resize: "none", fontSize: 18 }}
+        style={{ width: "100%", resize: "none", fontSize: "var(--fs-20)" }}
         onChange={(e) => setText(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); if (canCheck) check(); } }} />
       {speakOk && profile && <MicButton item={i} lang={answerLang(it, lang, profile.native_lang)} disabled={!!fb || checking}
         onText={(said) => { if (said.trim()) setText((x) => [x.trim(), said.trim()].filter(Boolean).join(" ")); }} />}
@@ -447,7 +447,7 @@ export function Lesson({ id }: { id: string }) {
   else body = (
     <>
       <h2 className="ex-title">{t("lesson.matchPairs")}</h2>
-      <div className="od-grid" style={{ "--od-cols": 2, "--od-gap": "12px" } as React.CSSProperties}>
+      <div className="od-grid" style={{ "--od-cols": 2, "--od-gap": "var(--s-4)" } as React.CSSProperties}>
         {(["l", "r"] as const).map((side) => (
           <div className="opt-grid" key={side} style={{ gridTemplateColumns: "1fr" }}>
             {matchCols![side].map((v, vi) => {
@@ -493,7 +493,7 @@ export function Lesson({ id }: { id: string }) {
                     <span>{t("lesson.wrong")}{fb.note && <small>{fb.note}</small>}<small>{t("lesson.answer", { answer: fb.correct })}</small>
                       {fb.verdict && <small role="status">{t("lesson.appealRejected", { reason: fb.verdict })}</small>}</span></span>
                 )}
-                <span className="od-row" style={gap("10px")}>
+                <span className="od-row" style={gap("var(--s-4)")}>
                   {!fb.ok && ctx && <button className="btn btn-ghost" aria-keyshortcuts="1" onClick={openExplain}>{t("lesson.explain")} <kbd className="kbd" aria-hidden="true">1</kbd></button>}
                   {fb.judged && !fb.appealed && ctx && <button className="btn btn-ghost" aria-keyshortcuts="2" onClick={openAppeal}>🚩 {t("lesson.appeal")} <kbd className="kbd" aria-hidden="true">2</kbd></button>}
                   <button className={`btn ${fb.ok ? "btn-primary" : "btn-danger"}`} onClick={next}>{t(last ? "lesson.finish" : "lesson.continue")}</button>
@@ -520,7 +520,7 @@ function ExplainSheet({ run }: { run: () => Promise<string> }) {
   useEffect(() => { run().then(setTxt, (e) => setTxt(`${t("ai.failed")}: ${(e as Error).message}`)); }, []);
   return <>
     <h3>{t("lesson.explain")}</h3>
-    <p role="status" style={{ margin: "12px 0 18px", whiteSpace: "pre-wrap" }}>{txt ?? t("ai.thinking")}</p>
+    <p role="status" style={{ margin: "var(--s-4) 0 var(--s-5)", whiteSpace: "pre-wrap" }}>{txt ?? t("ai.thinking")}</p>
     <button className="btn btn-primary btn-block" autoFocus onClick={closeSheet}>{t("lesson.gotIt")}</button>
   </>;
 }
@@ -540,8 +540,8 @@ function AppealSheet({ onSend }: { onSend: (reason: string) => Promise<void> }) 
   return <>
     <h3>{t("lesson.appealTitle")}</h3>
     <textarea className="input" rows={3} value={reason} autoFocus disabled={busy} aria-label={t("lesson.appealTitle")}
-      style={{ width: "100%", resize: "none", margin: "12px 0" }} onChange={(e) => setReason(e.target.value)} />
-    {err && <p className="small" role="alert" style={{ color: "var(--red)", fontWeight: 800, marginBottom: 12 }}>{err}</p>}
+      style={{ width: "100%", resize: "none", margin: "var(--s-4) 0" }} onChange={(e) => setReason(e.target.value)} />
+    {err && <p className="small" role="alert" style={{ color: "var(--red)", fontWeight: 800, marginBottom: "var(--s-4)" }}>{err}</p>}
     <button className="btn btn-primary btn-block" disabled={busy || !reason.trim()} onClick={send}>{t(busy ? "lesson.checking" : "lesson.appealSend")}</button>
     <button className="btn btn-ghost btn-block" disabled={busy} onClick={closeSheet}>{t("sheet.cancel")}</button>
   </>;

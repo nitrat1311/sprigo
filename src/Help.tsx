@@ -32,9 +32,9 @@ export function HelpSheet({ topic }: { topic?: HelpTopic }) {
   const opened = useRef<HTMLDetailsElement>(null);
   useEffect(() => { opened.current?.scrollIntoView({ block: "nearest" }); }, [topic]);
   return (
-    <div className="od-stack sheet-wide" style={{ "--od-gap": "14px", textAlign: "left" } as React.CSSProperties}>
-      <h3 style={{ textAlign: "center" }}>{t("help.title")}</h3>
-      <div className="od-stack" style={{ "--od-gap": "8px" } as React.CSSProperties}>
+    <div className="od-stack sheet-wide" style={{ "--od-gap": "var(--s-5)", textAlign: "left" } as React.CSSProperties}>
+      <h3 className="od-center">{t("help.title")}</h3>
+      <div className="od-stack" style={{ "--od-gap": "var(--s-3)" } as React.CSSProperties}>
         {TOPICS.map((k) => (
           <details key={k} open={topic === k} className="help-topic" ref={topic === k ? opened : undefined}>
             <summary>{t(`help.topics.${k}.q`)}</summary>
@@ -45,7 +45,7 @@ export function HelpSheet({ topic }: { topic?: HelpTopic }) {
           </details>
         ))}
       </div>
-      <p className="small muted" style={{ textAlign: "center" }}>
+      <p className="small muted od-center">
         {t("help.stuck")} <Link url={QA}>{t("help.qa")}</Link> · <Link url={WIKI}>{t("help.wiki")}</Link>
       </p>
       <div className="sheet-actions">
