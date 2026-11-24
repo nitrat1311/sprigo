@@ -670,7 +670,8 @@
     "heardNothing": "Je n'ai pas compris — réessaie un peu plus fort.",
     "cantSpeak": "Impossible de parler maintenant",
     "unitPassed": "Unité validée !",
-    "listenSlow": "Écouter lentement"
+    "listenSlow": "Écouter lentement",
+    "dblClickHint": "Double-clique sur une réponse sélectionnée pour la vérifier."
   },
   "profiles": {
     "saved": "Profil enregistré",

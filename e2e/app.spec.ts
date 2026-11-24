@@ -78,6 +78,18 @@ async function runLesson(page: Page, step: RegExp) {
   await expect(lesson).toBeHidden();
 }
 
+/** Onboards, reads a lesson to put "hola" in the word list, then opens the first story. */
+async function openStory(page: Page) {
+  await onboard(page);
+  await page.getByRole("button", { name: "Learn" }).click();
+  await runLesson(page, /Basic Greetings/);
+  await page.getByRole("button", { name: "Stories", exact: true }).click();
+  await page.getByRole("button", { name: /^Greetings & Introductions/ }).click();
+  const story = page.getByRole("dialog", { name: "ok" }); // the mock's story title
+  await expect(story.locator(".tap-word.known", { hasText: "Hola" }).first()).toBeVisible();
+  return story;
+}
+
 // The first two steps cover all five renderers: learn, choice, match, speak (skipped), then input and word bank.
 test("first lessons run every exercise type", async ({ page }) => {
   await onboard(page);
@@ -86,14 +98,90 @@ test("first lessons run every exercise type", async ({ page }) => {
   await runLesson(page, /Introduce Yourself/);
 });
 
-test("a story opens from Stories, marks known words and can be finished", async ({ page }) => {
+test("a double-click checks a selected answer and a click advances after feedback", async ({ page }) => {
   await onboard(page);
   await page.getByRole("button", { name: "Learn" }).click();
-  await runLesson(page, /Basic Greetings/); // puts "hola" in the word list
-  await page.getByRole("button", { name: "Stories", exact: true }).click();
-  await page.getByRole("button", { name: /^Greetings & Introductions/ }).click();
-  const story = page.getByRole("dialog", { name: "ok" }); // the mock's story title
-  await expect(story.locator(".tap-word.known", { hasText: "Hola" }).first()).toBeVisible();
+  await page.getByRole("button", { name: /Basic Greetings/ }).click();
+  const lesson = page.getByRole("dialog", { name: "Lesson" });
+  const option = lesson.locator(".opt", { hasText: /^\d?hola$/ });
+  for (let i = 0; !(await option.isVisible()); i++) {
+    expect(i).toBeLessThan(10);
+    await lesson.getByRole("button", { name: "Continue", exact: true }).click();
+  }
+  await option.click(); // select it first: the double-click gesture only checks a selected answer
+  await expect(lesson.getByText("Correct!")).toBeHidden();
+  await option.dblclick();
+  await expect(lesson.getByText("Correct!")).toBeVisible();
+  await expect(option).toHaveClass(/correct/);
+  await option.click(); // after feedback a normal click is enough to advance
+  await expect(lesson.getByText("Correct!")).toBeHidden();
+});
+
+test("a double-click on an unselected answer selects it without grading it", async ({ page }) => {
+  await onboard(page);
+  await page.getByRole("button", { name: "Learn" }).click();
+  await page.getByRole("button", { name: /Basic Greetings/ }).click();
+  const lesson = page.getByRole("dialog", { name: "Lesson" });
+  const option = lesson.locator(".opt", { hasText: /^\d?hola$/ });
+  for (let i = 0; !(await option.isVisible()); i++) {
+    expect(i).toBeLessThan(10);
+    await lesson.getByRole("button", { name: "Continue", exact: true }).click();
+  }
+  await option.dblclick();
+  await expect(option).toHaveClass(/sel/);
+  await expect(lesson.getByText("Correct!")).toBeHidden();
+  await expect(lesson.locator(".hearts-box")).toHaveText("5"); // nothing was graded, so no heart went
+});
+
+test("a double-click keeps wrong-answer feedback available before a click advances", async ({ page }) => {
+  await onboard(page);
+  await page.getByRole("button", { name: "Learn" }).click();
+  await page.getByRole("button", { name: /Basic Greetings/ }).click();
+  const lesson = page.getByRole("dialog", { name: "Lesson" });
+  const wrong = lesson.locator(".opt", { hasText: /^\d?adiós$/ });
+  for (let i = 0; !(await wrong.isVisible()); i++) {
+    expect(i).toBeLessThan(10);
+    await lesson.getByRole("button", { name: "Continue", exact: true }).click();
+  }
+  await expect(lesson.locator(".hearts-box")).toHaveText("5");
+  await wrong.click(); // select the wrong answer, then check it with a double-click
+  await wrong.dblclick();
+  await expect(lesson.locator(".hearts-box")).toHaveText("4");
+  await expect(lesson.locator(".fb.bad")).toBeVisible();
+  await expect(wrong).toHaveClass(/wrong/);
+  await expect(lesson.locator(".opt.correct")).toBeVisible();
+  await wrong.click(); // a normal click advances
+  await expect(lesson.locator(".fb.bad")).toBeHidden();
+  await expect(lesson.locator(".hearts-box")).toHaveText("4");
+});
+
+test("a story opens from Stories, marks known words and can be finished", async ({ page }) => {
+  const story = await openStory(page);
+  const option = story.locator(".opt", { hasText: /^\d?hola$/ });
+  await story.getByRole("button", { name: "Continue", exact: true }).click(); // the mock's question follows the first line
+  await expect(option).toBeVisible();
+  await option.click();
+  await story.getByRole("button", { name: "Check" }).click();
+  await expect(story.getByText("Correct!")).toBeVisible();
+  for (let i = 0; !(await story.getByText("Story complete!").isVisible()); i++) {
+    expect(i).toBeLessThan(40);
+    await story.getByRole("button", { name: /^(Continue|Finish)$/ }).click();
+  }
+  await story.getByRole("button", { name: "Done" }).click();
+  await expect(page.getByRole("button", { name: /Greetings & Introductions.*Read again/ })).toBeVisible(); // remembered
+});
+
+test("a story answer checks with a selected double-click and advances on a click", async ({ page }) => {
+  const story = await openStory(page);
+  const option = story.locator(".opt", { hasText: /^\d?hola$/ });
+  await story.getByRole("button", { name: "Continue", exact: true }).click(); // the mock's question follows the first line
+  await expect(option).toBeVisible();
+  await option.click(); // select it first: the double-click gesture only checks a selected answer
+  await expect(story.getByText("Correct!")).toBeHidden();
+  await option.dblclick();
+  await expect(story.getByText("Correct!")).toBeVisible();
+  await option.click(); // after feedback a normal click is enough to advance
+  await expect(story.getByText("Correct!")).toBeHidden();
   for (let i = 0; !(await story.getByText("Story complete!").isVisible()); i++) {
     expect(i).toBeLessThan(40);
     const opt = story.locator(".opt", { hasText: /^\d?hola$/ });
@@ -101,7 +189,6 @@ test("a story opens from Stories, marks known words and can be finished", async 
     else await story.getByRole("button", { name: /^(Continue|Finish)$/ }).click();
   }
   await story.getByRole("button", { name: "Done" }).click();
-  await expect(page.getByRole("button", { name: /Greetings & Introductions.*Read again/ })).toBeVisible(); // remembered
 });
 
 test("Stories lists earlier levels once the learner moves up", async ({ page }) => {

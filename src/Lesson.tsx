@@ -77,6 +77,8 @@ async function practiceItems(id: string, enrollmentId: number, prompts: { listen
 export const TIME_LIMIT: Record<string, number> = { "practice-madness": 90, "practice-timed": 120 };
 
 const questionOf = (it: Item) => it.kind === "learn" || it.kind === "speak" ? it.phrase : it.kind === "match" ? "match" : [it.prompt, "context" in it ? it.context : "", "listen" in it ? it.listen : ""].filter(Boolean).join(" — ");
+/** Double-click is a mouse gesture: iOS Safari doesn't dispatch dblclick reliably for taps. */
+const finePointer = () => matchMedia("(hover: hover) and (pointer: fine)").matches;
 
 // judged: the AI called it wrong (appealable, F); lost: a heart went for it; appealed: the one appeal is spent; verdict: the AI's reason for rejecting it
 type Fb = { ok: boolean; correct: string; given: string; note?: string; judged?: boolean; lost?: boolean; appealed?: boolean; verdict?: string } | null;
@@ -103,6 +105,7 @@ export function Lesson({ id }: { id: string }) {
   const [score, setScore] = useState({ correct: 0, xp: 0 });
   const [result, setResult] = useState<{ xp: number; acc: number; gems: number; passed?: boolean; required?: number } | null>(null);
   const [sel, setSel] = useState<number | null>(null);
+  const picked = useRef<number | null>(null); // option selected before the current click gesture, so a double-click on an unselected answer only selects it
   const [bankSel, setBankSel] = useState<number[]>([]);
   const [text, setText] = useState("");
   const [typed, setTyped] = useState(""); // bank: letters typed to pick a word
@@ -114,7 +117,7 @@ export function Lesson({ id }: { id: string }) {
   const limit = TIME_LIMIT[id];
   const [left, setLeft] = useState(limit ?? 0);
 
-  function reset() { setSel(null); setBankSel([]); setText(""); setTyped(""); setHeard(null); setFb(null); setMatched({ done: [], left: null, wrong: [], misses: 0 }); }
+  function reset() { picked.current = null; setSel(null); setBankSel([]); setText(""); setTyped(""); setHeard(null); setFb(null); setMatched({ done: [], left: null, wrong: [], misses: 0 }); }
 
   useEffect(() => {
     if (!enrollment || (!ctx && !practice)) return;
@@ -400,12 +403,18 @@ export function Lesson({ id }: { id: string }) {
         {it.options.map((o, oi) => {
           const state = fb ? (oi === it.answer ? "correct" : oi === sel ? "wrong" : "") : oi === sel ? "sel" : "";
           return (
-            <button className={`opt ${state}`} key={oi} disabled={!!fb} onClick={() => setSel(oi)}>
+            <button className={`opt ${state}`} key={oi} disabled={!!fb && oi !== sel} onClick={(e) => {
+              if (e.detail > 1) return; // the second click of a double-click belongs to onDoubleClick
+              if (fb) return next();
+              picked.current = sel;
+              setSel(oi);
+            }} onDoubleClick={() => { if (finePointer() && !fb && picked.current === oi) void check(); }}>
               <span className="opt-num">{oi + 1}</span><span>{o}</span>
             </button>
           );
         })}
       </div>
+      {!fb && <p className="muted small dblclick-hint">{t("lesson.dblClickHint")}</p>}
     </>
   );
   else if (it.kind === "bank") body = (
