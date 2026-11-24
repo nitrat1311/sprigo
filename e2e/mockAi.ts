@@ -45,7 +45,10 @@ export async function mockOllama(page: Page) {
     if (path !== "/v1/chat/completions") return route.fulfill(json({})); // warm-up and the rest
     // ponytail: non-streamed replies only; add SSE when a test covers chat or the tutor call
     const schema = req.postDataJSON().response_format?.json_schema?.schema;
-    const content = schema ? JSON.stringify(fill(schema)) : "ok";
+    const turn = schema ? fill(schema) as Record<string, unknown> : null;
+    // A roleplay turn without `translation`: the reply must still arrive, with its translation filled in afterwards.
+    if (turn && "goal_reached" in turn) delete turn.translation;
+    const content = turn ? JSON.stringify(turn) : "ok";
     return route.fulfill(json({
       id: "mock", object: "chat.completion", created: 0, model: "mock:latest",
       choices: [{ index: 0, message: { role: "assistant", content }, finish_reason: "stop" }],

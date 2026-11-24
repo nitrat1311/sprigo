@@ -3,7 +3,7 @@ import { crossChecked, formsPrompt, formsSchema, fromTable, pickAsks } from "./c
 import { z } from "zod";
 import { generate, generatePlain, generateStream } from "./ai";
 import { applyMemoryOps, cachedGuides, enrollmentProfile, getCached, listMemories, listMistakes, markMemoriesUsed, memoryOn, putCached } from "./db";
-import { REGISTRY, givesAway, langEn, lessonPrompt, mistakeLine, lessonSchema, plannedActivities, checkPrompt, checkSchema, rejected, reviewSystem, shuffleAnswer, solvePrompt, solveSchema, solveSystem, systemPrompt, toItems, type Item, type LessonContext } from "./activities";
+import { REGISTRY, givesAway, langEn, lessonPrompt, mistakeLine, lessonSchema, plannedActivities, checkPrompt, checkSchema, rejected, reviewSystem, shuffleAnswer, solvePrompt, solveSchema, solveSystem, systemPrompt, toItems, type Item, type LessonContext, isEchoCorrection } from "./activities";
 import { CHAT_MAX_TURNS, CHAT_MIN_TURNS, FREE_GOAL, type Character } from "./characters";
 import { CEFR, levelsOf, storyId, type Course, type CourseLevel, type Cefr } from "./course";
 import { looseTutor, tutorPrompt, tutorSchema, tutorSystem, type TutorEvent, type TutorMsg } from "./tutor";
@@ -266,12 +266,12 @@ export const checkWriting = (c: Base, task: string, text: string) =>
 export type ChatMsg = { from: "ai" | "me"; text: string; translation?: string; correction?: string };
 
 const turnSchema = z.object({ correction: z.string(), reply: z.string(), translation: z.string(), goal_reached: z.boolean() });
-// Some models (glm on Ollama) drop goal_reached or correction every time, so retrying can't help; a missing one means "no".
-const looseTurn = turnSchema.extend({ correction: z.string().catch(""), goal_reached: z.boolean().catch(false) });
+// Some models (glm on Ollama) drop goal_reached, correction or translation every time, so retrying can't help; a missing one means "no".
+const looseTurn = turnSchema.extend({ correction: z.string().catch(""), translation: z.string().catch(""), goal_reached: z.boolean().catch(false) });
 
 /** The character's next turn; also corrects the learner's last message. Empty history = opening line.
  *  `opts.rules` add lines to the system prompt (drills); `opts.keep` caps how many past messages the prompt carries. */
-export function chatTurn(c: Base & { about?: string[] }, ch: Character, topic: { goal: string }, history: ChatMsg[], opts: { rules?: string[]; keep?: number } = {}) {
+export async function chatTurn(c: Base & { about?: string[] }, ch: Character, topic: { goal: string }, history: ChatMsg[], opts: { rules?: string[]; keep?: number } = {}) {
   const native = langEn(c.native);
   const free = topic.goal.startsWith(FREE_GOAL);
   const sent = history.filter((m) => m.from === "me").length;
@@ -285,7 +285,7 @@ export function chatTurn(c: Base & { about?: string[] }, ch: Character, topic: {
       ? `${personaInPrompt(ch, "Your personality: ")} The learner picked the topic, so this is a casual chat between two people, not a scene from your job. Keep your personality and manner, but never bring up your work, customers, place or tasks unless the learner does. Topic: ${goalInPrompt(ch, topic.goal.slice(FREE_GOAL.length))}.`
       : `${personaInPrompt(ch)} The learner's goal: ${goalInPrompt(ch, topic.goal)}.`,
     c.about?.length ? `You have talked with this learner before and remember: ${c.about.join(" ")} Where it fits the chat, ask about one of these or link the topic to it, one thing at a time; never list what you know.` : "",
-    `Stay in character. \`reply\`: ${c.course.name} only, 1–2 short sentences suited to ${c.level}, in your own manner. Always ${c.course.name}, even when the learner or the goal is written in another language. \`translation\`: the reply in ${native}.`,
+    `Stay in character. \`reply\`: ${c.course.name} only, 1–2 short sentences suited to ${c.level}, in your own manner. Always ${c.course.name}, even when the learner or the goal is written in another language. \`translation\`: translate the complete reply into ${native}; do not repeat the ${c.course.name} text.`,
     free
       ? "Keep the chat going: react to what the learner just said and ask one follow-up question about the topic or their experience with it."
       : `Pace the scene so it lasts about ${CHAT_MIN_TURNS}–${CHAT_MAX_TURNS} learner messages: one small step per turn, with realistic details to sort out (names, dates, preferences, a small complication) and a question the learner has to answer. Never solve several steps at once.`,
@@ -302,7 +302,18 @@ export function chatTurn(c: Base & { about?: string[] }, ch: Character, topic: {
       `Check only this last learner message for \`correction\` (earlier ones were already corrected): "${last.text}"\nThen write ${name}'s next turn.`
     : free ? "Open the chat: a short, friendly greeting and a first question about the topic."
     : "Open the scene: a short greeting that leads straight into the goal and invites the learner to start.";
-  return generate(turnSchema, system, prompt, "tutor", undefined, looseTurn);
+  const r = await generate(turnSchema, system, prompt, "tutor", undefined, looseTurn);
+  // The model sometimes repeats the learner's sentence (often with a short explanation after it) and calls that a correction.
+  return r.correction && isEchoCorrection(last?.from === "me" ? last.text : "", r.correction, c.course.iso) ? { ...r, correction: "" } : r;
+}
+
+/** One extra pass for a reply whose own translation was missing or echoed it; "" when the model cannot translate it. */
+export function translateReply(c: Base, reply: string) {
+  return generate(z.object({ translation: z.string() }),
+    `Translate the text from ${c.course.name} into ${langEn(c.native)}. Return only the translation in the JSON field. Do not continue the conversation.`,
+    reply, "tutor")
+    .then((r) => r.translation.trim())
+    .catch(() => ""); // a chat reply still reads without its translation
 }
 
 /** Rehearsal: the next in-role turn as `brief.who`. No correction, no goal, and no learner facts: the brief is the whole context. */

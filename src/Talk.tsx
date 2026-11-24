@@ -10,7 +10,8 @@ import { sttReady } from "./stt";
 import { Face, type FaceState } from "./face/Face";
 import { CHAT_MAX_TURNS as CHAT_TURNS, CHAT_MIN_TURNS, FREE_GOAL, type Character, type Talk } from "./characters";
 import { inlineName, isTutorId, remembersLearner } from "./tutors";
-import { avoidancePass, chatTurn, debrief, learnerFacts, loadStory, rehearseTurn, rememberSession, type ChatMsg, type Story as StoryData } from "./lessons";
+import { avoidancePass, chatTurn, debrief, learnerFacts, loadStory, rehearseTurn, rememberSession, translateReply, type ChatMsg, type Story as StoryData } from "./lessons";
+import { translationFor } from "./activities";
 import { REHEARSE_LONG, type Debrief } from "./rehearsal";
 import * as db from "./db";
 import { recordSession, today, xpMult } from "./progress";
@@ -376,6 +377,9 @@ export function Chat({ talk, ch }: { talk: Talk; ch: Character }) {
       const fixed = history.map((m, i) => i === history.length - 1 && m.from === "me" ? { ...m, correction: r.correction.trim() || undefined } : m);
       setMsgs([...fixed, { from: "ai", text: r.reply, translation: r.translation }]);
       say(r.reply, fixed.length);
+      // The reply shows at once; a missing or echoed translation is patched in when the extra pass lands.
+      void translationFor(r.reply, r.translation, () => translateReply({ course, level: enrollment.level, native: profile.native_lang }, r.reply), course.iso === profile.native_lang)
+        .then((translation) => { if (translation !== r.translation) setMsgs((ms) => ms.map((m, i) => i === fixed.length && m.from === "ai" ? { ...m, translation } : m)); });
       // The prompt holds the goal back too; this guards models that wrap up early anyway.
       if (r.goal_reached && history.filter((m) => m.from === "me").length >= CHAT_MIN_TURNS) setGoal(true);
     } catch (e) { setErr((e as Error).message); setMsgs(history); }
@@ -483,7 +487,7 @@ export function Chat({ talk, ch }: { talk: Talk; ch: Character }) {
       <div className="chat">
         {msgs.map((m, i) => m.from === "ai" ? (
           <button key={i} className="bubble" lang={lang} aria-busy={voicing === i} onClick={() => { say(m.text, i); setOpen((s) => new Set(s).add(i)); }}>
-            <span>{m.text}</span>{open.has(i) && <small>{m.translation}</small>}
+            <span>{m.text}</span>{open.has(i) && <small>{m.translation || t("roleplay.noTranslation")}</small>}
             {voicing === i && <small className="voicing gen-pulse" role="status"><Icon name="headphones" /> {engine ? t("ai.speakingWith", { engine: t(`voice.engine.${engine}`) }) : t("ai.speaking")}</small>}
           </button>
         ) : (

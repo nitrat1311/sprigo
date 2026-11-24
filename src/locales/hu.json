@@ -421,6 +421,7 @@
     "placeholder": "Írj a tanult nyelven",
     "send": "Küldés",
     "tapHint": "Koppints egy üzenetre a fordításért",
+    "noTranslation": "Nincs fordítás",
     "goalReached": "Cél teljesítve! Fejezd be, hogy megkapd az XP-t.",
     "limit": "Ennyi elég egy beszélgetéshez – fejezd be, és megkapod az XP-t.",
     "goalDone": "Cél teljesítve!",

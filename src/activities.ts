@@ -307,3 +307,24 @@ export function shuffleAnswer(opts: string[], answer: number) {
   const options = shuffle(opts);
   return { options, answer: options.indexOf(opts[answer]) };
 }
+
+/** A translation is usable when it is non-empty and, unless both languages are the same, not just the reply repeated. */
+export function validTranslation(reply: string, translation: string, sameLang = false) {
+  const a = reply.trim().toLocaleLowerCase(), b = translation.trim().toLocaleLowerCase();
+  return b !== "" && (sameLang || a !== b);
+}
+
+/** The corrected sentence alone; the model may add a short explanation after it. */
+const correctedSentence = (x: string) => x.split(/[.!?]\s+|\s+[—–-]\s+|\s+\(/)[0];
+
+/** A correction that only repeats the learner's sentence, even with an explanation after it, is not a correction. */
+export function isEchoCorrection(original: string, correction: string, lang?: string) {
+  const a = normalize(original, lang);
+  return a !== "" && normalize(correctedSentence(correction), lang) === a;
+}
+
+/** A reply's translation: its own when usable, else a second pass's — kept even when it repeats the reply, as "Taxi" or "No" do. "" when the retry fails. */
+export async function translationFor(reply: string, translation: string, retry: () => Promise<string>, sameLang = false) {
+  if (validTranslation(reply, translation, sameLang)) return translation.trim();
+  try { return (await retry()).trim(); } catch { return ""; }
+}
