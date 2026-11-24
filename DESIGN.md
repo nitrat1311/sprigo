@@ -38,7 +38,7 @@ colors:
     green-dark: "#406f31"
     green-bright: "#a9d27c"
     blue-ink: "#8cc4e0"
-    gold-dark: "#d9a01f"
+    gold-dark: "#b98318"    # also the gold 3D edge; must stay darker than gold
     on-gold: "#241b09"      # bright accents take dark ink in dark mode
     on-green: "#141a10"
 typography:
