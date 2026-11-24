@@ -22,7 +22,7 @@
 
 ## What it does
 
-- **Courses from A1 to C2** in English, Spanish, French, German, Turkish and Hungarian (plus Romanian A1), with AI-generated exercises that adapt to your mistakes.
+- **Courses from A1 to C2** in English, Spanish, French, German, Turkish and Hungarian (plus Romanian A1 and Dutch A1 to C1), with AI-generated exercises that adapt to your mistakes.
 - **Live lessons** with an animated AI tutor: a video-call style conversation with live captions, and you can interrupt any time.
 - **Speaking and listening** with local speech recognition (whisper.cpp) and natural local voices (Piper, Kokoro).
 - **Stories, roleplay and a practice hub** for mistakes, words and timed challenges.
