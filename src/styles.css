@@ -456,8 +456,7 @@ button[aria-busy="true"]{cursor:progress}
 .input:focus-visible,.select:focus-visible{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px color-mix(in srgb,var(--blue) 35%,transparent)}
 /* Learn opens on the current lesson, far below the page top, so search stays pinned while its results scroll (#44). */
 .search-box{position:sticky;top:0;z-index:10;background:var(--bg);padding:20px 0 10px}
-.search-status{margin:8px 0 0}
-.search-status:empty{display:none}
+.search-status{margin:8px 0 0;min-height:0}
 .search-results{max-height:50vh;overflow-y:auto;margin-top:10px}
 .sheet:focus,.lesson-overlay:focus{outline:none}
 .swatch{width:36px;height:36px;border-radius:50%;border:3px solid transparent;box-shadow:0 0 0 2px var(--border)}
