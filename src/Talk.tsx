@@ -84,7 +84,7 @@ export function Done({ title, r }: { title: string; r: Result }) {
   const { t } = useTranslation();
   return (
     <div className="result-wrap">
-      <div className="result-badge" style={{ color: "var(--on-accent)" }}><Icon name="trophy" /></div>
+      <div className="result-badge" style={{ color: "var(--on-gold)" }}><Icon name="trophy" /></div>
       <h2 style={{ fontSize: 26, fontWeight: 900 }}>{title}</h2>
       <div className="result-stats">
         <span className="result-stat gold"><span className="rs-k">{t("lesson.totalXp")}</span><span className="rs-v">+{r.xp}</span></span>
