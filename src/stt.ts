@@ -3,7 +3,7 @@ import { mark } from "./latency";
 import { Channel, invoke } from "@tauri-apps/api/core";
 import { fetch as tauriFetch } from "@tauri-apps/plugin-http";
 import { isTauri, isCompanion, getSetting } from "./db";
-import { VAD, VAD_IDLE, concat, cutTo, resample, rms, vadStep, type VadEvent } from "./audio";
+import { VAD, VAD_IDLE, concat, cutTo, loudness, resample, rms, vadStep, type VadEvent } from "./audio";
 import { wav16 } from "./wav";
 import { speechMetrics, type Utterance } from "./speech";
 
@@ -118,12 +118,13 @@ async function speechSpan(x: Float32Array): Promise<[number, number] | null | un
 /** Starts a take on an open `mic`; `stop()` returns the transcript (`stop(false)` just drops the take). Auto-stops after
  *  MAX_RECORD_S (onAutoStop fires). With `native` the transcript also gets its speech signals; there is no tutor turn
  *  to time, so `latencyMs` is null. */
-export function startRecording(mic: Mic, lang: string, onAutoStop?: () => void, native?: string) {
+/** `playback`: also return the take as a WAV blob URL, for the learner to hear (the caller revokes it). */
+export function startRecording(mic: Mic, lang: string, onAutoStop?: () => void, native?: string, playback = false) {
   mic.start();
   const timer = setTimeout(() => onAutoStop?.(), MAX_RECORD_S * 1000);
   let stopped = false;
   return {
-    async stop(transcribe = true): Promise<{ text: string; m?: Utterance }> {
+    async stop(transcribe = true): Promise<{ text: string; m?: Utterance; audio?: string }> {
       if (stopped) return { text: "" };
       stopped = true;
       clearTimeout(timer);
@@ -138,7 +139,10 @@ export function startRecording(mic: Mic, lang: string, onAutoStop?: () => void, 
       if (span === null) return { text: "" };
       const all = cutTo(x, 16000, span ?? null);
       const text = await transcribeSamples(all, 16000, lang);
-      return { text, m: native && text ? speechMetrics(all, 16000, text, { latencyMs: null }, native, lang) : undefined };
+      // The learner's own take, to play back next to the model voice, at a steady level (blob URL; the caller revokes it).
+      // Made only once transcription has succeeded, so a failed one leaves nothing to release.
+      const audio = playback && all.length ? URL.createObjectURL(new Blob([wav16(loudness(all)) as BlobPart], { type: "audio/wav" })) : undefined;
+      return { text, m: native && text ? speechMetrics(all, 16000, text, { latencyMs: null }, native, lang) : undefined, audio };
     },
   };
 }

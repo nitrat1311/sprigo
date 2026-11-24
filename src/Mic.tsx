@@ -19,11 +19,15 @@ export function useSpeakBlock() {
  *  It also closes while the window is hidden or in the background (keep-alive keeps the screen mounted), dropping a
  *  take in progress, and opens again when the window comes back.
  *  `item`: what is being answered. When it changes, a take in progress and any error are dropped, without reopening
- *  the mic (remounting the button per item would reopen it every time). */
-export function MicButton({ lang, onText, disabled, trigger = 0, native, item }: { lang: string; onText: (text: string, m?: Utterance) => void; disabled?: boolean; trigger?: number; native?: string; item?: unknown }) {
+ *  the mic (remounting the button per item would reopen it every time).
+ *  `playback`: offer "Play my recording" after a take (speaking exercises). */
+export function MicButton({ lang, onText, disabled, trigger = 0, native, item, playback }: { lang: string; onText: (text: string, m?: Utterance) => void; disabled?: boolean; trigger?: number; native?: string; item?: unknown; playback?: boolean }) {
   const { t } = useTranslation();
   const [state, setState] = useState<"idle" | "starting" | "rec" | "busy">("idle");
   const [err, setErr] = useState("");
+  const player = useRef<HTMLAudioElement | null>(null);
+  const [take, setTake] = useState<string>(); // blob URL of the last recording
+  useEffect(() => () => { if (take) URL.revokeObjectURL(take); }, [take]); // the old one when replaced, the last on leaving
   const mic = useRef<Promise<Mic> | undefined>(undefined);
   const gone = useRef(false);
   const away = useRef(false); // window hidden or unfocused: the mic stays closed
@@ -35,7 +39,8 @@ export function MicButton({ lang, onText, disabled, trigger = 0, native, item }:
     shown.current = item;
     epoch.current++;
     rec.current?.stop(false); rec.current = undefined;
-    setErr("");
+    player.current?.pause();
+    setTake(undefined); setErr("");
     setState((s) => (s === "rec" || s === "starting" ? "idle" : s)); // "busy": the take already stopped, let it finish
   }, [item]);
   /** The open mic, opened on first need; a failed open is forgotten so the next tap asks again. */
@@ -58,6 +63,7 @@ export function MicButton({ lang, onText, disabled, trigger = 0, native, item }:
       away.current = true;
       epoch.current++;
       release();
+      player.current?.pause();
       setState((s) => (s === "rec" || s === "starting" ? "idle" : s)); // "busy": the take already stopped, let it finish
     };
     const back = () => {
@@ -71,6 +77,8 @@ export function MicButton({ lang, onText, disabled, trigger = 0, native, item }:
     window.addEventListener("focus", back);
     return () => {
       gone.current = true;
+      const a = player.current;
+      if (a) { a.pause(); a.removeAttribute("src"); a.load(); } // drop the element's hold on the take; its URL is revoked by the take effect
       document.removeEventListener("visibilitychange", vis);
       window.removeEventListener("blur", leave);
       window.removeEventListener("focus", back);
@@ -84,7 +92,11 @@ export function MicButton({ lang, onText, disabled, trigger = 0, native, item }:
     rec.current = undefined;
     setState("busy");
     const asked = shown.current;
-    try { const r2 = await r.stop(); if (!gone.current && asked === shown.current) onText(r2.text, r2.m); } // not for a newer item
+    try {
+      const r2 = await r.stop();
+      if (gone.current || asked !== shown.current) { if (r2.audio) URL.revokeObjectURL(r2.audio); return; } // gone, or a newer item
+      setTake(r2.audio); onText(r2.text, r2.m);
+    }
     catch (e) { if (!gone.current) setErr(`${t("stt.failed")}: ${(e as Error).message ?? e}`); }
     finally { if (!gone.current) setState("idle"); }
   };
@@ -93,13 +105,14 @@ export function MicButton({ lang, onText, disabled, trigger = 0, native, item }:
     if (state !== "idle") return;
     if (!document.hidden) away.current = false; // a tap means the window is in front, even if no focus event came
     setErr("");
+    player.current?.pause(); // a new take: stop playing the last one
     setState("starting");
     const run = epoch.current;
     try {
       let m = await getMic();
       if (!m.alive()) { void m.close(); mic.current = undefined; m = await getMic(); } // e.g. the mic was unplugged
       if (gone.current || run !== epoch.current) return; // window went away or item changed while it opened: already reset
-      rec.current = startRecording(m, lang, stop, native);
+      rec.current = startRecording(m, lang, stop, native, playback);
       setState("rec");
     }
     catch { if (!gone.current && run === epoch.current) { setErr(t("stt.noMic")); setState("idle"); } }
@@ -114,6 +127,14 @@ export function MicButton({ lang, onText, disabled, trigger = 0, native, item }:
       <button className={`mic-btn ${state}`} onClick={toggle} disabled={disabled || state === "busy" || state === "starting"} aria-pressed={state === "rec"}
         aria-label={t(state === "rec" ? "stt.stop" : "stt.record")}><Icon name="mic" /></button>
       <p className="muted small" role="status" style={{ textAlign: "center", color: err ? "var(--red)" : undefined }}>{err || t(`stt.${state}`)}</p>
+      {take && state === "idle" && <div style={{ display: "flex", justifyContent: "center" }}>
+        <button className="mic-playback" onClick={() => {
+          const a = player.current ?? (player.current = new Audio());
+          if (a.src !== take) { a.src = take; a.load(); }
+          a.currentTime = 0;
+          a.play().catch(() => { a.load(); void a.play().catch(() => {}); });
+        }}><Icon name="headphones" /> {t("stt.playback")}</button>
+      </div>}
       {err && <div style={{ display: "flex", justifyContent: "center" }}><HelpButton topic="mic" /></div>}
     </div>
   );

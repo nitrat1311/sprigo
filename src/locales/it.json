@@ -767,7 +767,8 @@
     "noMic": "Nessun accesso al microfono. Consentilo in Impostazioni di sistema → Privacy → Microfono.",
     "failed": "Il riconoscimento vocale non è riuscito",
     "unavailable": "Per parlare serve l'app desktop con il modello vocale.",
-    "off": "Gli esercizi vocali sono disattivati nelle Impostazioni."
+    "off": "Gli esercizi vocali sono disattivati nelle Impostazioni.",
+    "playback": "Riproduci la mia registrazione"
   },
   "update": {
     "section": "Aggiornamenti",

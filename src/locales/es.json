@@ -776,7 +776,8 @@
     "noMic": "Sin acceso al micrófono. Permítelo en Ajustes del Sistema → Privacidad → Micrófono.",
     "failed": "Falló el reconocimiento de voz",
     "unavailable": "Hablar requiere la app de escritorio con el modelo de voz.",
-    "off": "Los ejercicios orales están desactivados en Ajustes."
+    "off": "Los ejercicios orales están desactivados en Ajustes.",
+    "playback": "Reproducir mi grabación"
   },
   "update": {
     "section": "Actualizaciones",
