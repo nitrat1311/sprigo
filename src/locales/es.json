@@ -721,9 +721,9 @@
     "smallModel": "Los modelos de menos de {{min}} pueden crear lecciones con respuestas incorrectas. Se recomienda un modelo de {{min}} o más.",
     "guide": {
       "good": "Medido: bueno para lecciones en vivo.",
-      "weak": "Medido: rápido, pero algunos ejercicios tenían respuestas incorrectas.",
+      "weak": "Medido: rápido, pero solo el {{pct}} % de los ejercicios se superó.",
       "slow": "Medido: demasiado lento para lecciones en vivo.",
-      "weakSlow": "Medido: demasiado lento y algunos ejercicios tenían respuestas incorrectas.",
+      "weakSlow": "Medido: demasiado lento y solo el {{pct}} % de los ejercicios se superó.",
       "details": "Primera frase {{secs}} s · {{pct}} % de ejercicios superados · {{hardware}}, {{date}}"
     },
     "test": "Probar conexión",

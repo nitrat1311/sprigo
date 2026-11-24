@@ -721,9 +721,9 @@
     "smallModel": "Les modèles de moins de {{min}} peuvent écrire des leçons avec de mauvaises réponses. Un modèle d'au moins {{min}} est recommandé.",
     "guide": {
       "good": "Mesuré : bon pour les leçons en direct.",
-      "weak": "Mesuré : rapide, mais certains exercices avaient de mauvaises réponses.",
+      "weak": "Mesuré : rapide, mais seulement {{pct}} % des exercices réussis.",
       "slow": "Mesuré : trop lent pour les leçons en direct.",
-      "weakSlow": "Mesuré : trop lent, et certains exercices avaient de mauvaises réponses.",
+      "weakSlow": "Mesuré : trop lent, et seulement {{pct}} % des exercices réussis.",
       "details": "Première phrase {{secs}} s · {{pct}} % d’exercices réussis · {{hardware}}, {{date}}"
     },
     "test": "Tester la connexion",

@@ -39,7 +39,11 @@ test("the model picker shows measured guidance", async ({ page }) => {
   const model = sheet.getByLabel(/Model/);
   await model.fill("qwen3:8b");
   await expect(sheet.getByText(/^Measured:/)).toBeVisible();
-  await expect(sheet.getByText(/Apple M4/)).toBeVisible(); // the data names the machine it ran on
+  await expect(sheet.getByText(/\d+% of exercises pass/)).toBeVisible(); // the share, which does not depend on the machine
+  await expect(model).toHaveAttribute("aria-describedby", "ai-model-note"); // the note describes the field, not names it
+  await model.fill("qwen3.5:4b-mlx");
+  await expect(sheet.getByText(/^Measured:/)).toBeVisible();
+  await expect(sheet.getByRole("note")).toContainText("Models under 8B"); // measured and under 8B: both notes stay
   await model.fill("tiny:1b");
   await expect(sheet.getByText(/^Measured:/)).toBeHidden();
   await expect(sheet.getByRole("note")).toContainText("Models under 8B"); // unmeasured: the old size warning

@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { GOOD_QUALITY, LIVE_SAY_MS, guideFor, verdictOf, type Measurement } from "./modelGuide.ts";
+import { GOOD_QUALITY, LIVE_SAY_MS, guideFor, modelKey, verdictOf, type Measurement } from "./modelGuide.ts";
 import { MEASURED } from "./modelGuideData.ts";
 
 const m = (over: Partial<Measurement> = {}): Measurement => ({
@@ -44,13 +44,14 @@ test("the bundled measurements name their machine and date and are in range", ()
   const seen = new Set<string>();
   for (const r of MEASURED) {
     assert.ok(r.model, "a row names its model");
-    assert.ok(!seen.has(r.model.toLowerCase().replace(/:latest$/, "")), `${r.model} appears once`);
-    seen.add(r.model.toLowerCase().replace(/:latest$/, ""));
+    assert.ok(!seen.has(modelKey(r.model)), `${r.model} appears once`);
+    seen.add(modelKey(r.model));
     assert.ok(r.sayMs > 0 && r.replyMs > 0, `${r.model}: positive times`);
     assert.ok(r.quality >= 0 && r.quality <= 100, `${r.model}: quality is a percentage`);
     assert.ok(r.cases > 0, `${r.model}: quality comes from eval cases`);
     assert.ok(r.hardware, `${r.model}: the machine is recorded`);
     assert.match(r.measured, /^\d{4}-\d{2}-\d{2}$/, `${r.model}: the date is recorded`);
+    if (r.evaluated) assert.match(r.evaluated, /^\d{4}-\d{2}-\d{2}$/, `${r.model}: the eval date is recorded`);
     assert.equal(guideFor(r.model, MEASURED), r, `${r.model} is found by its own name`);
   }
 });

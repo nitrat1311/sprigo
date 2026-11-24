@@ -15,8 +15,10 @@ export type Measurement = {
   cases: number;
   /** The machine it ran on, shown with the numbers so they are not read as universal. */
   hardware: string;
-  /** When it ran, YYYY-MM-DD. */
+  /** When the bench ran, YYYY-MM-DD. */
   measured: string;
+  /** When the eval ran, YYYY-MM-DD; absent from older rows that predate this field. */
+  evaluated?: string;
 };
 
 /** A first sentence later than this feels laggy live: tutor.ts plays a filler after FILLER_MS (1.5 s). */
@@ -33,10 +35,10 @@ export const verdictOf = (m: Pick<Measurement, "sayMs" | "quality">): Verdict =>
 };
 
 // Ollama may list a model as "name:latest"; the user may type either form, in any case.
-const key = (name: string) => name.trim().toLowerCase().replace(/:latest$/, "");
+export const modelKey = (name: string) => name.trim().toLowerCase().replace(/:latest$/, "");
 
 /** The measurement for a model name, if one was made; null means "not measured", never "bad". */
 export function guideFor(model: string, rows: Measurement[]): Measurement | null {
-  const k = key(model);
-  return k ? rows.find((r) => key(r.model) === k) ?? null : null;
+  const k = modelKey(model);
+  return k ? rows.find((r) => modelKey(r.model) === k) ?? null : null;
 }

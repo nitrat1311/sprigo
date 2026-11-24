@@ -687,9 +687,9 @@
     "smallModel": "{{min}} altındaki modeller derslerde yanlış cevaplar üretebilir. En az {{min}} bir model önerilir.",
     "guide": {
       "good": "Ölçüldü: canlı dersler için iyi.",
-      "weak": "Ölçüldü: hızlı, ama bazı alıştırmaların yanıtları yanlıştı.",
+      "weak": "Ölçüldü: hızlı, ama alıştırmaların yalnızca %{{pct}} kadarı geçti.",
       "slow": "Ölçüldü: canlı dersler için çok yavaş.",
-      "weakSlow": "Ölçüldü: çok yavaş ve bazı alıştırmaların yanıtları yanlıştı.",
+      "weakSlow": "Ölçüldü: çok yavaş ve alıştırmaların yalnızca %{{pct}} kadarı geçti.",
       "details": "İlk cümle {{secs}} sn · alıştırmaların %{{pct}} kadarı geçti · {{hardware}}, {{date}}"
     },
     "test": "Bağlantıyı test et",

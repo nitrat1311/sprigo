@@ -712,9 +712,9 @@
     "smallModel": "I modelli sotto {{min}} possono scrivere lezioni con risposte errate. Si raccomanda un modello di {{min}} o superiore.",
     "guide": {
       "good": "Misurato: buono per le lezioni dal vivo.",
-      "weak": "Misurato: veloce, ma alcuni esercizi avevano risposte sbagliate.",
+      "weak": "Misurato: veloce, ma solo il {{pct}}% degli esercizi è stato superato.",
       "slow": "Misurato: troppo lento per le lezioni dal vivo.",
-      "weakSlow": "Misurato: troppo lento e alcuni esercizi avevano risposte sbagliate.",
+      "weakSlow": "Misurato: troppo lento e solo il {{pct}}% degli esercizi è stato superato.",
       "details": "Prima frase {{secs}} s · {{pct}}% di esercizi superati · {{hardware}}, {{date}}"
     },
     "test": "Testa la connessione",

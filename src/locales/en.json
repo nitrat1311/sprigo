@@ -693,9 +693,9 @@
     "smallModel": "Models under {{min}} can write lessons with wrong answers. A model of {{min}} or more is recommended.",
     "guide": {
       "good": "Measured: good for live lessons.",
-      "weak": "Measured: quick, but some exercises had wrong answers.",
+      "weak": "Measured: quick, but only {{pct}}% of exercises passed.",
       "slow": "Measured: too slow for live lessons.",
-      "weakSlow": "Measured: too slow, and some exercises had wrong answers.",
+      "weakSlow": "Measured: too slow, and only {{pct}}% of exercises passed.",
       "details": "First sentence {{secs}} s · {{pct}}% of exercises pass · {{hardware}}, {{date}}"
     },
     "test": "Test connection",

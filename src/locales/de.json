@@ -693,9 +693,9 @@
     "smallModel": "Modelle unter {{min}} können Lektionen mit falschen Antworten schreiben. Empfohlen wird ein Modell ab {{min}}.",
     "guide": {
       "good": "Gemessen: gut für Live-Lektionen.",
-      "weak": "Gemessen: schnell, aber einige Übungen hatten falsche Antworten.",
+      "weak": "Gemessen: schnell, aber nur {{pct}} % der Übungen bestanden.",
       "slow": "Gemessen: zu langsam für Live-Lektionen.",
-      "weakSlow": "Gemessen: zu langsam, und einige Übungen hatten falsche Antworten.",
+      "weakSlow": "Gemessen: zu langsam, und nur {{pct}} % der Übungen bestanden.",
       "details": "Erster Satz {{secs}} s · {{pct}} % der Übungen bestanden · {{hardware}}, {{date}}"
     },
     "test": "Verbindung testen",
