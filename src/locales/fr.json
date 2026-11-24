@@ -608,6 +608,12 @@
     "qLessons_many": "Termine {{count}} leçons",
     "chestTitle": "Tu as un panier de récolte à ouvrir",
     "chestTap": "Touche pour ouvrir",
+    "gems_one": "{{count}} pièce",
+    "gems_other": "{{count}} pièces",
+    "gems_many": "{{count}} pièces",
+    "hearts_one": "{{count}} goutte",
+    "hearts_other": "{{count}} gouttes",
+    "hearts_many": "{{count}} gouttes",
     "qPractice_one": "Termine {{count}} séance de pratique",
     "qPractice_other": "Termine {{count}} séances de pratique",
     "qPractice_many": "Termine {{count}} séances de pratique"

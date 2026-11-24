@@ -31,7 +31,7 @@ const NAV: { id: Route; icon: IconName }[] = [
   { id: "shop", icon: "shop" }, { id: "profile", icon: "user" },
 ];
 const MORE: { id: Route; icon: IconName }[] = [
-  { id: "stories", icon: "story" }, { id: "roleplay", icon: "video" }, { id: "friends", icon: "users" }, { id: "grammar", icon: "book" },
+  { id: "stories", icon: "story" }, { id: "roleplay", icon: "masks" }, { id: "friends", icon: "users" }, { id: "grammar", icon: "book" },
   { id: "notifications", icon: "bell" }, { id: "settings", icon: "gear" },
 ];
 const SCREENS: Record<Route, () => React.ReactNode> = {
@@ -52,7 +52,7 @@ function NavBtn({ id, icon, onGo }: { id: Route; icon: IconName; onGo?: () => vo
   const { t } = useTranslation();
   const active = route === id;
   return (
-    <button className={`nav-item ${active ? "active" : ""}`} onClick={() => { go(id); onGo?.(); }} aria-current={active ? "page" : "false"}>
+    <button className={`nav-item ${active ? "active" : ""}`} onClick={() => { go(id); onGo?.(); }} aria-current={active ? "page" : undefined}>
       <Icon name={icon} /><span>{t(`nav.${id}`)}</span>
     </button>
   );

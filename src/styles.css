@@ -124,11 +124,11 @@ svg{display:block}
   font-weight:800;font-size:var(--fs-15);letter-spacing:var(--tr-caps);text-transform:uppercase;color:var(--text-muted);
   text-align:left;width:100%;min-height:44px;
 }
-.nav-item svg{width:26px;height:26px;flex:none}
+.nav-item svg{width:24px;height:24px;flex:none}
 .nav-item:hover{background:var(--surface)}
 .nav-item.active{color:var(--blue-ink);background:var(--sky)}
 .nav-live{position:relative;display:flex;align-items:center;gap:var(--s-4);width:100%;margin:0 0 var(--s-4);padding:var(--s-4) var(--s-5);border:0;border-radius:var(--r);background:linear-gradient(135deg,var(--purple),var(--blue));box-shadow:0 var(--edge-2) 0 var(--purple-dark);color:var(--on-accent);font:inherit;font-weight:900;font-size:var(--fs-15);letter-spacing:var(--tr-caps);text-transform:uppercase;cursor:pointer;transition:transform .1s,filter .15s}
-.nav-live svg{width:26px;height:26px;flex:none}
+.nav-live svg{width:24px;height:24px;flex:none}
 .nav-live:hover{filter:brightness(1.08)}
 .nav-live:active{transform:translateY(4px);box-shadow:none}
 .live-dot{margin-left:auto;width:10px;height:10px;border-radius:50%;background:var(--live);box-shadow:0 0 0 0 color-mix(in srgb,var(--live) 70%,transparent);animation:live-pulse 1.6s infinite}
@@ -151,8 +151,8 @@ svg{display:block}
 /* top stats (inside rail) */
 .stat-strip{display:flex;gap:var(--s-5)}
 .stat-chip{display:flex;align-items:center;gap:var(--s-3);font-weight:800;font-size:var(--fs-15)}
-.stat-chip svg{width:22px;height:22px}
-.stat-chip svg.tree{width:34px;height:34px;margin:-6px -2px}
+.stat-chip svg{width:24px;height:24px}
+.stat-chip svg.tree{width:32px;height:32px;margin:-6px -2px}
 
 /* ===== chunky buttons ===== */
 .btn{
@@ -235,7 +235,7 @@ html[data-theme="dark"] .biome-scene .sky{fill:transparent}
 .node-shape .fc{fill:var(--fc)}
 .node-shape .ring{fill:none;stroke:var(--green-bright);stroke-width:4;opacity:0;transform-box:fill-box;transform-origin:center}
 .node-btn .ic{position:relative;margin-top:-2px}
-.node-btn .ic svg{width:28px;height:28px}
+.node-btn .ic svg{width:24px;height:24px}
 .node-btn:hover{transform:scale(1.06)}
 .node-btn:active{transform:translateY(2px)}
 .node.done.legendary .node-btn,.node.chest .node-btn{--fc:var(--gold);--sh:var(--gold-dark);color:var(--on-gold)}
@@ -267,6 +267,8 @@ html[data-theme="dark"] .biome-scene .sky{fill:transparent}
 .ach-badge.earned i{border-color:var(--gold-dark);color:var(--gold-dark)}
 .muted{color:var(--text-muted)}
 .small{font-size:var(--fs-13)}
+.link-btn{padding:0;font:inherit;font-weight:800;color:var(--blue-ink);background:none;border:none;cursor:pointer}
+.link-btn:hover{text-decoration:underline}
 .progress-track{height:14px;background:var(--border);border-radius:var(--r-pill);overflow:hidden}
 .progress-fill{height:100%;background:var(--gold);border-radius:var(--r-pill);transition:width .4s ease}
 .progress-fill.green{background:var(--green)}
@@ -299,7 +301,7 @@ html[data-theme="dark"] .biome-scene .sky{fill:transparent}
 .tier.current .tier-name{color:var(--text);font-size:var(--fs-13)}
 
 /* shop */
-.shop-item{display:flex;align-items:center;gap:var(--s-4);border:2px solid var(--border);border-radius:var(--r-card);padding:var(--s-5);margin-bottom:var(--s-4)}
+.shop-item{display:flex;align-items:center;gap:var(--s-4);margin-bottom:var(--s-4)} /* the rest is .card */
 .shop-item .s-icon{width:52px;height:52px;flex:none;border-radius:var(--r);display:flex;align-items:center;justify-content:center}
 .shop-item .s-body{flex:1;min-width:0}
 .shop-item h4{font-size:var(--fs-17);font-weight:900}
@@ -533,7 +535,7 @@ button.bubble:hover{border-color:var(--blue)}
 /* "Play my recording" under the mic: a quiet text control, not a pill (44px tall for touch). */
 .mic-playback{display:inline-flex;align-items:center;gap:var(--s-3);min-height:44px;padding:0 var(--s-3);color:var(--blue);font-weight:700;font-size:var(--fs-15)}
 .mic-btn{width:84px;height:84px;border-radius:50%;background:var(--blue);color:var(--on-accent);box-shadow:0 var(--edge-3) 0 var(--blue-dark);display:flex;align-items:center;justify-content:center}
-.mic-btn svg{width:34px;height:34px}
+.mic-btn svg{width:32px;height:32px}
 .mic-btn.rec{background:var(--red);box-shadow:0 var(--edge-3) 0 var(--red-dark);animation:pulse 1.2s infinite;outline:4px solid var(--red-tint)}
 .mic-btn:disabled{opacity:.6}
 
