@@ -1,7 +1,7 @@
-// Custom tutors (#167, milestone 1): the package a learner writes themselves or imports from `sprigo-tutor.json`.
-// Pure so it runs under `node --test`; the tutors table is src/migrations.ts v9, reads and writes in src/db.ts.
+// Custom tutors (#167): the package a learner writes themselves or imports from `sprigo-tutor.json`, and the cast side
+// the screens use. Pure so it runs under `node --test`; the tutors table is src/migrations.ts v9, reads and writes in src/db.ts.
 import { z } from "zod";
-import type { FaceSpec } from "./characters.ts";
+import { CHARACTERS, type BuiltinId, type Character, type FaceSpec } from "./characters.ts";
 
 /** Imported tutors will get no memory writes (milestone 3), so each row remembers where it came from. */
 export const TUTOR_SOURCES = ["local", "imported"] as const;
@@ -14,7 +14,7 @@ export const TUTOR_TOPICS_MAX = 6;
 export const TUTOR_AVATAR_MAX = 512 * 1024;
 export const TUTOR_SCENE_MAX = 2 * 1024 * 1024;
 
-/** Tutor rows are `custom:<uuid>`, never a built-in CharacterId. Parsing one as a talk id is milestone 2. */
+/** Tutor rows are `custom:<uuid>`, never a built-in CharacterId; parseTalkId takes a resolver for them. */
 export const TUTOR_ID_PREFIX = "custom:";
 export const isTutorId = (id: string) => id.startsWith(TUTOR_ID_PREFIX) && id.length > TUTOR_ID_PREFIX.length;
 export const newTutorId = () => `${TUTOR_ID_PREFIX}${crypto.randomUUID()}`;
@@ -111,3 +111,27 @@ export function parseTutorPackage(input: unknown): TutorParse {
 
 /** For the template repo: what a `sprigo-tutor.json` may hold. Cross-field rules (voice, topic ids) are not JSON Schema's to express. */
 export const TUTOR_JSON_SCHEMA = z.toJSONSchema(tutorPackage);
+
+// ---- Custom tutors as cast members ----
+
+/** A saved custom tutor: the package plus its row id. src/db.ts adds the profile, source and timestamp. */
+export type CustomTutor = TutorPackage & { id: string };
+
+/** Drawn bust for a tutor with no face of its own; M3 draws its avatar instead. */
+export const TUTOR_FACE: FaceSpec = {
+  head: "round", ears: "small", eyes: "round", brows: "flat", nose: "button", mouth: "smile",
+  hair: "short", facialHair: "none", outfit: "shirt", accessory: "none", skin: 2, hairColor: 1,
+};
+
+/** A custom tutor as the engine and the screens take a character. */
+export function toCharacter(t: CustomTutor): Character {
+  const { name, gender, color, kokoroVoice, persona, topics } = t;
+  return { name, gender, color, kokoroVoice, persona, face: t.face ?? TUTOR_FACE, topics };
+}
+
+/** The character a talk id names: a built-in, or one of `customs` (a profile's tutors). Undefined when neither has it. */
+export function characterOf(id: string, customs: readonly CustomTutor[] = []): Character | undefined {
+  if (!isTutorId(id)) return Object.prototype.hasOwnProperty.call(CHARACTERS, id) ? CHARACTERS[id as BuiltinId] : undefined;
+  const t = customs.find((c) => c.id === id);
+  return t && toCharacter(t);
+}

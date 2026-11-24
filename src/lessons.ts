@@ -4,7 +4,7 @@ import { z } from "zod";
 import { generate, generatePlain, generateStream } from "./ai";
 import { applyMemoryOps, cachedGuides, enrollmentProfile, getCached, listMemories, listMistakes, markMemoriesUsed, memoryOn, putCached } from "./db";
 import { REGISTRY, givesAway, langEn, lessonPrompt, mistakeLine, lessonSchema, plannedActivities, checkPrompt, checkSchema, rejected, reviewSystem, shuffleAnswer, solvePrompt, solveSchema, solveSystem, systemPrompt, toItems, type Item, type LessonContext } from "./activities";
-import { CHARACTERS, CHAT_MAX_TURNS, CHAT_MIN_TURNS, FREE_GOAL, type CharacterId } from "./characters";
+import { CHAT_MAX_TURNS, CHAT_MIN_TURNS, FREE_GOAL, type Character } from "./characters";
 import { CEFR, levelsOf, storyId, type Course, type CourseLevel, type Cefr } from "./course";
 import { looseTutor, tutorPrompt, tutorSchema, tutorSystem, type TutorEvent, type TutorMsg } from "./tutor";
 import { cleanOps, looseMemory, memoryPrompt, memorySchema, memorySystem, pickMemories, type MemorySource } from "./memory";
@@ -270,8 +270,8 @@ const looseTurn = turnSchema.extend({ correction: z.string().catch(""), goal_rea
 
 /** The character's next turn; also corrects the learner's last message. Empty history = opening line.
  *  `opts.rules` add lines to the system prompt (drills); `opts.keep` caps how many past messages the prompt carries. */
-export function chatTurn(c: Base & { about?: string[] }, who: CharacterId, topic: { goal: string }, history: ChatMsg[], opts: { rules?: string[]; keep?: number } = {}) {
-  const ch = CHARACTERS[who], native = langEn(c.native);
+export function chatTurn(c: Base & { about?: string[] }, ch: Character, topic: { goal: string }, history: ChatMsg[], opts: { rules?: string[]; keep?: number } = {}) {
+  const native = langEn(c.native);
   const free = topic.goal.startsWith(FREE_GOAL);
   const sent = history.filter((m) => m.from === "me").length;
   const system = [
@@ -372,9 +372,8 @@ export function lessonWord(enrollmentId: number, c: Base, word: string, sentence
 // ---- Tutor call: the tutor's reply to one event ----
 
 /** With `onText` the reply streams (SPR-13); see generateStream. */
-export function tutorTurn(c: Base & { about?: string[]; coach?: string }, who: CharacterId, unit: Unit, history: TutorMsg[], notes: string, event: TutorEvent, screen = "",
+export function tutorTurn(c: Base & { about?: string[]; coach?: string }, ch: Character, unit: Unit, history: TutorMsg[], notes: string, event: TutorEvent, screen = "",
   onText?: (raw: string) => boolean) {
-  const ch = CHARACTERS[who];
   const system = tutorSystem({
     name: ch.name, persona: ch.persona, target: c.course.name, native: langEn(c.native), level: c.level,
     unit: unit.title, words: unitWords(unit), grammar: unitGrammar(unit), about: c.about ?? [],

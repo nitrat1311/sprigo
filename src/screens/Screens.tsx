@@ -15,7 +15,7 @@ import { parseWords, toCsv, type CsvError } from "../wordsCsv";
 import { LISTEN_MIN_WORDS, MADNESS_MIN_WORDS } from "../activities";
 import { DOUBLE_XP_MS, rollDay, today } from "../progress";
 import { LEGEND_PRICE, unitGrammar } from "../lessons";
-import { CHARACTERS, talkId, type CharacterId } from "../characters";
+import { CHARACTERS, talkId, type BuiltinId, type CharacterId } from "../characters";
 import { rehearseId, type Formality } from "../rehearsal";
 import { currentUnit } from "../tutor";
 import { DRILL_MINUTES, FOUR_THREE_TWO_MINUTES, type Drill, drillId, goalToName, ladderDrill, nextPlanningSec, planningHistory, structureDrill } from "../drills";
@@ -50,7 +50,7 @@ export function TutorSheet() {
   return (
     <div className="od-stack" style={{ "--od-gap": "10px" } as React.CSSProperties}>
       <h3 style={{ textAlign: "center" }}>{t("tutor.pick")}</h3>
-      {(Object.keys(CHARACTERS) as CharacterId[]).map((k) => {
+      {(Object.keys(CHARACTERS) as BuiltinId[]).map((k) => {
         const { name, color, face } = CHARACTERS[k];
         return (
           <button key={k} className="tutor-pick" onClick={() => { closeSheet(); start(`tutor:${k}`); }}>
@@ -479,7 +479,7 @@ export function Stories() {
   );
 }
 
-function TopicSheet({ who, voice }: { who: CharacterId; voice: boolean }) {
+function TopicSheet({ who, voice }: { who: BuiltinId; voice: boolean }) {
   const { t } = useTranslation();
   const { closeSheet } = useApp();
   const start = useStartLesson();
@@ -509,7 +509,7 @@ function CastPicker({ value, onChange }: { value: CharacterId; onChange: (c: Cha
     <div className="od-field" style={{ "--od-gap": "6px" } as React.CSSProperties}>
       <b id="cast-pick">{t("roleplay.briefCast")}</b>
       <div className="seg" role="radiogroup" aria-labelledby="cast-pick">
-        {(Object.keys(CHARACTERS) as CharacterId[]).map((k) => {
+        {(Object.keys(CHARACTERS) as BuiltinId[]).map((k) => {
           const { name, color, face } = CHARACTERS[k];
           return (
             <button key={k} role="radio" aria-checked={value === k} aria-label={name} title={name} className={`btn ${value === k ? "btn-blue" : "btn-ghost"}`}
@@ -660,7 +660,7 @@ export function Roleplay() {
         <span className="btn btn-blue" style={{ pointerEvents: "none" }}>{t("roleplay.start")}</span>
       </button>
       <div className="rp-grid">
-        {(Object.keys(CHARACTERS) as CharacterId[]).map((k) => {
+        {(Object.keys(CHARACTERS) as BuiltinId[]).map((k) => {
           const { name, color, face } = CHARACTERS[k];
           return (
             <div className="card rp-card" key={k}>

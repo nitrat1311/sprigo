@@ -12,7 +12,8 @@ import { listen, sttReady, type Listener } from "./stt";
 import { FREE_CONTEXT, RECENT, baselineOf, learnerState, nextHint, summarize, type LearnerState, type Utterance } from "./speech";
 import { Face, type FaceState } from "./face/Face";
 import { Avatar } from "./screens/Profiles";
-import { CHARACTERS, type CharacterId } from "./characters";
+import { type CharacterId } from "./characters";
+import { characterOf } from "./tutors";
 import { judge, learnerFacts, loadPractice, rememberSession, tutorTurn } from "./lessons";
 import { warmUp } from "./ai";
 import { FILLER_MS, NOTES_MAX, currentUnit, filler, isNoise, mergeInput, partialSay, sentences, silenceDelay, type TutorEvent, type TutorMsg, type TutorReply } from "./tutor";
@@ -40,9 +41,11 @@ type Call = {
 };
 
 export function TutorCall({ who }: { who: CharacterId }) {
+  // App only opens a call for an id it could resolve; a tutor deleted mid-call renders nothing.
+  const ch = characterOf(who);
+  if (!ch) return null;
   const { t } = useTranslation();
   const { course, enrollment, profile, done, s, setS, gainXp, toast } = useApp();
-  const ch = CHARACTERS[who];
   const lang = course?.iso ?? "en";
   const levelDef = course && enrollment ? course.levels[enrollment.level] : undefined;
   const unit = levelDef ? currentUnit(levelDef, done) : undefined;
@@ -160,7 +163,7 @@ export function TutorCall({ who }: { who: CharacterId }) {
       const mood = nextHint(c.mood, learnerState(said, (await usual) ?? baselineOf(said.slice(0, -RECENT))));
       c.mood = mood.prev;
       mark("req");
-      const r = await tutorTurn({ course, level: enrollment.level, native: profile.native_lang, about: facts, coach: mood.hint }, who, unit, c.hist, c.notes, e, describePractice(c.pr, topics), onText);
+      const r = await tutorTurn({ course, level: enrollment.level, native: profile.native_lang, about: facts, coach: mood.hint }, ch, unit, c.hist, c.notes, e, describePractice(c.pr, topics), onText);
       mark("llm");
       if (c.over) return true;
       c.notes = r.notes.slice(0, NOTES_MAX); c.last = r; c.failed = null;

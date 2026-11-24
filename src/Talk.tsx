@@ -7,7 +7,8 @@ import { sfx, useStartLesson } from "./Lesson";
 import { onTtsFallback, prewarm, resetTtsNotice, speak, speakingWith, stopSpeaking } from "./tts";
 import { MicButton } from "./Mic";
 import { Face, type FaceState } from "./face/Face";
-import { CHARACTERS, CHAT_MAX_TURNS as CHAT_TURNS, CHAT_MIN_TURNS, FREE_GOAL, type Talk } from "./characters";
+import { CHAT_MAX_TURNS as CHAT_TURNS, CHAT_MIN_TURNS, FREE_GOAL, type Talk } from "./characters";
+import { characterOf } from "./tutors";
 import { avoidancePass, chatTurn, debrief, learnerFacts, loadStory, rehearseTurn, rememberSession, type ChatMsg, type Story as StoryData } from "./lessons";
 import { REHEARSE_LONG, type Debrief } from "./rehearsal";
 import * as db from "./db";
@@ -310,7 +311,9 @@ export function Chat({ talk }: { talk: Talk }) {
   const { who, topic, voice, rehearse, drill } = talk;
   const { t } = useTranslation();
   const { course, enrollment, profile, s, setS, gainXp, toast } = useApp();
-  const ch = CHARACTERS[who];
+  // App only opens a talk for an id it could resolve; a tutor deleted mid-chat renders nothing.
+  const ch = characterOf(who);
+  if (!ch) return null;
   const name = rehearse ? rehearse.who : ch.name;
   const lang = course?.iso ?? "en";
   const [voicing, setVoicing] = useState<number | null>(null); // AI message being spoken (or its voice being made)
@@ -367,7 +370,7 @@ export function Chat({ talk }: { talk: Talk }) {
         say(r.reply, history.length);
         return;
       }
-      const r = await chatTurn({ course, level: enrollment.level, native: profile.native_lang, about: await about }, who, topic, history,
+      const r = await chatTurn({ course, level: enrollment.level, native: profile.native_lang, about: await about }, ch, topic, history,
         drill ? { rules: drillRules(drill), keep: DRILL_KEEP } : {});
       if (ending.current) return;
       const fixed = history.map((m, i) => i === history.length - 1 && m.from === "me" ? { ...m, correction: r.correction.trim() || undefined } : m);

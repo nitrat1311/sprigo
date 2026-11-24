@@ -81,7 +81,10 @@ export const CHARACTERS = {
     ],
   },
 } satisfies Record<string, Character>;
-export type CharacterId = keyof typeof CHARACTERS;
+/** A built-in member of the cast. */
+export type BuiltinId = keyof typeof CHARACTERS;
+/** A built-in, or a custom tutor saved by the learner (`tutors` table, src/tutors.ts). */
+export type CharacterId = BuiltinId | `custom:${string}`;
 
 /** Learner messages: the goal can't end a chat before MIN; MAX always ends it. */
 export const CHAT_MIN_TURNS = 6, CHAT_MAX_TURNS = 12;
@@ -97,24 +100,32 @@ export function talkId(voice: boolean, who: CharacterId, topic: string | { free:
 /** What App routes a chat/call/rehearse/drill id to; `rehearse` only on a rehearsal (see rehearsal.ts), `drill` only on a fluency drill (see drills.ts). */
 export type Talk = { voice: boolean; who: CharacterId; topic: { id?: string; goal: string }; rehearse?: RehearsalBrief; drill?: Drill };
 
-export function parseTalkId(id: string): Talk | null {
-  const [kind, who, ...rest] = id.split(":");
+/** `resolve` finds a custom tutor by id (see characterOf in src/tutors.ts); built-in ids never need it. */
+export function parseTalkId(id: string, resolve?: (id: CharacterId) => Character | undefined): Talk | null {
+  const [kind, head, ...tail] = id.split(":");
+  // A custom tutor id is `custom:<uuid>`: one id with a colon of its own, so it takes an extra segment here.
+  const custom = head === "custom" && tail.length > 0;
+  const who = (custom ? `${head}:${tail[0]}` : head) as CharacterId;
+  const rest = custom ? tail.slice(1) : tail;
+  const ch = custom
+    ? resolve?.(who)
+    : Object.prototype.hasOwnProperty.call(CHARACTERS, who) ? CHARACTERS[who as BuiltinId] : undefined;
+  if (!ch) return null;
   if (kind === "drill") {
     const d = parseDrill(rest);
-    if (!Object.prototype.hasOwnProperty.call(CHARACTERS, who) || !d) return null;
-    return { voice: true, who: who as CharacterId, topic: { goal: FREE_GOAL + d.topic }, drill: d };
+    return d ? { voice: true, who, topic: { goal: FREE_GOAL + d.topic }, drill: d } : null;
   }
   if (kind === "rehearse") {
     const [mode, enc] = rest, brief = enc === undefined ? null : parseBrief(enc);
-    if (!Object.prototype.hasOwnProperty.call(CHARACTERS, who) || (mode !== "chat" && mode !== "call") || rest.length !== 2 || !brief) return null;
-    return { voice: mode === "call", who: who as CharacterId, topic: { goal: brief.about ?? "" }, rehearse: brief };
+    if ((mode !== "chat" && mode !== "call") || rest.length !== 2 || !brief) return null;
+    return { voice: mode === "call", who, topic: { goal: brief.about ?? "" }, rehearse: brief };
   }
-  if ((kind !== "chat" && kind !== "call") || !Object.prototype.hasOwnProperty.call(CHARACTERS, who) || !rest.length) return null;
-  const voice = kind === "call", c = who as CharacterId;
+  if ((kind !== "chat" && kind !== "call") || !rest.length) return null;
+  const voice = kind === "call";
   if (rest[0] === FREE) {
     const text = rest.slice(1).join(":").trim();
-    return text ? { voice, who: c, topic: { goal: FREE_GOAL + text } } : null;
+    return text ? { voice, who, topic: { goal: FREE_GOAL + text } } : null;
   }
-  const topic = CHARACTERS[c].topics.find((x) => x.id === rest.join(":"));
-  return topic ? { voice, who: c, topic } : null;
+  const topic = ch.topics.find((x) => x.id === rest.join(":"));
+  return topic ? { voice, who, topic } : null;
 }

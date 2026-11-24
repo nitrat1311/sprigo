@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { isTutorId, newTutorId, parseTutorPackage, TUTOR_AVATAR_MAX, TUTOR_JSON_SCHEMA, TUTOR_PERSONA_MAX, TUTOR_SCENE_MAX } from "./tutors.ts";
+import { isTutorId, newTutorId, parseTutorPackage, TUTOR_AVATAR_MAX, TUTOR_FACE, TUTOR_JSON_SCHEMA, TUTOR_PERSONA_MAX, TUTOR_SCENE_MAX, characterOf, toCharacter, type CustomTutor } from "./tutors.ts";
 
 const b64 = (bytes: number[]) => Buffer.from(bytes).toString("base64");
 const PNG = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 13];
@@ -88,4 +88,17 @@ test("tutor ids are custom-prefixed and never a built-in character id", () => {
   const id = newTutorId();
   assert.ok(isTutorId(id) && id.startsWith("custom:") && id.length > "custom:".length);
   for (const bad of ["", "custom:", "mia"]) assert.equal(isTutorId(bad), false, bad);
+});
+
+test("characterOf resolves built-ins, and a saved tutor as a character", () => {
+  const ada: CustomTutor = { ...valid, id: "custom:ada" };
+  assert.deepEqual(characterOf("custom:ada", [ada]), toCharacter(ada));
+  assert.deepEqual(Object.keys(toCharacter(ada)).sort(), ["color", "face", "gender", "kokoroVoice", "name", "persona", "topics"]);
+  assert.deepEqual(toCharacter(ada).face, TUTOR_FACE, "an avatar-only tutor gets the neutral face");
+  assert.deepEqual(toCharacter({ ...ada, face: { ...TUTOR_FACE, hair: "bun" } }).face.hair, "bun");
+  assert.equal(characterOf("custom:ada"), undefined, "nothing to resolve against");
+  assert.equal(characterOf("custom:ada", [{ ...ada, id: "custom:bo" }]), undefined);
+  assert.equal(characterOf("mia", [ada])?.name, "Mia", "built-ins never need the list");
+  assert.equal(characterOf("mia2", [ada]), undefined);
+  assert.equal(characterOf("toString", [ada]), undefined, "only real cast keys");
 });

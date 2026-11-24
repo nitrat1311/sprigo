@@ -15,7 +15,7 @@ import { remoteDb, serveCompanion } from "./companion";
 import { evictIds, type Memory, type MemoryOps, type MemorySource } from "./memory";
 import { grade, newCard, review, strengthOf, type Grade, type WordCard } from "./srs";
 import { USAGE_SQL, type AiFeature, type UsageRow } from "./usage";
-import { newTutorId, parseTutorPackage, type TutorPackage, type TutorProfile, type TutorSource } from "./tutors";
+import { newTutorId, parseTutorPackage, type CustomTutor, type TutorPackage, type TutorProfile, type TutorSource } from "./tutors";
 export { NEW_STATS, type Stats };
 
 type Row = Record<string, any>;
@@ -354,7 +354,7 @@ export async function applyMemoryOps(profileId: number, source: MemorySource, op
 
 // ---- Custom tutors (#167, src/tutors.ts; per profile like memories, deleted with it) ----
 
-export type Tutor = TutorPackage & { id: string; profile_id: number; source: TutorSource; created_at: string };
+export type Tutor = CustomTutor & { profile_id: number; source: TutorSource; created_at: string };
 const TUTOR_COLS = "id, profile_id, data, avatar, scene, source, created_at";
 function toTutor(r: Row): Tutor {
   const { data, avatar, scene, ...rest } = r;

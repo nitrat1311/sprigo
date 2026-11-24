@@ -14,7 +14,8 @@ import type { Update } from "@tauri-apps/plugin-updater";
 import { Chat, Story } from "./Talk";
 import { Flashcards } from "./Flashcards";
 import { TutorCall } from "./TutorCall";
-import { CHARACTERS, parseTalkId, type CharacterId } from "./characters";
+import { parseTalkId, type CharacterId } from "./characters";
+import { characterOf } from "./tutors";
 import { parseStoryId, type Cefr } from "./course";
 import { parseWriteId } from "./writing";
 import { Writing } from "./Write";
@@ -258,7 +259,7 @@ export default function App() {
       {lessonId && (lessonId.startsWith("story:") ? (story && <Story key={lessonId} {...story} />)
         : lessonId.startsWith("write:") ? (writing && <Writing key={lessonId} level={writing.level as Cefr} unit={writing.unit} />)
         : lessonId.startsWith("cards:") ? <Flashcards key={lessonId} deck={lessonId.slice(6)} />
-        : lessonId.startsWith("tutor:") ? (lessonId.slice(6) in CHARACTERS && <TutorCall key={lessonId} who={lessonId.slice(6) as CharacterId} />)
+        : lessonId.startsWith("tutor:") ? (!!characterOf(lessonId.slice(6)) && <TutorCall key={lessonId} who={lessonId.slice(6) as CharacterId} />)
         : /^(chat|call|rehearse|drill):/.test(lessonId) ? (talk && <Chat key={lessonId} talk={talk} />) : <Lesson id={lessonId} />)}
       </div>
       </>}
