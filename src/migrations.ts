@@ -107,6 +107,8 @@ CREATE INDEX tutors_profile ON tutors(profile_id)`,
   {
     v: 10, // #46: the learner's own writing. `unit_notes` is one note per unit of an enrollment (`level:unit`, src/course.ts unitRef);
     // `journal` is one entry per local day (YYYY-MM-DD, src/progress.ts today). Both are part of the database, so export and backups carry them.
+    // The REFERENCES clauses below never cascade: this app never enables `PRAGMA foreign_keys`; deleted profiles lose
+    // their rows because src/profileDelete.ts deletes them explicitly.
     sql: `
 CREATE TABLE unit_notes(
   enrollment_id INTEGER NOT NULL REFERENCES enrollments(id) ON DELETE CASCADE,

@@ -45,3 +45,35 @@ test("a journal entry and a unit note survive a reload and can be deleted", asyn
   await page.getByRole("dialog").getByRole("button", { name: "Delete", exact: true }).click();
   await expect(page.getByRole("button", { name: /Greetings & Introductions/ })).toContainText("No note yet");
 });
+
+test("an unsaved journal draft survives switching to the unit notes and back", async ({ page }) => {
+  await onboard(page);
+  await page.getByRole("button", { name: "Notes", exact: true }).click();
+  const box = page.getByLabel("Today's journal entry");
+  await box.fill("Un borrador sin guardar.");
+  await page.getByRole("tab", { name: "Unit notes" }).click();
+  await expect(box).toBeHidden();
+  await page.getByRole("tab", { name: "Journal", exact: true }).click();
+  await expect(box).toHaveValue("Un borrador sin guardar.");
+});
+
+test("an unsaved journal draft survives opening and closing an earlier entry", async ({ page }) => {
+  const yesterday = "Ayer fui al mercado con mi vecina.";
+  // Two fixed local days: the entry saved on the first one becomes an earlier entry on the second.
+  await page.clock.setFixedTime(new Date("2026-01-05T10:00:00Z"));
+  await onboard(page);
+  await page.getByRole("button", { name: "Notes", exact: true }).click();
+  await page.getByLabel("Today's journal entry").fill(yesterday);
+  await page.getByRole("button", { name: "Save", exact: true }).click();
+  await expect(page.getByRole("status")).toHaveText("Saved");
+
+  await page.clock.setFixedTime(new Date("2026-01-06T10:00:00Z"));
+  await page.reload();
+  await page.getByRole("button", { name: "Notes", exact: true }).click();
+  const box = page.getByLabel("Today's journal entry");
+  await box.fill("Borrador de hoy.");
+  await page.getByRole("button").filter({ hasText: yesterday }).click();
+  await page.getByRole("dialog").getByRole("button", { name: "Close", exact: true }).click();
+  await expect(page.getByRole("dialog")).toBeHidden();
+  await expect(box).toHaveValue("Borrador de hoy.");
+});

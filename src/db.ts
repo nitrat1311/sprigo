@@ -16,7 +16,7 @@ import { evictIds, type Memory, type MemoryOps, type MemorySource } from "./memo
 import { grade, newCard, review, strengthOf, type Grade, type WordCard } from "./srs";
 import { USAGE_SQL, type AiFeature, type UsageRow } from "./usage";
 import { newTutorId, parseTutorPackage, type CustomTutor, type TutorPackage, type TutorProfile, type TutorSource } from "./tutors";
-import { cleanEntry, cleanNote } from "./notes";
+import { cleanEntry, cleanNote, isDayKey } from "./notes";
 export { NEW_STATS, type Stats };
 
 type Row = Record<string, any>;
@@ -230,6 +230,7 @@ export async function listJournal(profileId: number, limit = 365) {
 }
 /** Saves the day's entry; an empty text removes it. One entry per local day. */
 export async function saveJournalEntry(profileId: number, day: string, text: string) {
+  if (!isDayKey(day)) throw new Error(`Invalid journal day: ${day}`);
   const d = await db(), clean = cleanEntry(text);
   if (!clean) return d.execute("DELETE FROM journal WHERE profile_id = $1 AND day = $2", [profileId, day]);
   await d.execute(

@@ -1,12 +1,12 @@
 // Notes and journal (#46): the learner's own words, a note per unit and one dated entry per day.
 // Stored in SQLite (src/db.ts, migration v10) and part of the database file, so export and backups carry them.
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Icon } from "../icons";
 import { useApp } from "../store";
 import * as db from "../db";
 import { today } from "../progress";
-import { JOURNAL_MAX, NOTE_MAX, snippet } from "../notes";
+import { JOURNAL_MAX, NOTE_MAX, cleanEntry, snippet } from "../notes";
 import { levelsOf, unitRef, type Cefr, type CourseLevel } from "../course";
 import { checkWriting } from "../lessons";
 import type { Feedback } from "../writing";
@@ -27,13 +27,17 @@ export function Notes() {
       <p className="muted" style={{ marginBottom: 14 }}>{t("notes.subtitle")}</p>
       <div className="tabs" role="tablist" aria-label={t("notes.title")}>
         {(["journal", "units"] as Tab[]).map((k) => (
-          <button key={k} role="tab" id={`notes-tab-${k}`} aria-selected={tab === k} aria-controls="notes-panel" onClick={() => setTab(k)}>
+          <button key={k} role="tab" id={`notes-tab-${k}`} aria-selected={tab === k} aria-controls={`notes-panel-${k}`} onClick={() => setTab(k)}>
             {t(`notes.tabs.${k}`)}
           </button>
         ))}
       </div>
-      <div id="notes-panel" role="tabpanel" aria-labelledby={`notes-tab-${tab}`} className="od-stack" style={gap("14px")}>
-        {tab === "journal" ? <Journal /> : <UnitNotes />}
+      {/* Both panels stay mounted, only one is shown: a journal draft must survive a look at the unit notes. */}
+      <div id="notes-panel-journal" role="tabpanel" aria-labelledby="notes-tab-journal" hidden={tab !== "journal"} className="od-stack" style={gap("14px")}>
+        <Journal />
+      </div>
+      <div id="notes-panel-units" role="tabpanel" aria-labelledby="notes-tab-units" hidden={tab !== "units"} className="od-stack" style={gap("14px")}>
+        <UnitNotes />
       </div>
     </>
   );
@@ -49,19 +53,22 @@ function Journal() {
   const [saved, setSaved] = useState("");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
-  const reload = () => db.listJournal(profile!.id).then((list) => {
-    setEntries(list);
-    const mine = list.find((e) => e.day === day);
-    setText(mine?.text ?? ""); setSaved(mine?.text ?? "");
-  });
+  const loadedDay = useRef(day); // the day the editor's text belongs to; a change means the app stayed open overnight
   // Reloaded after a sheet closes (it may have edited or deleted another day's entry), never on open:
-  // that would drop a draft the learner was still typing.
-  useEffect(() => { if (!sheet) reload().catch((e) => console.error("journal", e)); }, [profile!.id, !sheet]);
+  // that would drop a draft the learner was still typing. A new day starts from that day's stored entry.
+  const load = () => db.listJournal(profile!.id).then((list) => {
+    setEntries(list);
+    const stored = list.find((e) => e.day === day)?.text ?? "";
+    const rolled = loadedDay.current !== day;
+    loadedDay.current = day;
+    if (rolled || cleanEntry(text) === saved) { setText(stored); setSaved(stored); }
+  });
+  useEffect(() => { if (!sheet) load().catch((e) => console.error("journal", e)); }, [profile!.id, day, !sheet]);
 
-  const clean = text.trim();
+  const clean = cleanEntry(text);
   const save = async () => {
     setBusy(true);
-    try { await db.saveJournalEntry(profile!.id, day, text); setSaved(clean); toast(t("notes.saved")); await reload(); }
+    try { await db.saveJournalEntry(profile!.id, day, text); setSaved(clean); toast(t("notes.saved")); await load(); }
     catch (e) { toast(t("notes.saveFailed")); console.error("journal", e); }
     finally { setBusy(false); }
   };
@@ -71,7 +78,7 @@ function Journal() {
     try {
       const fb = await checkWriting({ course, level: enrollment.level, native: profile!.native_lang }, t("notes.entryLabel"), clean);
       openSheet(<CheckSheet fb={fb} lang={course.iso} />);
-    } catch (e) { setErr((e as Error).message); }
+    } catch (e) { console.warn("check", e); setErr(t("notes.checkFailed")); }
     finally { setBusy(false); }
   };
   const past = entries.filter((e) => e.day !== day);
@@ -82,13 +89,13 @@ function Journal() {
           <h2 style={{ margin: 0 }}>{t("notes.today")}</h2>
           <span className="muted small">{fullDate(day, i18n.language)} · {t("notes.writeIn", { lang: course ? langName(course.iso) : "—" })}</span>
         </div>
-        <textarea id="journal-today" className="input" rows={6} maxLength={JOURNAL_MAX} value={text}
+        <textarea id="journal-today" className="input" rows={6} maxLength={JOURNAL_MAX} value={text} disabled={busy}
           aria-label={t("notes.entryLabel")} placeholder={t("write.placeholder")}
           onChange={(e) => { setText(e.target.value); setErr(""); }} />
-        {err && <p className="small" role="alert" style={{ color: "var(--red)", margin: 0 }}>{t("notes.checkFailed")} {err}</p>}
+        {err && <p className="small" role="alert" style={{ color: "var(--red)", margin: 0 }}>{err}</p>}
         <div className="od-row" style={{ ...gap("8px"), flexWrap: "wrap" }}>
           <button className="btn btn-primary" disabled={busy || clean === saved} onClick={save}>{t("notes.save")}</button>
-          <button className="btn btn-ghost" disabled={busy || !clean || !ai || !enrollment} onClick={check}>
+          <button className="btn btn-ghost" disabled={busy || !clean || !ai || !enrollment || !course} onClick={check}>
             <Icon name="spark" /> {t(busy ? "notes.checking" : "notes.check")}
           </button>
         </div>
