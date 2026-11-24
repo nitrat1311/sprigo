@@ -4,6 +4,8 @@ import { useApp } from "../store";
 import { languages } from "../i18n";
 import type { ThemePref } from "../theme";
 import { SMALL_MODEL_B, isSmallModel } from "../modelSize";
+import { guideFor, verdictOf } from "../modelGuide";
+import { MEASURED } from "../modelGuideData";
 import { PROVIDERS, RECOMMENDED_OLLAMA, detectLocal, getKey, listModels, pullOllama, setKey, type AiConfig, type ProviderId } from "../ai";
 import { aiUsage, aiUsageMonths, getSetting, isCompanion, isTauri, isWeb, setSetting } from "../db";
 import { monthOf, summarize, type UsageRow } from "../usage";
@@ -274,6 +276,23 @@ export function AiSheet() {
   );
 }
 
+/** What the model measured like (#37): pnpm bench latency and pnpm eval quality, bundled in modelGuideData.ts. */
+function ModelGuide({ model }: { model: string }) {
+  const { t, i18n } = useTranslation();
+  const m = guideFor(model, MEASURED);
+  if (!m) return null;
+  const lang = i18n.resolvedLanguage ?? "en";
+  const secs = new Intl.NumberFormat(lang, { maximumFractionDigits: 1 }).format(m.sayMs / 1000);
+  const date = new Intl.DateTimeFormat(lang, { day: "numeric", month: "short", year: "numeric" }).format(new Date(`${m.measured}T12:00:00`));
+  const verdict = verdictOf(m);
+  return (
+    <span className="small" role="note" style={{ color: verdict === "good" ? "var(--green)" : "var(--orange)" }}>
+      {t(`ai.guide.${verdict}`)}
+      <span className="muted"> · {t("ai.guide.details", { secs, pct: Math.round(m.quality), hardware: m.hardware, date })}</span>
+    </span>
+  );
+}
+
 /** One provider's server, key and model; saving makes it the active provider. */
 function AiConfigSheet({ provider, models: found }: { provider: ProviderId; models: string[] }) {
   const { t } = useTranslation();
@@ -328,7 +347,9 @@ function AiConfigSheet({ provider, models: found }: { provider: ProviderId; mode
       <label className="od-field"><b>{t("ai.model")}</b><span className="muted small">{t("ai.modelDesc")}</span>
         <input className="input" list="ai-models" value={model} spellCheck={false} onChange={(e) => setModel(e.target.value)} />
         <datalist id="ai-models">{models.map((m) => <option key={m} value={m} />)}</datalist>
-        {!needsKey && isSmallModel(cfg.model) && <span className="small" role="note" style={{ color: "var(--orange)" }}>{t("ai.smallModel", { min: `${SMALL_MODEL_B}B` })}</span>}
+        {!needsKey && (guideFor(cfg.model, MEASURED)
+          ? <ModelGuide model={cfg.model} />
+          : isSmallModel(cfg.model) && <span className="small" role="note" style={{ color: "var(--orange)" }}>{t("ai.smallModel", { min: `${SMALL_MODEL_B}B` })}</span>)}
       </label>
       {status && <p className="small" role="status" style={{ color: status.ok ? "var(--green)" : "var(--red)", overflowWrap: "anywhere" }}>{status.msg}</p>}
       <div className="od-stack sheet-actions" style={gap("8px")}>

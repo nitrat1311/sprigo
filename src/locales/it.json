@@ -710,6 +710,13 @@
     "model": "Modello",
     "modelDesc": "Testa la connessione per elencare i modelli disponibili",
     "smallModel": "I modelli sotto {{min}} possono scrivere lezioni con risposte errate. Si raccomanda un modello di {{min}} o superiore.",
+    "guide": {
+      "good": "Misurato: buono per le lezioni dal vivo.",
+      "weak": "Misurato: veloce, ma alcuni esercizi avevano risposte sbagliate.",
+      "slow": "Misurato: troppo lento per le lezioni dal vivo.",
+      "weakSlow": "Misurato: troppo lento e alcuni esercizi avevano risposte sbagliate.",
+      "details": "Prima frase {{secs}} s · {{pct}}% di esercizi superati · {{hardware}}, {{date}}"
+    },
     "test": "Testa la connessione",
     "save": "Salva",
     "connected": "Connesso — {{count}} modelli trovati",

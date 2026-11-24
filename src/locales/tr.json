@@ -685,6 +685,13 @@
     "model": "Model",
     "modelDesc": "Mevcut modelleri listelemek için bağlantıyı test et",
     "smallModel": "{{min}} altındaki modeller derslerde yanlış cevaplar üretebilir. En az {{min}} bir model önerilir.",
+    "guide": {
+      "good": "Ölçüldü: canlı dersler için iyi.",
+      "weak": "Ölçüldü: hızlı, ama bazı alıştırmaların yanıtları yanlıştı.",
+      "slow": "Ölçüldü: canlı dersler için çok yavaş.",
+      "weakSlow": "Ölçüldü: çok yavaş ve bazı alıştırmaların yanıtları yanlıştı.",
+      "details": "İlk cümle {{secs}} sn · alıştırmaların %{{pct}} kadarı geçti · {{hardware}}, {{date}}"
+    },
     "test": "Bağlantıyı test et",
     "save": "Kaydet",
     "connected": "Bağlandı — {{count}} model bulundu",

@@ -30,6 +30,21 @@ test("onboarding creates a profile and sets up local AI", async ({ page }) => {
   await expect(page.getByRole("dialog")).toBeHidden();
 });
 
+test("the model picker shows measured guidance", async ({ page }) => {
+  await onboard(page);
+  await page.getByRole("tab", { name: "AI & voice" }).click();
+  await page.locator(".card", { hasText: "AI provider" }).getByRole("button", { name: "Change" }).click();
+  await page.getByRole("dialog").getByRole("button", { name: "Ollama settings" }).click(); // the model field lives here
+  const sheet = page.getByRole("dialog");
+  const model = sheet.getByLabel(/Model/);
+  await model.fill("qwen3:8b");
+  await expect(sheet.getByText(/^Measured:/)).toBeVisible();
+  await expect(sheet.getByText(/Apple M4/)).toBeVisible(); // the data names the machine it ran on
+  await model.fill("tiny:1b");
+  await expect(sheet.getByText(/^Measured:/)).toBeHidden();
+  await expect(sheet.getByRole("note")).toContainText("Models under 8B"); // unmeasured: the old size warning
+});
+
 test("help answers setup questions in the app, also from a setting's ?", async ({ page }) => {
   await onboard(page);
   await page.locator(".card", { hasText: "Help & FAQ" }).getByRole("button", { name: "Open" }).click();

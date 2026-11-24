@@ -691,6 +691,13 @@
     "model": "Model",
     "modelDesc": "Test the connection to list the available models",
     "smallModel": "Models under {{min}} can write lessons with wrong answers. A model of {{min}} or more is recommended.",
+    "guide": {
+      "good": "Measured: good for live lessons.",
+      "weak": "Measured: quick, but some exercises had wrong answers.",
+      "slow": "Measured: too slow for live lessons.",
+      "weakSlow": "Measured: too slow, and some exercises had wrong answers.",
+      "details": "First sentence {{secs}} s · {{pct}}% of exercises pass · {{hardware}}, {{date}}"
+    },
     "test": "Test connection",
     "save": "Save",
     "connected": "Connected — {{count}} models found",

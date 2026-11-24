@@ -719,6 +719,13 @@
     "model": "Modèle",
     "modelDesc": "Teste la connexion pour lister les modèles disponibles",
     "smallModel": "Les modèles de moins de {{min}} peuvent écrire des leçons avec de mauvaises réponses. Un modèle d'au moins {{min}} est recommandé.",
+    "guide": {
+      "good": "Mesuré : bon pour les leçons en direct.",
+      "weak": "Mesuré : rapide, mais certains exercices avaient de mauvaises réponses.",
+      "slow": "Mesuré : trop lent pour les leçons en direct.",
+      "weakSlow": "Mesuré : trop lent, et certains exercices avaient de mauvaises réponses.",
+      "details": "Première phrase {{secs}} s · {{pct}} % d’exercices réussis · {{hardware}}, {{date}}"
+    },
     "test": "Tester la connexion",
     "save": "Enregistrer",
     "connected": "Connecté — {{count}} modèles trouvés",

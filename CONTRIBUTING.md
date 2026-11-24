@@ -57,6 +57,8 @@ How the app fits together is in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md); de
 
 Run it when you change a lesson prompt (`src/activities.ts`), add a course level, or want to recommend a model. Each run writes `eval/<time>-<model>.md` (and `.json` with every exercise). To compare two prompt versions, run it on each branch with the same model and compare the tables; the report header shows the commit. Generation is not deterministic, so run each side twice and treat differences of a few points as noise. The rule checks themselves are tested in `src/evalRules.test.ts`.
 
+`pnpm bench [model…]` times the tutor's live reply (first sentence and full reply) with the app's real prompt and settings, writing `eval/<time>-bench.json`. After running both on the release machine, `pnpm guide` joins the newest report per model into [`src/modelGuideData.ts`](src/modelGuideData.ts): the measurements the AI settings show next to the model field. They are hardware-specific, so each row keeps the machine and date it ran on.
+
 ### Conventions
 
 - Commit messages start with the area, then a short sentence: `Drills: avoidance pass for goal drills`.

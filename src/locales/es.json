@@ -719,6 +719,13 @@
     "model": "Modelo",
     "modelDesc": "Prueba la conexión para ver los modelos disponibles",
     "smallModel": "Los modelos de menos de {{min}} pueden crear lecciones con respuestas incorrectas. Se recomienda un modelo de {{min}} o más.",
+    "guide": {
+      "good": "Medido: bueno para lecciones en vivo.",
+      "weak": "Medido: rápido, pero algunos ejercicios tenían respuestas incorrectas.",
+      "slow": "Medido: demasiado lento para lecciones en vivo.",
+      "weakSlow": "Medido: demasiado lento y algunos ejercicios tenían respuestas incorrectas.",
+      "details": "Primera frase {{secs}} s · {{pct}} % de ejercicios superados · {{hardware}}, {{date}}"
+    },
     "test": "Probar conexión",
     "save": "Guardar",
     "connected": "Conectado: {{count}} modelos encontrados",

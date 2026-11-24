@@ -691,6 +691,13 @@
     "model": "Modell",
     "modelDesc": "Teszteld a kapcsolatot az elérhető modellek listázásához",
     "smallModel": "{{min}} alatt a modellek hibás válaszokat írhatnak a leckékbe. Legalább {{min}} méretű modell ajánlott.",
+    "guide": {
+      "good": "Mérve: jó az élő leckékhez.",
+      "weak": "Mérve: gyors, de néhány feladatnak hibás volt a megoldása.",
+      "slow": "Mérve: túl lassú az élő leckékhez.",
+      "weakSlow": "Mérve: túl lassú, és néhány feladatnak hibás volt a megoldása.",
+      "details": "Első mondat {{secs}} mp · a feladatok {{pct}}%-a sikeres · {{hardware}}, {{date}}"
+    },
     "test": "Kapcsolat tesztelése",
     "save": "Mentés",
     "connected": "Kapcsolódva – {{count}} modell található",
