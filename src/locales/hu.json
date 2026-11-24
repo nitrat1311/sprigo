@@ -641,7 +641,8 @@
     "heardNothing": "Nem értettem – próbáld újra kicsit hangosabban.",
     "cantSpeak": "Most nem tudok beszélni",
     "unitPassed": "Egység teljesítve!",
-    "listenSlow": "Lassú lejátszás"
+    "listenSlow": "Lassú lejátszás",
+    "dblClickHint": "Kattints duplán a kiválasztott válaszra az ellenőrzéshez."
   },
   "profiles": {
     "saved": "Profil mentve",

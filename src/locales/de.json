@@ -641,7 +641,8 @@
     "heardNothing": "Das habe ich nicht verstanden – versuche es etwas lauter.",
     "cantSpeak": "Sprechen gerade nicht möglich",
     "unitPassed": "Einheit bestanden!",
-    "listenSlow": "Langsam anhören"
+    "listenSlow": "Langsam anhören",
+    "dblClickHint": "Doppelklicke eine ausgewählte Antwort, um sie zu prüfen."
   },
   "profiles": {
     "saved": "Profil gespeichert",

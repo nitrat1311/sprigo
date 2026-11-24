@@ -635,7 +635,8 @@
     "heardNothing": "Anlaşılmadı — biraz daha yüksek sesle tekrar dene.",
     "cantSpeak": "Şu an konuşamam",
     "unitPassed": "Ünite geçildi!",
-    "listenSlow": "Yavaş dinle"
+    "listenSlow": "Yavaş dinle",
+    "dblClickHint": "Seçili cevabı kontrol etmek için çift tıkla."
   },
   "profiles": {
     "saved": "Profil kaydedildi",

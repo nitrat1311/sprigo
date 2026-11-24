@@ -641,7 +641,8 @@
     "heardNothing": "Didn't catch that — try again a little louder.",
     "cantSpeak": "Can't speak now",
     "unitPassed": "Unit passed!",
-    "listenSlow": "Listen slowly"
+    "listenSlow": "Listen slowly",
+    "dblClickHint": "Double-click a selected answer to check it."
   },
   "profiles": {
     "saved": "Profile saved",

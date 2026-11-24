@@ -22,6 +22,8 @@ import { storyId, type Cefr } from "./course";
 import { SpeakButton } from "./SpeakButton";
 
 const gap = (g: string) => ({ "--od-gap": g }) as React.CSSProperties;
+/** Double-click is a mouse gesture: iOS Safari doesn't dispatch dblclick reliably for taps. */
+const finePointer = () => matchMedia("(hover: hover) and (pointer: fine)").matches;
 
 export type Result = { xp: number; gems: number };
 
@@ -132,6 +134,7 @@ export function Story({ level, unit: unitId }: { level: Cefr; unit: string }) {
   const [err, setErr] = useState("");
   const [p, setP] = useState(0); // position in `seq`
   const [sel, setSel] = useState<number | null>(null);
+  const picked = useRef<number | null>(null); // option selected before the current click gesture, so a double-click on an unselected answer only selects it
   const [checked, setChecked] = useState(false);
   const [correct, setCorrect] = useState(0);
   const [shown, setShown] = useState<Set<number>>(new Set()); // lines with translation revealed
@@ -162,16 +165,16 @@ export function Story({ level, unit: unitId }: { level: Cefr; unit: string }) {
   }, [p, story]);
 
   const next = () => {
-    if (p + 1 < seq.length) { setP(p + 1); setSel(null); setChecked(false); return; }
+    if (p + 1 < seq.length) { picked.current = null; setP(p + 1); setSel(null); setChecked(false); return; }
     const xp = (10 + correct * 10) * xpMult(s), gems = correct * 2;
     setS((s) => recordSession(s, { xp, gems, kind: "practice" }, today()));
     completeStep(storyId(level, unitId), xp);
     sfx("done");
     setResult({ xp, gems });
   };
-  const check = (choice = sel) => {
-    if (checked || !q || choice === null) return;
-    setChecked(true); sfx(choice === q.answer ? "ok" : "bad"); if (choice === q.answer) setCorrect((c) => c + 1);
+  const check = () => {
+    if (checked || !q || sel === null) return;
+    setChecked(true); sfx(sel === q.answer ? "ok" : "bad"); if (sel === q.answer) setCorrect((c) => c + 1);
   };
 
   // Keyboard: digits pick an answer, Enter is the footer button, Space replays the line. Esc stays in useQuit.
@@ -223,18 +226,23 @@ export function Story({ level, unit: unitId }: { level: Cefr; unit: string }) {
         <h3 style={{ fontWeight: 900, marginBottom: 12 }}>{q.prompt}</h3>
         <div className="opt-grid">
           {q.options.map((o, oi) => (
-            <button key={oi} disabled={checked && oi !== sel} onClick={() => { if (!checked) setSel(oi); }}
-              onDoubleClick={() => { if (checked) next(); else { setSel(oi); check(oi); } }}
+            <button key={oi} disabled={checked && oi !== sel} onClick={(e) => {
+              if (e.detail > 1) return; // the second click of a double-click belongs to onDoubleClick
+              if (checked) return next();
+              picked.current = sel;
+              setSel(oi);
+            }} onDoubleClick={() => { if (finePointer() && !checked && picked.current === oi) check(); }}
               className={`opt ${checked ? (oi === q.answer ? "correct" : oi === sel ? "wrong" : "") : oi === sel ? "sel" : ""}`}>
               <span className="opt-num">{oi + 1}</span><span lang={lang}>{o}</span>
             </button>
           ))}
         </div>
+        {!checked && <p className="muted small dblclick-hint">{t("lesson.dblClickHint")}</p>}
       </div>}
       <div ref={endRef} />
     </>;
     footer = q && !checked
-      ? <><span className="muted small">{t("stories.tapHint")}</span><button className="btn btn-primary" disabled={sel === null} onClick={() => check()}>{t("lesson.check")}</button></>
+      ? <><span className="muted small">{t("stories.tapHint")}</span><button className="btn btn-primary" disabled={sel === null} onClick={check}>{t("lesson.check")}</button></>
       : <>
         {q ? <span className={`fb ${sel === q.answer ? "good" : "bad"}`}>{t(sel === q.answer ? "lesson.correct" : "lesson.wrong")}</span> : <span className="muted small">{t("stories.tapHint")}</span>}
         <button className="btn btn-primary" onClick={next}>{t(p + 1 < seq.length ? "lesson.continue" : "lesson.finish")}</button>

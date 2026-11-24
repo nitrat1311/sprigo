@@ -660,7 +660,8 @@
     "heardNothing": "Non ho capito — riprova parlando un po’ più forte.",
     "cantSpeak": "Non puoi parlare ora",
     "unitPassed": "Unità superata!",
-    "listenSlow": "Ascolta lentamente"
+    "listenSlow": "Ascolta lentamente",
+    "dblClickHint": "Fai doppio clic su una risposta selezionata per controllarla."
   },
   "profiles": {
     "saved": "Profilo salvato",
