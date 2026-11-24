@@ -27,6 +27,7 @@ import { achievements, nearest, roman, type Achievement } from "../achievements"
 import { levelsOf, parseStoryId, parseUnitRef, storyId, type Cefr } from "../course";
 import { BOOKMARKS_CHANGED, BookmarkButton } from "../BookmarkButton";
 import { GuideSheet, jumpTo } from "./Learn";
+import { TutorsSheet } from "./Tutors";
 
 const iconBox = (bg: string, fg: string, size = 48, radius: number | string = 12): React.CSSProperties => ({
   width: size, height: size, flex: "none", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: radius, background: bg, color: fg,
@@ -663,6 +664,11 @@ export function Roleplay() {
         <span style={iconBox("var(--sky)", "var(--blue)")}><Icon name="users" /></span>
         <span className="od-field od-fill"><b>{t("roleplay.rehearse")}</b><span className="muted small">{t("roleplay.rehearseDesc")}</span></span>
         <span className="btn btn-blue" style={{ pointerEvents: "none" }}>{t("roleplay.start")}</span>
+      </button>
+      <button className="card row-item" style={{ marginBottom: 18, width: "100%" }} onClick={() => openSheet(<TutorsSheet />)}>
+        <span style={iconBox("var(--purple-tint)", "var(--purple-dark)")}><Icon name="user" /></span>
+        <span className="od-field od-fill"><b>{t("tutorManage.title")}</b><span className="muted small">{t("tutorManage.cardDesc")}</span></span>
+        <span className="btn btn-ghost" style={{ pointerEvents: "none" }}>{t("tutorManage.manage")}</span>
       </button>
       <div className="rp-grid">
         {castOf(tutors).map(({ id, ch, tutor }) => (

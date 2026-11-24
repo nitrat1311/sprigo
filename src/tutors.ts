@@ -7,6 +7,15 @@ import { CHARACTERS, type BuiltinId, type Character, type FaceSpec } from "./cha
 export const TUTOR_SOURCES = ["local", "imported"] as const;
 export type TutorSource = (typeof TUTOR_SOURCES)[number];
 
+/** Kokoro-82M's English voices, for the tutor form's picker. A package may still name any `[ab][fm]_…` id. */
+// ponytail: hardcoded Kokoro-82M English voice ids; read them from kokoro-js metadata if more languages arrive.
+export const KOKORO_VOICES = [
+  "af_alloy", "af_aoede", "af_bella", "af_heart", "af_jessica", "af_kore", "af_nicole", "af_nova", "af_river", "af_sarah", "af_sky",
+  "am_adam", "am_echo", "am_eric", "am_fenrir", "am_liam", "am_michael", "am_onyx", "am_puck", "am_santa",
+  "bf_alice", "bf_emma", "bf_isabella", "bf_lily",
+  "bm_daniel", "bm_fable", "bm_george", "bm_lewis",
+] as const;
+
 export const TUTOR_NAME_MAX = 40;
 export const TUTOR_PERSONA_MAX = 1500;
 export const TUTOR_TOPIC_GOAL_MAX = 200;
