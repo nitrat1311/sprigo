@@ -157,11 +157,15 @@ test("a double-click keeps wrong-answer feedback available before a click advanc
 
 test("a story opens from Stories, marks known words and can be finished", async ({ page }) => {
   const story = await openStory(page);
+  const option = story.locator(".opt", { hasText: /^\d?hola$/ });
+  await story.getByRole("button", { name: "Continue", exact: true }).click(); // the mock's question follows the first line
+  await expect(option).toBeVisible();
+  await option.click();
+  await story.getByRole("button", { name: "Check" }).click();
+  await expect(story.getByText("Correct!")).toBeVisible();
   for (let i = 0; !(await story.getByText("Story complete!").isVisible()); i++) {
     expect(i).toBeLessThan(40);
-    const opt = story.locator(".opt", { hasText: /^\d?hola$/ });
-    if (await opt.isVisible() && await opt.isEnabled()) { await opt.click(); await story.getByRole("button", { name: "Check" }).click(); }
-    else await story.getByRole("button", { name: /^(Continue|Finish)$/ }).click();
+    await story.getByRole("button", { name: /^(Continue|Finish)$/ }).click();
   }
   await story.getByRole("button", { name: "Done" }).click();
   await expect(page.getByRole("button", { name: /Greetings & Introductions.*Read again/ })).toBeVisible(); // remembered
@@ -170,10 +174,8 @@ test("a story opens from Stories, marks known words and can be finished", async 
 test("a story answer checks with a selected double-click and advances on a click", async ({ page }) => {
   const story = await openStory(page);
   const option = story.locator(".opt", { hasText: /^\d?hola$/ });
-  for (let i = 0; !(await option.isVisible()); i++) {
-    expect(i).toBeLessThan(40);
-    await story.getByRole("button", { name: /^(Continue|Finish)$/ }).click();
-  }
+  await story.getByRole("button", { name: "Continue", exact: true }).click(); // the mock's question follows the first line
+  await expect(option).toBeVisible();
   await option.click(); // select it first: the double-click gesture only checks a selected answer
   await expect(story.getByText("Correct!")).toBeHidden();
   await option.dblclick();

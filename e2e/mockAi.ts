@@ -23,6 +23,7 @@ const jsonType = (v: unknown) => Array.isArray(v) ? "array" : typeof v === "numb
 
 function fill(s: any, key = ""): unknown {
   if (key in FIELDS && jsonType(FIELDS[key]) === s.type) return FIELDS[key]; // `answer` is a string in translate, an index in stories
+  if (key === "answer" && s.type === "integer") return 0; // stories: a 0-based index; z.int()'s min would point past the options
   if (s.anyOf) return fill(s.anyOf[0], key);
   switch (s.type) {
     case "object": return Object.fromEntries(Object.entries(s.properties ?? {}).map(([k, v]) => [k, fill(v, k)]));
