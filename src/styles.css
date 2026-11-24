@@ -11,6 +11,7 @@
   .od-stat, .od-field, .od-cell { --od-gap: 2px; display: grid; gap: var(--od-gap); } /* own default: a row's gap must not leak into its title/description */
   :where(.od-stat,.od-field,.od-cell) > :where(*) { display: block; }
   datalist { display: none; } /* the rule above would draw it as an empty box */
+  [hidden] { display: none !important; } /* and a hidden file input as a native picker */
   .od-tile { display: grid; grid-template-rows: auto 1fr; }
   :where(.od-tile) > :where(*) { display: block; }
   .od-media { display: block; width: 100%; height: auto; aspect-ratio: var(--od-ratio, auto); }

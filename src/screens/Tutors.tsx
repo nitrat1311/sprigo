@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { Icon } from "../icons";
 import { useApp } from "../store";
 import * as db from "../db";
+import { loadKokoro, sayWithKokoro } from "../tts";
 import { Face } from "../face/Face";
 import {
   KOKORO_VOICES, TUTOR_AVATAR_MAX, TUTOR_NAME_MAX, TUTOR_PERSONA_MAX, TUTOR_SCENE_MAX, TUTOR_TOPIC_GOAL_MAX, TUTOR_TOPICS_MAX,
@@ -13,6 +14,8 @@ import {
 
 /** A package file is read into memory before JSON.parse, so keep a learner from picking a huge unrelated file. */
 const IMPORT_MAX = 4 * 1024 * 1024;
+/** Kokoro speaks English only: the voice preview is a short English line whatever course is open. */
+const VOICE_SAMPLE = "Hello! Nice to meet you. How are you today?";
 const gap = (g = "14px") => ({ "--od-gap": g }) as React.CSSProperties;
 
 type TopicRow = { id: string | null; goal: string };
@@ -63,7 +66,7 @@ function ImageField({ label, max, value, onChange, onProblem }: {
   return (
     <div className="od-field" style={gap("6px")}>
       <b>{label}</b>
-      <input ref={pick} className="input" type="file" accept="image/png,image/webp" aria-label={label} hidden
+      <input ref={pick} type="file" accept="image/png,image/webp" aria-label={label} hidden
         onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ""; if (f) file(f); }} />
       <span className="od-row" style={gap("8px")}>
         <button type="button" className="btn btn-ghost" aria-label={`${label}: ${t(value ? "tutorManage.changeImage" : "tutorManage.chooseImage")}`}
@@ -95,12 +98,30 @@ function TutorForm({ initial }: { initial?: db.Tutor }) {
   const [scene, setScene] = useState<string | undefined>(initial?.scene);
   const [errors, setErrors] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
+  const [preview, setPreview] = useState<number | null>(null); // the Kokoro model downloading for the voice preview
+  const [testing, setTesting] = useState(false);
   const voices = KOKORO_VOICES.filter((v) => v[1] === gender);
   const ownVoice = !voices.includes(voice as (typeof KOKORO_VOICES)[number]) && voice[1] === gender;
 
   const changeGender = (g: "f" | "m") => {
     setGender(g);
     if (voice[1] !== g) setVoice(g === "f" ? "af_heart" : "am_michael");
+  };
+  // The preview must play the selected Kokoro voice even when the device speaks with another provider or accent.
+  const listen = async () => {
+    if (preview !== null || testing) return;
+    setPreview(0);
+    try {
+      await loadKokoro(setPreview); // a first use downloads the model, as picking Kokoro in Settings does
+      setPreview(null);
+      setTesting(true);
+      await sayWithKokoro(VOICE_SAMPLE, voice);
+    } catch (e) {
+      toast(t("voice.loadFailed", { name: "Kokoro", error: (e as Error).message }));
+    } finally {
+      setPreview(null);
+      setTesting(false);
+    }
   };
   const setRow = (i: number, goal: string) => setRows((rs) => rs.map((r, j) => (j === i ? { ...r, goal } : r)));
   const save = async () => {
@@ -149,13 +170,21 @@ function TutorForm({ initial }: { initial?: db.Tutor }) {
           <input className="input" type="color" value={color} onChange={(e) => setColor(e.target.value)} style={{ width: 64, padding: 4 }} />
         </label>
       </div>
-      <label className="od-field" style={gap("6px")}>
+      <div className="od-field" style={gap("6px")}>
         <b>{t("tutorManage.voice")}</b>
-        <select className="select" value={voice} onChange={(e) => setVoice(e.target.value)}>
-          {voices.map((v) => <option key={v} value={v}>{v}</option>)}
-          {ownVoice && <option value={voice}>{voice}</option>}
-        </select>
-      </label>
+        <div className="od-row" style={gap("8px")}>
+          <select className="select od-fill" aria-label={t("tutorManage.voice")} value={voice} onChange={(e) => setVoice(e.target.value)}>
+            {voices.map((v) => <option key={v} value={v}>{v}</option>)}
+            {ownVoice && <option value={voice}>{voice}</option>}
+          </select>
+          {!db.isCompanion && ( // Kokoro runs out of memory in the phone's Safari, so Settings does not offer it there either
+            <button type="button" className="btn btn-ghost" disabled={preview !== null || testing} aria-busy={preview !== null || testing} onClick={listen}>
+              {t("voice.listen")}
+            </button>
+          )}
+        </div>
+        {preview !== null && <span className="muted small" role="status">{t("voice.downloading", { pct: Math.round(preview * 100) })}</span>}
+      </div>
       <label className="od-field" style={gap("6px")}>
         <b>{t("tutorManage.persona")}</b>
         <textarea className="input" value={persona} maxLength={TUTOR_PERSONA_MAX} rows={5} style={{ minHeight: 110, resize: "vertical" }}

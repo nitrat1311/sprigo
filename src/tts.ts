@@ -298,6 +298,13 @@ export async function sayWithEleven(text: string, lang: string, key: string, voi
   await viaBytes(`test:${voice}\n${text}`, elevenLine(text, lang, voice, key), seq, () => {});
 }
 
+/** The tutor form's preview: this Kokoro voice whatever the device's provider or accent is; no fallback, so a missing model throws. */
+export async function sayWithKokoro(text: string, voice: string) {
+  const speed = await ttsSpeed();
+  stopSpeaking();
+  await viaWorker("kokoro", text, voice, seq, () => {}, speed);
+}
+
 // ---- Which engine spoke, and one notice per session when the chosen one fell back to the system voice ----
 let lastEngine: TtsProvider | null = null; // null: nothing spoken yet
 export const speakingWith = () => lastEngine;
