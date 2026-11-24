@@ -1,6 +1,6 @@
 // Custom tutor management (#167 M4): write, edit, import and delete the tutors that sit beside the built-in cast.
 // Opened from Roleplay; every change goes through db + store.reloadTutors so the pickers see it at once.
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Icon } from "../icons";
 import { useApp } from "../store";
@@ -9,7 +9,7 @@ import { loadKokoro, sayWithKokoro } from "../tts";
 import { Face } from "../face/Face";
 import {
   KOKORO_VOICES, TUTOR_AVATAR_MAX, TUTOR_NAME_MAX, TUTOR_PERSONA_MAX, TUTOR_SCENE_MAX, TUTOR_TOPIC_GOAL_MAX, TUTOR_TOPICS_MAX,
-  parseTutorPackage, toCharacter, TUTOR_FACE, type TutorPackage,
+  parseTutorPackage, toCharacter, tutorFileName, tutorPackageOf, TUTOR_FACE, type TutorPackage,
 } from "../tutors";
 
 /** A package file is read into memory before JSON.parse, so keep a learner from picking a huge unrelated file. */
@@ -300,6 +300,55 @@ function ImportErrors({ errors }: { errors: string[] }) {
   );
 }
 
+/** The row's ⋯ menu: export, edit or delete. Same menu markup and styles as the profile gate. */
+function TutorMenu({ tutor }: { tutor: db.Tutor }) {
+  const { t } = useTranslation();
+  const { openSheet, toast } = useApp();
+  const [open, setOpen] = useState(false);
+  const wrap = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!open) return;
+    const down = (e: MouseEvent) => { if (!wrap.current?.contains(e.target as Node)) setOpen(false); };
+    document.addEventListener("mousedown", down);
+    return () => document.removeEventListener("mousedown", down);
+  }, [open]);
+  const exportTutor = async () => {
+    setOpen(false);
+    const json = JSON.stringify(tutorPackageOf(tutor), null, 2), file = tutorFileName(tutor.name);
+    try {
+      if (db.isTauri) {
+        const to = await (await import("@tauri-apps/plugin-dialog")).save({ defaultPath: file, filters: [{ name: "JSON", extensions: ["json"] }] });
+        if (!to) return;
+        await (await import("@tauri-apps/api/core")).invoke("write_text", { path: to, text: json });
+      } else {
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(new Blob([json], { type: "application/json" }));
+        a.download = file;
+        a.click();
+        URL.revokeObjectURL(a.href);
+      }
+      toast(t("tutorManage.exported", { name: tutor.name }));
+    } catch (e) {
+      console.error("export tutor", e);
+      toast(t("tutorManage.exportFailed"));
+    }
+  };
+  return (
+    <div className="menu-wrap" ref={wrap} onBlur={(e) => wrap.current?.contains(e.relatedTarget) || setOpen(false)}>
+      <button className="btn btn-ghost" aria-label={t("tutorManage.more", { name: tutor.name })} aria-haspopup="menu" aria-expanded={open}
+        onClick={() => setOpen((o) => !o)}><Icon name="dots" /></button>
+      {open && (
+        <div className="menu" role="menu" onMouseDown={(e) => e.preventDefault()}
+          onKeyDown={(e) => { if (e.key === "Escape") { e.stopPropagation(); setOpen(false); } }}>
+          <button role="menuitem" className="menu-item" autoFocus onClick={exportTutor}>{t("tutorManage.export")}</button>
+          <button role="menuitem" className="menu-item" onClick={() => { setOpen(false); openSheet(<TutorForm initial={tutor} />); }}>{t("tutorManage.edit")}</button>
+          <button role="menuitem" className="menu-item danger" onClick={() => { setOpen(false); openSheet(<DeleteTutorSheet tutor={tutor} />); }}>{t("tutorManage.delete")}</button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 /** The tutor list: create, import, edit and delete; the same sheet returns after each change. */
 export function TutorsSheet() {
   const { t } = useTranslation();
@@ -318,23 +367,15 @@ export function TutorsSheet() {
       <p className="small" style={{ margin: 0 }}>{t("tutorManage.desc")}</p>
       {!tutors.length && <p className="muted small" style={{ margin: 0 }}>{t("tutorManage.empty")}</p>}
       {tutors.map((tutor) => (
-        <div key={tutor.id} className="card od-stack" style={gap("8px")}>
-          <div className="od-row" style={gap("10px")}>
-            <Face spec={tutor.face ?? TUTOR_FACE} color={tutor.color} size={44} label={tutor.name} image={tutor.avatar} />
-            <span className="od-field od-fill">
-              <b>{tutor.name}</b>
-              <span className="muted small">{tutor.topics[0]?.goal}</span>
-            </span>
-            {tutor.source === "imported" && <span className="soon-tag">{t("tutorManage.imported")}</span>}
-          </div>
-          <div className="od-row" style={gap("8px")}>
-            <button className="btn btn-ghost" aria-label={t("tutorManage.editName", { name: tutor.name })} onClick={() => openSheet(<TutorForm initial={tutor} />)}>
-              <Icon name="pen" /> {t("tutorManage.edit")}
-            </button>
-            <button className="btn btn-ghost" aria-label={t("tutorManage.deleteName", { name: tutor.name })} onClick={() => openSheet(<DeleteTutorSheet tutor={tutor} />)}>
-              <Icon name="trash" /> {t("tutorManage.delete")}
-            </button>
-          </div>
+        <div key={tutor.id} className="card od-row" style={{ ...gap("10px"), padding: "8px 12px" }}>
+          <Face spec={tutor.face ?? TUTOR_FACE} color={tutor.color} size={36} label={tutor.name} image={tutor.avatar} />
+          <span className="od-fill" title={`${tutor.name}${tutor.topics[0] ? ` · ${tutor.topics[0].goal}` : ""}`}
+            style={{ minWidth: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+            <b>{tutor.name}</b>
+            {tutor.topics[0] && <span className="muted small"> · {tutor.topics[0].goal}</span>}
+          </span>
+          {tutor.source === "imported" && <span className="soon-tag" style={{ flexShrink: 0 }}>{t("tutorManage.imported")}</span>}
+          <TutorMenu tutor={tutor} />
         </div>
       ))}
       <button className="btn btn-primary btn-block" onClick={() => openSheet(<TutorForm />)}>+ {t("tutorManage.create")}</button>

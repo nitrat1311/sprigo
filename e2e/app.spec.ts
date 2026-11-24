@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { readFileSync } from "node:fs";
 import { ANSWER, BANK, FORM, PAIRS, mockOllama } from "./mockAi";
 
 test.beforeEach(async ({ page }) => { await mockOllama(page); });
@@ -248,15 +249,51 @@ test("a tutor package is imported, edited and deleted from the tutor list", asyn
   await expect(list.getByText("Boris", { exact: true })).toBeVisible();
   await expect(list.getByText("Imported")).toBeVisible();
 
-  await list.getByRole("button", { name: "Edit Boris" }).click();
+  await list.getByRole("button", { name: "Options for Boris" }).click();
+  await list.getByRole("menuitem", { name: "Edit" }).click();
   const form = page.getByRole("dialog", { name: "Edit tutor" });
   await form.getByLabel("Name").fill("Boris Petrov");
   await form.getByRole("button", { name: "Save tutor" }).click();
   await expect(list.getByText("Boris Petrov", { exact: true })).toBeVisible();
 
-  await list.getByRole("button", { name: "Delete Boris Petrov" }).click();
+  await list.getByRole("button", { name: "Options for Boris Petrov" }).click();
+  await list.getByRole("menuitem", { name: "Delete" }).click();
   await page.getByRole("dialog", { name: "Delete Boris Petrov?" }).getByRole("button", { name: "Delete", exact: true }).click();
   await expect(list.getByText("No tutors of your own yet.")).toBeVisible();
+});
+
+test("a tutor exports as a package the import flow takes again", async ({ page }) => {
+  await onboard(page);
+  await page.getByRole("button", { name: "Roleplay", exact: true }).click();
+  await page.getByRole("button", { name: /My tutors/ }).click();
+  const list = page.getByRole("dialog", { name: "My tutors" });
+  await list.getByRole("button", { name: "Import a tutor" }).click();
+  await page.getByRole("dialog").locator('input[type="file"]').setInputFiles("e2e/fixtures/boris-tutor.json");
+  const imported = page.getByRole("dialog", { name: "Import a tutor" });
+  await imported.getByLabel("I am responsible for this content").check();
+  await imported.getByRole("button", { name: "Import tutor" }).click();
+  await expect(list.getByText("Boris", { exact: true })).toBeVisible();
+
+  const more = list.getByRole("button", { name: "Options for Boris" });
+  await more.click();
+  await expect(more).toHaveAttribute("aria-expanded", "true");
+  const download = page.waitForEvent("download");
+  await list.getByRole("menuitem", { name: "Export" }).click();
+  const file = await download;
+  expect(file.suggestedFilename()).toBe("boris.sprigo-tutor.json");
+  const pkg = JSON.parse(readFileSync((await file.path())!, "utf8"));
+  expect(pkg).toMatchObject({ name: "Boris", gender: "m", kokoroVoice: "am_michael" });
+  for (const rowOnly of ["id", "profile_id", "source", "created_at"]) expect(pkg).not.toHaveProperty(rowOnly);
+  await expect(page.getByText("Boris exported.")).toBeVisible();
+
+  await list.getByRole("button", { name: "Import a tutor" }).click();
+  await page.getByRole("dialog").locator('input[type="file"]').setInputFiles({
+    name: "boris.sprigo-tutor.json", mimeType: "application/json", buffer: Buffer.from(JSON.stringify(pkg)),
+  });
+  const again = page.getByRole("dialog", { name: "Import a tutor" });
+  await again.getByLabel("I am responsible for this content").check();
+  await again.getByRole("button", { name: "Import tutor" }).click();
+  await expect(list.getByText("Boris", { exact: true })).toHaveCount(2);
 });
 
 test("readable font and text size apply at once and stay after a reload", async ({ page }) => {

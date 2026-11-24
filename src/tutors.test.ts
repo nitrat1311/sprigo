@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { CHARACTERS } from "./characters.ts";
-import { isTutorId, newTutorId, parseTutorPackage, TUTOR_AVATAR_MAX, TUTOR_FACE, TUTOR_JSON_SCHEMA, TUTOR_NAME_MAX, TUTOR_PERSONA_MAX, TUTOR_SCENE_MAX, TUTOR_TOPIC_GOAL_MAX, characterOf, goalInPrompt, inlineName, nameInPrompt, personaInPrompt, remembersLearner, sanitizeTutorText, toCharacter, tutorData, type CustomTutor } from "./tutors.ts";
+import { isTutorId, newTutorId, parseTutorPackage, tutorFileName, tutorPackageOf, TUTOR_AVATAR_MAX, TUTOR_FACE, TUTOR_JSON_SCHEMA, TUTOR_NAME_MAX, TUTOR_PERSONA_MAX, TUTOR_SCENE_MAX, TUTOR_TOPIC_GOAL_MAX, characterOf, goalInPrompt, inlineName, nameInPrompt, personaInPrompt, remembersLearner, sanitizeTutorText, toCharacter, tutorData, type CustomTutor } from "./tutors.ts";
 
 const b64 = (bytes: number[]) => Buffer.from(bytes).toString("base64");
 const PNG = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 13];
@@ -168,4 +168,20 @@ test("built-in cast members enter a prompt byte for byte as before", () => {
     assert.equal(inlineName(ch), ch.name, ch.name);
     assert.equal(goalInPrompt(ch, "check in and ask for a room"), "check in and ask for a room", ch.name);
   }
+});
+
+test("a stored row exports as a package that parses again, without row-only fields", () => {
+  const row = { ...valid, id: "custom:7f1c", profile_id: 3, source: "imported", created_at: "2026-01-02T03:04:05Z", avatar: png(), scene: webp() };
+  const pkg = tutorPackageOf(row);
+  assert.deepEqual(pkg, { ...valid, avatar: png(), scene: webp() });
+  const r = parseTutorPackage(pkg);
+  assert.ok(r.ok, "the exported file is a package the import flow takes");
+  assert.deepEqual(r.tutor, pkg);
+});
+
+test("an exported file is named from the slugified tutor name", () => {
+  assert.equal(tutorFileName("Ada"), "ada.sprigo-tutor.json");
+  assert.equal(tutorFileName("Boris Petrov"), "boris-petrov.sprigo-tutor.json");
+  assert.equal(tutorFileName("  Zoë  "), "zoe.sprigo-tutor.json");
+  assert.equal(tutorFileName("李雷"), "tutor.sprigo-tutor.json");
 });

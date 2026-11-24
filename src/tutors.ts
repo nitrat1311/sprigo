@@ -123,6 +123,22 @@ export function parseTutorPackage(input: unknown): TutorParse {
 /** For the template repo: what a `sprigo-tutor.json` may hold. Cross-field rules (voice, topic ids) are not JSON Schema's to express. */
 export const TUTOR_JSON_SCHEMA = z.toJSONSchema(tutorPackage);
 
+/** A stored tutor as the file a learner shares: only the package fields, never the row's id, profile, source or date. */
+export function tutorPackageOf(t: TutorPackage): TutorPackage {
+  const { name, gender, color, kokoroVoice, persona, face, topics, avatar, scene } = t;
+  return {
+    name, gender, color, kokoroVoice, persona, topics: topics.map(({ id, goal }) => ({ id, goal })),
+    ...(face ? { face } : {}), ...(avatar ? { avatar } : {}), ...(scene ? { scene } : {}),
+  };
+}
+
+/** `ada.sprigo-tutor.json`: an ASCII slug of the name, safe on every filesystem. */
+export function tutorFileName(name: string): string {
+  const slug = name.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40).replace(/-+$/g, "");
+  return `${slug || "tutor"}.sprigo-tutor.json`;
+}
+
 // ---- Custom tutors as cast members ----
 
 /** A saved custom tutor: the package plus its row id. src/db.ts adds the profile, source and timestamp. */
