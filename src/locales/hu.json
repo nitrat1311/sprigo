@@ -84,7 +84,9 @@
     "legendTicket_one": "{{count}} jegy",
     "legendTicket_other": "{{count}} jegy",
     "skipUnit": "Egység teljesítése teszttel ({{score}}%)",
-    "toTop": "Az elejére",
+    "summit": "Csúcs: {{level}}",
+    "summitEnd": "Csúcs",
+    "lockedDesc": "Az előző leckék teljesítésével nyílik meg.",
     "toHere": "Vissza a leckémhez"
   },
   "practice": {

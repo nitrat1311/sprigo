@@ -78,7 +78,9 @@
     "legendTicket_many": "{{count}} biglietti",
     "legendTicket_other": "{{count}} biglietti",
     "skipUnit": "Superare questa unità con un test (%{{score}})",
-    "toTop": "All'alto",
+    "summit": "Vetta: {{level}}",
+    "summitEnd": "Vetta",
+    "lockedDesc": "Completa le lezioni precedenti per sbloccare questa.",
     "toHere": "Torna alla mia lezione"
   },
   "practice": {

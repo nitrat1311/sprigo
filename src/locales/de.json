@@ -84,7 +84,9 @@
     "legendTicket_one": "{{count}} Ticket",
     "legendTicket_other": "{{count}} Tickets",
     "skipUnit": "Einheit per Test überspringen ({{score}} %)",
-    "toTop": "Nach oben",
+    "summit": "Gipfel: {{level}}",
+    "summitEnd": "Gipfel",
+    "lockedDesc": "Schließe die vorigen Lektionen ab, um diese freizuschalten.",
     "toHere": "Zu meiner Lektion"
   },
   "practice": {

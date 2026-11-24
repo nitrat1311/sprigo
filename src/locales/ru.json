@@ -90,7 +90,9 @@
     "legendTicket_many": "{{count}} билетов",
     "legendTicket_other": "{{count}} билета",
     "skipUnit": "Пройти раздел с тестом ({{score}} %)",
-    "toTop": "Наверх",
+    "summit": "Вершина: {{level}}",
+    "summitEnd": "Вершина",
+    "lockedDesc": "Пройди предыдущие уроки, чтобы открыть этот.",
     "toHere": "К моему уроку"
   },
   "practice": {

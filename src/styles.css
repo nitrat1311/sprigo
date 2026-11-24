@@ -187,7 +187,7 @@ svg{display:block}
 /* Biome (src/biomes.ts): tint behind the path, ground scene under unit 1, unit heads in the biome colour. */
 .path-stack{background:var(--bt);border-radius:var(--r-sheet);overflow:clip;padding:0 var(--s-4)}
 html[data-theme="dark"] .path-stack{background:var(--btd)}
-.biome-ground{margin:0 calc(-1 * var(--s-4));line-height:0}
+.biome-ground{margin:0 calc(-1 * var(--s-4));line-height:0;height:72px;overflow:hidden}
 .biome-ground svg,.biome-band svg,.biome-thumb svg{display:block;width:100%;height:100%}
 html[data-theme="dark"] .biome-scene{filter:brightness(.62) saturate(.85)}
 html[data-theme="dark"] .biome-scene .sky{fill:transparent}
@@ -199,24 +199,41 @@ html[data-theme="dark"] .biome-scene .sky{fill:transparent}
 .biome-band{height:70px;margin:0 calc(-1 * var(--s-5)) var(--s-4)}
 .biome-thumb{flex:none;width:56px;height:40px;border-radius:var(--r-sm);overflow:hidden}
 .unit-head{
-  position:sticky;bottom:12px;z-index:5;overflow:hidden;
+  position:relative;z-index:5;overflow:hidden;
   background:var(--green);color:var(--on-accent);border-radius:var(--r-card);padding:var(--s-5);margin:var(--s-3) 0 var(--s-6);
   box-shadow:0 var(--edge-2) 0 var(--green-dark);
 }
+/* Only the head of the unit holding the viewport's bottom edge may pin (usePinnedHeads, Learn.tsx); left to
+   CSS alone every unit still reaching below the fold drags its head up to the same spot over the right one. */
+.unit[data-pinned] > .unit-head{position:sticky;bottom:12px}
+/* The summit at the top of the path (column-reverse, so the last child in DOM is the top). */
+.summit{
+  display:flex;flex-direction:column;align-items:center;gap:var(--s-2);padding:var(--s-5) 0 var(--s-3);
+  color:var(--text-muted);font-size:var(--fs-13);font-weight:800;letter-spacing:var(--tr-wide);text-transform:uppercase;text-align:center;
+}
+.summit .ic svg{opacity:.8}
 .unit-head .uh-kicker{font-size:var(--fs-12);font-weight:800;letter-spacing:var(--tr-wide);text-transform:uppercase}
 .unit-head h2{font-size:var(--fs-24);font-weight:900}
 /* Units not reached yet: faded, so the way ahead reads as "later". */
-.unit.later .unit-head,.unit.later .path{opacity:.5;filter:saturate(.35)}
+.unit.later .path{opacity:.5;filter:saturate(.35)}
+/* Head stays opaque: it pins over the path, a see-through head lets node labels bleed through. */
+.unit.later .unit-head{filter:saturate(.35)}
 .unit-skip{position:relative;z-index:1;display:inline-flex;align-items:center;gap:var(--s-3);margin-top:var(--s-3);padding:var(--s-3) var(--s-4);border-radius:var(--r-pill);background:rgb(0 0 0 / .18);color:inherit;font:inherit;font-size:var(--fs-13);font-weight:800}
 .unit-skip:hover{background:rgb(0 0 0 / .28)}
 .unit-skip svg{width:16px;height:16px}
-.scroll-btns{position:fixed;right:max(16px,calc(50vw - 640px));bottom:24px;z-index:20;display:flex;flex-direction:column;gap:var(--s-3)}
+/* Bottom-right of the content column, never over the sidebar or the rail. */
+.scroll-btns{position:fixed;right:max(16px,calc((100vw - var(--sidebar-w) - var(--center-w)) / 2));bottom:128px;z-index:20;display:flex;flex-direction:column;gap:var(--s-3)} /* above a pinned unit head (bottom 12 + ~96 tall) */
+@media(min-width:1100px){
+  /* Right edge of the .center column: .main-inner inset + rail + gap, or the band edge when it is clamped. */
+  .scroll-btns{--sb-edge:calc(var(--rail-w) + var(--s-7) + var(--s-5));
+    right:max(var(--sb-edge),calc(50vw - (var(--sidebar-w) + var(--center-w) + var(--rail-w) + 64px) / 2 + var(--sb-edge)))}
+}
 .scroll-btn{width:48px;height:48px;border-radius:var(--r-pill);display:flex;align-items:center;justify-content:center;background:var(--card);color:var(--blue);border:2px solid var(--border);box-shadow:0 var(--edge-1) 0 var(--border)}
 .scroll-btn > :first-child{transform:rotate(180deg)}
 .scroll-btn.here{color:var(--gold-dark)}
 .scroll-btn.here > :first-child{transform:none}
 .scroll-btn[data-tip]:hover::after{left:auto;right:calc(100% + 8px);bottom:50%;transform:translateY(50%)}
-@media (max-width:767px){.scroll-btns{bottom:96px}}
+@media (max-width:767px){.scroll-btns{bottom:200px}}
 .unit-head .uh-row{display:flex;align-items:center;justify-content:space-between;gap:var(--s-4)}
 .unit-head .guidebook{
   display:flex;align-items:center;gap:var(--s-3);background:rgba(255,255,255,.18);
@@ -247,10 +264,15 @@ html[data-theme="dark"] .biome-scene .sky{fill:transparent}
 .node.locked .node-btn{--fc:var(--border);--sh:var(--locked-shadow);color:var(--text-faint);cursor:not-allowed}
 .start-tag{
   position:absolute;top:-30px;background:var(--card);border:2px solid var(--border);border-radius:var(--r-sm);
-  padding:var(--s-2) var(--s-3);font-size:var(--fs-12);font-weight:900;color:var(--green-dark);letter-spacing:var(--tr-wide);text-transform:uppercase;
+  padding:var(--s-2) var(--s-3);font-size:var(--fs-13);font-weight:900;color:var(--green-dark);letter-spacing:var(--tr-wide);text-transform:uppercase;
   animation:bob 1.6s ease-in-out infinite;white-space:nowrap;
 }
-.node-label{font-size:var(--fs-13);font-weight:800;color:var(--text-muted);margin-top:var(--s-2);text-align:center;max-width:110px}
+.node-label{
+  font-size:var(--fs-13);font-weight:800;color:var(--text-muted);margin-top:var(--s-2);text-align:center;max-width:132px;
+  /* A chip in the biome tint keeps the dotted connector from crossing the text. */
+  background:var(--bt,var(--bg));padding:var(--s-1) var(--s-3);border-radius:var(--r-pill);position:relative;z-index:1;
+}
+html[data-theme="dark"] .node-label{background:var(--btd,var(--bg))}
 .node.locked .node-label{color:var(--text-muted)} /* the grey pebble marks the lock; the label still has to pass 4.5:1 on every biome tint */
 @keyframes pulse{0%,100%{outline-width:4px}50%{outline-width:8px}}
 @keyframes ring{0%,100%{transform:scale(1.04)}50%{transform:scale(1.12)}}
@@ -433,7 +455,7 @@ button[aria-busy="true"]{cursor:progress}
   .more-menu{position:fixed;right:8px;bottom:calc(72px + env(safe-area-inset-bottom));z-index:51;min-width:210px;display:flex;flex-direction:column;gap:var(--s-1);padding:var(--s-3);border:2px solid var(--border);border-radius:var(--r);background:var(--card);box-shadow:var(--elev);animation:more-up .15s ease-out}
   @keyframes more-up{from{opacity:0;transform:translateY(8px)}}
   .center{padding-bottom:140px}
-  .unit-head{bottom:calc(76px + env(safe-area-inset-bottom))}
+  .unit[data-pinned] > .unit-head{bottom:calc(76px + env(safe-area-inset-bottom))}
   .ex-title{font-size:var(--fs-20)}
 }
 /* One iteration too: an infinite animation at .01ms loops thousands of times a second and flickers
