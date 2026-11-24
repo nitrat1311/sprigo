@@ -180,6 +180,35 @@ async fn transcribe(app: tauri::AppHandle, samples: Vec<f32>, lang: String) -> R
         .map_err(|e| e.to_string())?
 }
 
+/// Silero speech detector (whisper.cpp's ggml port, ~0.9 MB), bundled like the base model.
+const VAD_MODEL: &str = "resources/ggml-silero-v5.1.2.bin";
+static VAD: std::sync::Mutex<Option<whisper_rs::WhisperVadContext>> = std::sync::Mutex::new(None);
+
+/// Where speech starts and ends in `samples` (mono f32 at 16 kHz), in seconds: from the first detected segment's start
+/// to the last one's end. None when nothing sounds like speech; an error when the detector model is missing.
+#[tauri::command]
+async fn speech_span(app: tauri::AppHandle, samples: Vec<f32>) -> Result<Option<(f32, f32)>, String> {
+    let model = app.path().resolve(VAD_MODEL, tauri::path::BaseDirectory::Resource).ok().filter(|p| p.exists()).ok_or("Speech detector is missing from this build")?;
+    tauri::async_runtime::spawn_blocking(move || vad_span(&model, &samples))
+        .await
+        .map_err(|e| e.to_string())?
+}
+
+fn vad_span(model: &std::path::Path, samples: &[f32]) -> Result<Option<(f32, f32)>, String> {
+    let mut guard = VAD.lock().map_err(|e| e.to_string())?;
+    if guard.is_none() {
+        let path = model.to_str().ok_or("bad model path")?;
+        // One thread: with the default four, the detector never finished on speech on Windows (x64, whisper-rs 0.16).
+        // The model is 0.9 MB; a 7 s take takes ~40 ms on one thread.
+        let mut params = whisper_rs::WhisperVadContextParams::default();
+        params.set_n_threads(1);
+        *guard = Some(whisper_rs::WhisperVadContext::new(path, params).map_err(|e| e.to_string())?);
+    }
+    let segs: Vec<_> = guard.as_mut().unwrap().segments_from_samples(whisper_rs::WhisperVadParams::default(), samples).map_err(|e| e.to_string())?.collect();
+    // Segment times are in centiseconds.
+    Ok(segs.first().zip(segs.last()).map(|(a, b)| (a.start / 100.0, b.end / 100.0)))
+}
+
 fn whisper_text(model: &std::path::Path, samples: &[f32], lang: &str) -> Result<String, String> {
     // ponytail: one global lock, recordings are short and one learner speaks at a time
     let mut guard = STT.lock().map_err(|e| e.to_string())?;
@@ -220,6 +249,29 @@ mod tests {
         super::release_stt();
         println!("heard: {text}");
         text
+    }
+
+    /// Needs the detector model: `pnpm fetch-model`, then `cargo test -- --ignored`. Speech comes from macOS `say`,
+    /// after 1.5 s of silence with a loud click in it (a tap on the button) and before 1 s of silence.
+    #[test]
+    #[ignore]
+    fn speech_span_finds_the_speech_only() {
+        let wav = std::env::temp_dir().join("sprigo-vad-test.wav");
+        let ok = std::process::Command::new("say").args(["-o", wav.to_str().unwrap(), "--data-format=LEI16@16000", "Nice to meet you."]).status().unwrap().success();
+        assert!(ok);
+        let bytes = std::fs::read(&wav).unwrap();
+        let speech: Vec<f32> = bytes[4096..].chunks_exact(2).map(|b| i16::from_le_bytes([b[0], b[1]]) as f32 / 32768.0).collect();
+        let mut samples = vec![0.0f32; 24000];
+        for x in &mut samples[8000..8080] { *x = 0.9; } // the click
+        samples.extend(&speech);
+        samples.extend(vec![0.0f32; 16000]);
+        let model = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(super::VAD_MODEL);
+        let (start, end) = super::vad_span(&model, &samples).unwrap().expect("speech found");
+        let total = samples.len() as f32 / 16000.0;
+        println!("span {start:.2}..{end:.2} of {total:.2} s");
+        assert!(start > 1.0 && start < 2.0, "{start}");
+        assert!(end > total - 1.5 && end <= total, "{end}");
+        assert_eq!(super::vad_span(&model, &vec![0.0f32; 48000]).unwrap(), None);
     }
 
     /// Needs the model: `pnpm fetch-model`, then `cargo test -- --ignored`. Speech comes from macOS `say`.
@@ -265,6 +317,24 @@ fn show_main(app: &tauri::AppHandle) {
     }
 }
 
+/// WebKitGTK denies getUserMedia unless the app answers its permission request, and Tauri doesn't (#138).
+/// Allow microphone requests only; anything else keeps WebKit's default (deny).
+#[cfg(target_os = "linux")]
+fn allow_linux_mic(app: &tauri::AppHandle) {
+    use webkit2gtk::{glib::prelude::*, PermissionRequestExt, SettingsExt, UserMediaPermissionRequest, UserMediaPermissionRequestExt, WebViewExt};
+    let Some(w) = app.get_webview_window("main") else { return };
+    let _ = w.with_webview(|wv| {
+        let view = wv.inner();
+        if let Some(s) = WebViewExt::settings(&view) {
+            s.set_enable_media_stream(true);
+        }
+        view.connect_permission_request(|_, req| match req.downcast_ref::<UserMediaPermissionRequest>() {
+            Some(m) if m.is_for_audio_device() && !m.is_for_video_device() => { req.allow(); true }
+            _ => false,
+        });
+    });
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -281,6 +351,8 @@ pub fn run() {
             if !std::env::args().any(|a| a == HIDDEN_ARG) {
                 show_main(app.handle());
             }
+            #[cfg(target_os = "linux")]
+            allow_linux_mic(app.handle());
             Ok(())
         })
         .on_window_event(|w, e| {
@@ -291,7 +363,7 @@ pub fn run() {
                 }
             }
         })
-        .invoke_handler(tauri::generate_handler![list_user_courses, check_beta, secret_get, secret_set, stt_ready, stt_models, stt_use, stt_remove, stt_download, transcribe, set_background,
+        .invoke_handler(tauri::generate_handler![list_user_courses, check_beta, secret_get, secret_set, stt_ready, stt_models, stt_use, stt_remove, stt_download, transcribe, speech_span, set_background,
             companion::companion_set, companion::companion_status, companion::companion_reply,
             data::data_location, data::set_data_dir, data::dir_ok, data::file_exists, data::lock_read, data::lock_write,
             data::lock_remove, data::backups_list, data::backups_remove, data::copy_file, data::write_text, data::is_sqlite, data::install_db])
@@ -304,6 +376,7 @@ pub fn run() {
             tauri::RunEvent::Exit => {
                 companion::stop();
                 release_stt();
+                release_vad();
                 data::release_lock();
             }
             _ => {}
@@ -313,6 +386,13 @@ pub fn run() {
 /// ggml-metal asserts at process exit if a model is still loaded (SIGABRT → "quit unexpectedly"); free it first.
 fn release_stt() {
     if let Ok(mut g) = STT.lock() {
+        g.take();
+    }
+}
+
+/// The speech detector too, for the same reason.
+fn release_vad() {
+    if let Ok(mut g) = VAD.lock() {
         g.take();
     }
 }

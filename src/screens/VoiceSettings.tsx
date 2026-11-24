@@ -2,7 +2,7 @@
 import { Fragment, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useApp } from "../store";
-import { getSetting, isCompanion, isTauri, setSetting } from "../db";
+import { getSetting, isCompanion, isTauri, isWeb, setSetting } from "../db";
 import { elevenVoice, getElevenKey, loadKokoro, loadPiper, localTts, sayWithEleven, sayWithLocal, setElevenKey, speak, speakingWith, TTS_KEY, ttsProvider, ttsSpeaks, useTtsPreparing, ACCENTS, SPEED, ttsAccent, ttsSpeed, type TtsProvider } from "../tts";
 import { ELEVEN_VOICES, LOCAL_TTS } from "../ttsCloud";
 import { Icon } from "../icons";
@@ -25,6 +25,7 @@ const TTS = [
 const ttsName = (p: TtsProvider) => `settings.tts${p[0].toUpperCase()}${p.slice(1)}`;
 const HELLO: Record<string, string> = {
   ro: "Bună! Îmi pare bine să te cunosc. Ce mai faci?",
+  nl: "Hallo! Leuk je te ontmoeten. Hoe gaat het vandaag met je?",
   en: "Hello! Nice to meet you. How are you today?", tr: "Merhaba! Tanıştığıma memnun oldum. Bugün nasılsın?",
   de: "Hallo! Schön, dich kennenzulernen. Wie geht es dir heute?", fr: "Bonjour ! Ravi de te rencontrer. Comment vas-tu aujourd'hui ?",
   es: "¡Hola! Encantado de conocerte. ¿Cómo estás hoy?", hu: "Szia! Örülök, hogy megismerhetlek. Hogy vagy ma?",
@@ -329,7 +330,7 @@ function SttSheet({ initial, onChange }: { initial: SttProvider; onChange: (v: S
               <span className="od-field od-fill"><b>{t(sttName(p))}</b><span className="muted small">{t(`voice.${p}Good`)}</span></span>
             </button>
             {p === "deepgram" && hasKey && <button className="icon-btn" aria-label={t("voice.configure", { name: "Deepgram" })} onClick={configure}><Icon name="gear" /></button>}
-            {p === "whisper" && <button className="icon-btn" aria-label={t("voice.configure", { name: "Whisper" })} onClick={() => openSheet(<WhisperSheet onBack={back} />)}><Icon name="gear" /></button>}
+            {p === "whisper" && !isWeb && <button className="icon-btn" aria-label={t("voice.configure", { name: "Whisper" })} onClick={() => openSheet(<WhisperSheet onBack={back} />)}><Icon name="gear" /></button>}
             <InfoTip label={t("voice.about", { name: p === "deepgram" ? "Deepgram" : "Whisper" })}>{t(p === "deepgram" ? "voice.deepgramDesc" : "voice.whisperDesc")}</InfoTip>
           </div>
         ))}

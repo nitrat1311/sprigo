@@ -11,7 +11,7 @@ const fresh = () => wrapSqlJs(new SQL.Database());
 const tables = async (db: ReturnType<typeof fresh>) =>
   (await db.select<{ name: string }>("SELECT name FROM sqlite_master WHERE type = 'table' ORDER BY name")).map((r) => r.name);
 
-const TABLES = ["ai_usage", "bookmarks", "content_cache", "device_settings", "enrollments", "memories", "mistakes", "profiles", "speech_sessions", "step_progress", "words"];
+const TABLES = ["ai_usage", "bookmarks", "content_cache", "device_settings", "enrollments", "memories", "mistakes", "profiles", "speech_sessions", "step_progress", "tutors", "words"];
 
 test("empty database migrates to the latest version", async () => {
   const db = fresh();
@@ -124,6 +124,18 @@ test("v8: ai_usage defaults created_at and rolls up by local month, feature and 
   assert.deepEqual(rows.filter((r) => r.month === "2026-02").map((r) => r.feature).sort(), ["check", "tutor"]);
   const [now] = await db.select<{ created_at: string }>("SELECT created_at FROM ai_usage WHERE feature = 'guide'");
   assert.match(now.created_at, /^\d{4}-\d\d-\d\d \d\d:\d\d:\d\d$/);
+});
+
+test("v9: custom tutors are one package per profile, with a source and a timestamp", async () => {
+  const db = fresh();
+  await runMigrations(db, MIGRATIONS);
+  await db.execute("INSERT INTO profiles(id, name, color, ui_lang, native_lang, stats) VALUES (1, 'a', 'green', 'en', 'en', '{}')");
+  await db.execute("INSERT INTO tutors(id, profile_id, data) VALUES ('custom:1', 1, '{}')");
+  await db.execute("INSERT INTO tutors(id, profile_id, data, avatar, scene, source) VALUES ('custom:2', 1, '{}', 'data:image/png;base64,x', NULL, 'imported')");
+  const rows = await db.select<{ id: string; source: string; avatar: string | null; created_at: string }>("SELECT id, source, avatar, created_at FROM tutors ORDER BY id");
+  assert.deepEqual(rows.map((r) => [r.id, r.source, r.avatar]), [["custom:1", "local", null], ["custom:2", "imported", "data:image/png;base64,x"]]);
+  for (const r of rows) assert.match(r.created_at, /^\d{4}-\d\d-\d\d \d\d:\d\d:\d\d$/);
+  await assert.rejects(db.execute("INSERT INTO tutors(id, profile_id, data) VALUES ('custom:1', 1, '{}')"), "the id is the primary key");
 });
 
 test("v5 seeds FSRS state from word strength and keeps every word", async () => {

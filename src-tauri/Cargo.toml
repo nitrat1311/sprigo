@@ -1,6 +1,6 @@
 [package]
 name = "sprigo"
-version = "1.12.0"
+version = "1.12.1"
 description = "Local-first AI language learning"
 authors = ["ozerozdas"]
 edition = "2021"
@@ -38,6 +38,9 @@ qrcode = { version = "0.14.1", default-features = false, features = ["svg"] }
 whisper-rs = { version = "0.16", features = ["metal"] }
 [target.'cfg(not(target_os = "macos"))'.dependencies]
 whisper-rs = "0.16"
+# Already pulled in by wry; used directly to let the Linux webview open the mic (#138).
+[target.'cfg(target_os = "linux")'.dependencies]
+webkit2gtk = "2.0"
 
 
 # Read the optimization guideline for more details: https://tauri.app/concept/size/#cargo-configuration
