@@ -45,7 +45,7 @@ export function LiveButton({ className = "" }: { className?: string }) {
   const { openSheet } = useApp();
   return (
     <button className={`nav-live ${className}`} onClick={() => openSheet(<TutorSheet />)}>
-      <Icon name="video" /><span>{t("nav.live")}</span><i className="live-dot" aria-hidden="true" />
+      <Icon name="video" /><span>{t("nav.live")}</span>
     </button>
   );
 }
