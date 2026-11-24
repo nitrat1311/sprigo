@@ -15,6 +15,7 @@ import { remoteDb, serveCompanion } from "./companion";
 import { evictIds, type Memory, type MemoryOps, type MemorySource } from "./memory";
 import { grade, newCard, review, strengthOf, type Grade, type WordCard } from "./srs";
 import { USAGE_SQL, type AiFeature, type UsageRow } from "./usage";
+import { newTutorId, parseTutorPackage, type TutorPackage, type TutorProfile, type TutorSource } from "./tutors";
 export { NEW_STATS, type Stats };
 
 type Row = Record<string, any>;
@@ -349,6 +350,47 @@ export async function applyMemoryOps(profileId: number, source: MemorySource, op
   for (const u of ops.update) await d.execute("UPDATE memories SET text = $1, last_seen_at = CURRENT_TIMESTAMP WHERE id = $2 AND profile_id = $3", [u.text, u.id, profileId]);
   for (const a of ops.add) await d.execute("INSERT INTO memories(profile_id, kind, text, source) VALUES ($1, $2, $3, $4)", [profileId, a.kind, a.text, source]);
   for (const id of evictIds(await listMemories(profileId))) await d.execute("DELETE FROM memories WHERE id = $1", [id]);
+}
+
+// ---- Custom tutors (#167, src/tutors.ts; per profile like memories, deleted with it) ----
+
+export type Tutor = TutorPackage & { id: string; profile_id: number; source: TutorSource; created_at: string };
+const TUTOR_COLS = "id, profile_id, data, avatar, scene, source, created_at";
+function toTutor(r: Row): Tutor {
+  const { data, avatar, scene, ...rest } = r;
+  // Rows only ever hold a parsed package (createTutor/updateTutor validate), so a plain parse is enough here.
+  return { ...(JSON.parse(data) as TutorProfile), ...(avatar ? { avatar } : {}), ...(scene ? { scene } : {}), ...rest } as Tutor;
+}
+/** The package written by us and checked again on its way in; throws with the same readable lines the import screen shows. */
+function checkedTutor(pkg: TutorPackage) {
+  const parsed = parseTutorPackage(pkg);
+  if (!parsed.ok) throw new Error(`Invalid tutor (${parsed.errors.join("; ")})`);
+  return parsed.tutor;
+}
+
+export async function listTutors(profileId: number) {
+  return (await (await db()).select<Row>(`SELECT ${TUTOR_COLS} FROM tutors WHERE profile_id = $1 ORDER BY created_at, id`, [profileId])).map(toTutor);
+}
+export async function getTutor(id: string) {
+  const r = await (await db()).select<Row>(`SELECT ${TUTOR_COLS} FROM tutors WHERE id = $1`, [id]);
+  return r[0] ? toTutor(r[0]) : null;
+}
+/** A new `custom:<uuid>` tutor; `source` says whether it was written here or imported. */
+export async function createTutor(profileId: number, pkg: TutorPackage, source: TutorSource = "local") {
+  const id = newTutorId();
+  const { avatar, scene, ...profile } = checkedTutor(pkg);
+  await (await db()).execute("INSERT INTO tutors(id, profile_id, data, avatar, scene, source) VALUES ($1, $2, $3, $4, $5, $6)",
+    [id, profileId, JSON.stringify(profile), avatar ?? null, scene ?? null, source]);
+  return id;
+}
+/** Replaces the whole package: leave avatar or scene out to remove it. */
+export async function updateTutor(id: string, pkg: TutorPackage) {
+  const { avatar, scene, ...profile } = checkedTutor(pkg);
+  await (await db()).execute("UPDATE tutors SET data = $1, avatar = $2, scene = $3 WHERE id = $4",
+    [JSON.stringify(profile), avatar ?? null, scene ?? null, id]);
+}
+export async function deleteTutor(id: string) {
+  await (await db()).execute("DELETE FROM tutors WHERE id = $1", [id]);
 }
 
 // ---- Speech signals (SPR-25, src/speech.ts) ----
