@@ -127,7 +127,7 @@ function ProfileMenu() {
     <div className="sidebar-foot" ref={wrap}>
       <button ref={btn} className="nav-item profile-switch" aria-haspopup="menu" aria-expanded={open}
         aria-controls={open ? "account-menu" : undefined} title={t("nav.account")} onClick={toggle}>
-        <Avatar p={profile} size={30} /><span className="od-fill">{profile.name}</span><Icon name="swap" />
+        <Avatar p={profile} size={30} /><span className="od-fill">{profile.name}</span><Icon name="dots" />
       </button>
       {open && pos && (
         <div className="account-menu" id="account-menu" role="menu" aria-label={t("nav.account")} ref={menu}
