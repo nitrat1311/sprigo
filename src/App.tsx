@@ -5,11 +5,13 @@ import { useApp, type BootError, type Route } from "./store";
 import { Rail } from "./Rail";
 import { Lesson, sfxState } from "./Lesson";
 import { today } from "./progress";
+import { goalsOf, metricTotals, reportDue } from "./goals";
+import { ReportSheet } from "./GoalsCard";
 import { nudgeDue, nudgeMessage } from "./nudge";
 import { keepInBackground, notify } from "./notify";
 import { takeOver, resetDataDir } from "./datadir";
 import { findUpdate, UpdateSheet, whatsNew, WhatsNewSheet } from "./Update";
-import { isTauri } from "./db";
+import { isTauri, profileWordDays, speechMsDays } from "./db";
 import type { Update } from "@tauri-apps/plugin-updater";
 import { Chat, Story } from "./Talk";
 import { Flashcards } from "./Flashcards";
@@ -229,6 +231,27 @@ export default function App() {
     const h = setInterval(tick, 60_000);
     return () => clearInterval(h);
   }, [profile?.id, s.reminderOn, s.lastActive, s.reminded, s.streak, course?.iso, i18n.language]);
+
+  // #43: the finished week's summary, once, on the first launch after a new week. A quiet week is marked seen without a sheet.
+  const reported = useRef("");
+  useEffect(() => {
+    if (!ready || !profile) return; // the sheet box and its heading observer only exist once the app has rendered
+    const week = reportDue(profile.stats.reportedWeek, today());
+    if (!week) return;
+    const key = `${profile.id}:${week}`;
+    if (reported.current === key) return; // React StrictMode runs effects twice in development
+    reported.current = key;
+    const p = profile;
+    (async () => {
+      const [words, speakMs] = await Promise.all([profileWordDays(p.id), speechMsDays(p.id)]);
+      const data = { xp: { [p.stats.day]: p.stats.todayXp, ...p.stats.xpDays }, words, speakMs };
+      const cur = (m: "xp" | "words" | "speak") => metricTotals(m, "week", week, data).cur;
+      setS((x) => ({ ...x, reportedWeek: week }));
+      if (!cur("xp") && !cur("words") && !cur("speak")) return;
+      notify(t("goals.notifyTitle"), t("goals.notifyBody", { n: cur("xp") }));
+      openSheet(<ReportSheet period="week" start={week} goals={goalsOf(p.stats)} data={data} />);
+    })().catch((e) => console.error("weekly report", e));
+  }, [ready, profile?.id]);
 
   if (bootError) return <BootErrorScreen e={bootError} />;
   if (!ready) return null;

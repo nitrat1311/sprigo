@@ -254,6 +254,37 @@
     },
     "table": "Показать таблицей"
   },
+  "goals": {
+    "title": "Цели",
+    "week": "Цель на неделю",
+    "month": "Цель на месяц",
+    "weekShort": "неделя",
+    "monthShort": "месяц",
+    "measure": "Показатель",
+    "measureAria": "Что считать за {{period}}",
+    "target": "Цель",
+    "targetAria": "Цель за {{period}}",
+    "progress": "{{n}} из {{goal}} {{unit}}",
+    "previous": "Было: {{n}} {{unit}}",
+    "report": "Отчёт",
+    "weekReport": "Отчёт за неделю",
+    "monthReport": "Отчёт за месяц",
+    "range": "{{from}} – {{to}}",
+    "metrics": {
+      "xp": "XP",
+      "words": "Новые слова",
+      "speak": "Минуты речи"
+    },
+    "units": {
+      "xp": "XP",
+      "words": "слов",
+      "speak": "мин"
+    },
+    "goalDone": "Цель достигнута",
+    "goalLeft": "Осталось {{n}} {{unit}}",
+    "notifyTitle": "Твоя неделя в Sprigo",
+    "notifyBody": "За прошлую неделю {{n}} XP. Полный отчёт — в профиле."
+  },
   "profile": {
     "since": "Учится с {{date}}",
     "garden": "Мой сад",

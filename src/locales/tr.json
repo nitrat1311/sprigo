@@ -228,6 +228,37 @@
     },
     "table": "Tablo olarak göster"
   },
+  "goals": {
+    "title": "Hedefler",
+    "week": "Haftalık hedef",
+    "month": "Aylık hedef",
+    "weekShort": "hafta",
+    "monthShort": "ay",
+    "measure": "Ölçüt",
+    "measureAria": "Her {{period}} neyi ölçelim",
+    "target": "Hedef",
+    "targetAria": "Her {{period}} için hedef",
+    "progress": "{{goal}} {{unit}} hedefinden {{n}}",
+    "previous": "Önceki: {{n}} {{unit}}",
+    "report": "Rapor",
+    "weekReport": "Haftalık rapor",
+    "monthReport": "Aylık rapor",
+    "range": "{{from}} – {{to}}",
+    "metrics": {
+      "xp": "XP",
+      "words": "Yeni kelimeler",
+      "speak": "Konuşma dakikaları"
+    },
+    "units": {
+      "xp": "XP",
+      "words": "kelime",
+      "speak": "dk"
+    },
+    "goalDone": "Hedefe ulaşıldı",
+    "goalLeft": "{{n}} {{unit}} kaldı",
+    "notifyTitle": "Sprigo'da haftan",
+    "notifyBody": "Geçen hafta {{n}} XP. Tam rapor için profiline bak."
+  },
   "profile": {
     "since": "{{date}} tarihinden beri öğreniyor",
     "garden": "Bahçem",

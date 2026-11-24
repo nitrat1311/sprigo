@@ -1,5 +1,7 @@
 import { tensesFor } from "../conjugation";
 import { ProgressCharts } from "../ProgressCharts";
+import { GoalsCard } from "../GoalsCard";
+import { goalsOf } from "../goals";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Icon, type IconName } from "../icons";
@@ -379,11 +381,17 @@ function AchievementsSheet({ list }: { list: Achievement[] }) {
 
 export function Profile() {
   const { t, i18n } = useTranslation();
-  const { s, xp, profile, done, legendary, enrollment, go, openSheet } = useApp();
+  const { s, setS, xp, profile, done, legendary, enrollment, go, openSheet } = useApp();
   const [words, setWords] = useState(0);
   const [wordDays, setWordDays] = useState<Record<string, number>>({});
+  const [profileWords, setProfileWords] = useState<Record<string, number>>({});
   const [speech, setSpeech] = useState<Record<string, number>>({});
-  useEffect(() => { db.speechWeeks(profile!.id).then(setSpeech); }, [profile!.id]);
+  const [speechMs, setSpeechMs] = useState<Record<string, number>>({});
+  useEffect(() => {
+    db.speechWeeks(profile!.id).then(setSpeech);
+    db.speechMsDays(profile!.id).then(setSpeechMs);
+    db.profileWordDays(profile!.id).then(setProfileWords);
+  }, [profile!.id]);
   useEffect(() => {
     if (!enrollment) return;
     db.listWords(enrollment.id).then((w) => setWords(w.length));
@@ -423,6 +431,9 @@ export function Profile() {
       <h2 className="section-title">{t("progress.title")}</h2>
       {/* today from todayXp too: profiles from before #31 have no xpDays yet */}
       <ProgressCharts xpDays={{ [s.day]: s.todayXp, ...s.xpDays }} wordDays={wordDays} accuracy={s.accuracy} speech={speech} />
+      <h2 className="section-title">{t("goals.title")}</h2>
+      <GoalsCard goals={goalsOf(s)} day={today()} xpDays={{ [s.day]: s.todayXp, ...s.xpDays }} wordDays={profileWords} speechMs={speechMs}
+        onChange={(period, goal) => setS((x) => ({ ...x, goals: { ...goalsOf(x), [period]: goal } }))} />
       <h2 className="section-title">{t("profile.forYou")}</h2>
       <div className="od-grid profile-cards" style={{ "--od-cols": 2, "--od-gap": "12px" } as React.CSSProperties}>
         <CoachCard />

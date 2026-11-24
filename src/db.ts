@@ -306,6 +306,13 @@ export async function wordDays(enrollmentId: number) {
     "SELECT date(created_at, 'localtime') AS d, COUNT(*) AS n FROM words WHERE enrollment_id = $1 GROUP BY d", [enrollmentId]);
   return Object.fromEntries(r.map((x) => [x.d, x.n]));
 }
+/** New words per local day across all the profile's courses, for the goals report (#43). */
+export async function profileWordDays(profileId: number) {
+  const r = await (await db()).select<{ d: string; n: number }>(
+    `SELECT date(w.created_at, 'localtime') AS d, COUNT(*) AS n FROM words w
+     JOIN enrollments e ON e.id = w.enrollment_id WHERE e.profile_id = $1 AND w.created_at IS NOT NULL GROUP BY d`, [profileId]);
+  return Object.fromEntries(r.map((x) => [x.d, x.n]));
+}
 // The list's words, for highlighting them in text (#27). Kept until the list changes.
 // ponytail: only addWords/importWords clear it; clear on profile delete too if enrollment ids get reused
 let known: { id: number; words: Promise<string[]> } | null = null;
@@ -417,6 +424,12 @@ export async function speechWeeks(profileId: number) {
     `SELECT date(created_at, 'localtime', '-6 days', 'weekday 1') AS w, ROUND(AVG(wpm)) AS wpm FROM speech_sessions
      WHERE profile_id = $1 AND words > 0 GROUP BY w`, [profileId]);
   return Object.fromEntries(r.map((x) => [x.w, x.wpm]));
+}
+/** Speaking milliseconds per local day, for the goals report (#43); minutes are rounded only when shown. */
+export async function speechMsDays(profileId: number) {
+  const r = await (await db()).select<{ d: string; ms: number }>(
+    "SELECT date(created_at, 'localtime') AS d, SUM(speech_ms) AS ms FROM speech_sessions WHERE profile_id = $1 GROUP BY d", [profileId]);
+  return Object.fromEntries(r.map((x) => [x.d, x.ms]));
 }
 /** The learner's usual per answer over their last 10 tutor calls (SPR-26); chats and drills are a different kind of talk. Null before they have said a few things. */
 export async function speechBaseline(profileId: number): Promise<Baseline | null> {

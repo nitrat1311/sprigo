@@ -233,6 +233,37 @@
     },
     "table": "Mostra come tabella"
   },
+  "goals": {
+    "title": "Obiettivi",
+    "week": "Obiettivo settimanale",
+    "month": "Obiettivo mensile",
+    "weekShort": "settimana",
+    "monthShort": "mese",
+    "measure": "Misura",
+    "measureAria": "Cosa misurare ogni {{period}}",
+    "target": "Traguardo",
+    "targetAria": "Traguardo per {{period}}",
+    "progress": "{{n}} su {{goal}} {{unit}}",
+    "previous": "Prima: {{n}} {{unit}}",
+    "report": "Resoconto",
+    "weekReport": "Resoconto settimanale",
+    "monthReport": "Resoconto mensile",
+    "range": "{{from}} – {{to}}",
+    "metrics": {
+      "xp": "XP",
+      "words": "Parole nuove",
+      "speak": "Minuti di parlato"
+    },
+    "units": {
+      "xp": "XP",
+      "words": "parole",
+      "speak": "min"
+    },
+    "goalDone": "Obiettivo raggiunto",
+    "goalLeft": "Mancano {{n}} {{unit}}",
+    "notifyTitle": "La tua settimana in Sprigo",
+    "notifyBody": "La settimana scorsa hai guadagnato {{n}} XP. Il resoconto completo è nel profilo."
+  },
   "profile": {
     "since": "Apprendimento da {{date}}",
     "garden": "Il mio giardino",
