@@ -120,3 +120,10 @@ test("Romanian dictation and accented sentences use Romanian", () => {
   assert.equal(answerLang({ answer: "El merge la școală.", context: "" }, "en", "ro"), "ro");
   assert.equal(answerLang({ answer: "Ea are doi căței.", context: "" }, "en", "ro"), "ro");
 });
+
+test("Dutch dictation and sentences with ij use Dutch", () => {
+  assert.equal(guessLang("Ik ben er bijna."), "nl");
+  assert.equal(guessLang("Mijn fiets is gestolen."), "nl");
+  assert.equal(answerLang({ answer: "Hoe laat is het nu?", context: "" }, "en", "nl"), "nl");
+  assert.equal(answerLang({ answer: "Hij is ziek.", context: "" }, "en", "nl"), "nl");
+});

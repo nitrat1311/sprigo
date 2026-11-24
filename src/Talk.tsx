@@ -6,9 +6,12 @@ import { useApp } from "./store";
 import { sfx, useStartLesson } from "./Lesson";
 import { onTtsFallback, prewarm, resetTtsNotice, speak, speakingWith, stopSpeaking } from "./tts";
 import { MicButton } from "./Mic";
+import { sttReady } from "./stt";
 import { Face, type FaceState } from "./face/Face";
-import { CHARACTERS, CHAT_MAX_TURNS as CHAT_TURNS, CHAT_MIN_TURNS, FREE_GOAL, type Talk } from "./characters";
-import { avoidancePass, chatTurn, debrief, learnerFacts, loadStory, rehearseTurn, rememberSession, type ChatMsg, type Story as StoryData } from "./lessons";
+import { CHAT_MAX_TURNS as CHAT_TURNS, CHAT_MIN_TURNS, FREE_GOAL, type Character, type Talk } from "./characters";
+import { inlineName, isTutorId, remembersLearner } from "./tutors";
+import { avoidancePass, chatTurn, debrief, learnerFacts, loadStory, rehearseTurn, rememberSession, translateReply, type ChatMsg, type Story as StoryData } from "./lessons";
+import { translationFor } from "./activities";
 import { REHEARSE_LONG, type Debrief } from "./rehearsal";
 import * as db from "./db";
 import { recordSession, today, xpMult } from "./progress";
@@ -20,6 +23,8 @@ import { storyId, type Cefr } from "./course";
 import { SpeakButton } from "./SpeakButton";
 
 const gap = (g: string) => ({ "--od-gap": g }) as React.CSSProperties;
+/** Double-click is a mouse gesture: iOS Safari doesn't dispatch dblclick reliably for taps. */
+const finePointer = () => matchMedia("(hover: hover) and (pointer: fine)").matches;
 
 export type Result = { xp: number; gems: number };
 
@@ -130,6 +135,7 @@ export function Story({ level, unit: unitId }: { level: Cefr; unit: string }) {
   const [err, setErr] = useState("");
   const [p, setP] = useState(0); // position in `seq`
   const [sel, setSel] = useState<number | null>(null);
+  const picked = useRef<number | null>(null); // option selected before the current click gesture, so a double-click on an unselected answer only selects it
   const [checked, setChecked] = useState(false);
   const [correct, setCorrect] = useState(0);
   const [shown, setShown] = useState<Set<number>>(new Set()); // lines with translation revealed
@@ -160,14 +166,17 @@ export function Story({ level, unit: unitId }: { level: Cefr; unit: string }) {
   }, [p, story]);
 
   const next = () => {
-    if (p + 1 < seq.length) { setP(p + 1); setSel(null); setChecked(false); return; }
+    if (p + 1 < seq.length) { picked.current = null; setP(p + 1); setSel(null); setChecked(false); return; }
     const xp = (10 + correct * 10) * xpMult(s), gems = correct * 2;
     setS((s) => recordSession(s, { xp, gems, kind: "practice" }, today()));
     completeStep(storyId(level, unitId), xp);
     sfx("done");
     setResult({ xp, gems });
   };
-  const check = () => { setChecked(true); sfx(sel === q!.answer ? "ok" : "bad"); if (sel === q!.answer) setCorrect((c) => c + 1); };
+  const check = () => {
+    if (checked || !q || sel === null) return;
+    setChecked(true); sfx(sel === q.answer ? "ok" : "bad"); if (sel === q.answer) setCorrect((c) => c + 1);
+  };
 
   // Keyboard: digits pick an answer, Enter is the footer button, Space replays the line. Esc stays in useQuit.
   const keyState: KeyState = {
@@ -218,12 +227,18 @@ export function Story({ level, unit: unitId }: { level: Cefr; unit: string }) {
         <h3 style={{ fontWeight: 900, marginBottom: 12 }}>{q.prompt}</h3>
         <div className="opt-grid">
           {q.options.map((o, oi) => (
-            <button key={oi} disabled={checked} onClick={() => setSel(oi)}
+            <button key={oi} disabled={checked && oi !== sel} onClick={(e) => {
+              if (e.detail > 1) return; // the second click of a double-click belongs to onDoubleClick
+              if (checked) return next();
+              picked.current = sel;
+              setSel(oi);
+            }} onDoubleClick={() => { if (finePointer() && !checked && picked.current === oi) check(); }}
               className={`opt ${checked ? (oi === q.answer ? "correct" : oi === sel ? "wrong" : "") : oi === sel ? "sel" : ""}`}>
               <span className="opt-num">{oi + 1}</span><span lang={lang}>{o}</span>
             </button>
           ))}
         </div>
+        {!checked && <p className="muted small dblclick-hint">{t("lesson.dblClickHint")}</p>}
       </div>}
       <div ref={endRef} />
     </>;
@@ -306,14 +321,15 @@ function Rounds({ stats }: { stats: RoundStat[] }) {
   );
 }
 
-export function Chat({ talk }: { talk: Talk }) {
+export function Chat({ talk, ch }: { talk: Talk; ch: Character }) {
   const { who, topic, voice, rehearse, drill } = talk;
   const { t } = useTranslation();
   const { course, enrollment, profile, s, setS, gainXp, toast } = useApp();
-  const ch = CHARACTERS[who];
   const name = rehearse ? rehearse.who : ch.name;
   const lang = course?.iso ?? "en";
   const [voicing, setVoicing] = useState<number | null>(null); // AI message being spoken (or its voice being made)
+  const [stt, setStt] = useState(false); // the mic only opens once speaking can work, as in Lesson and Write
+  useEffect(() => { sttReady().then(setStt); }, []);
   const [engine, setEngine] = useState<string | null>(null); // which voice engine is speaking it, once audio starts
   const say = (text: string, i: number) => {
     setVoicing(i); setEngine(null);
@@ -367,12 +383,15 @@ export function Chat({ talk }: { talk: Talk }) {
         say(r.reply, history.length);
         return;
       }
-      const r = await chatTurn({ course, level: enrollment.level, native: profile.native_lang, about: await about }, who, topic, history,
+      const r = await chatTurn({ course, level: enrollment.level, native: profile.native_lang, about: await about }, ch, topic, history,
         drill ? { rules: drillRules(drill), keep: DRILL_KEEP } : {});
       if (ending.current) return;
       const fixed = history.map((m, i) => i === history.length - 1 && m.from === "me" ? { ...m, correction: r.correction.trim() || undefined } : m);
       setMsgs([...fixed, { from: "ai", text: r.reply, translation: r.translation }]);
       say(r.reply, fixed.length);
+      // The reply shows at once; a missing or echoed translation is patched in when the extra pass lands.
+      void translationFor(r.reply, r.translation, () => translateReply({ course, level: enrollment.level, native: profile.native_lang }, r.reply), course.iso === profile.native_lang)
+        .then((translation) => { if (translation !== r.translation) setMsgs((ms) => ms.map((m, i) => i === fixed.length && m.from === "ai" ? { ...m, translation } : m)); });
       // The prompt holds the goal back too; this guards models that wrap up early anyway.
       if (r.goal_reached && history.filter((m) => m.from === "me").length >= CHAT_MIN_TURNS) setGoal(true);
     } catch (e) { setErr((e as Error).message); setMsgs(history); }
@@ -400,8 +419,9 @@ export function Chat({ talk }: { talk: Talk }) {
     turn([...msgs, { from: "me", text: v }]);
   };
   const remember = () => {
-    // ponytail: only free-topic chats and rehearsals, never drills; in a scene the learner plays a role, so "I'm a doctor" is not about them
-    if (profile && !drill && (rehearse || topic.goal.startsWith(FREE_GOAL))) void rememberSession(profile.id, profile.native_lang, "chat", name, msgs.map((m) => ({ from: m.from === "me" ? "me" : "other", text: m.text })))
+    // ponytail: only free-topic chats and rehearsals, never drills; in a scene the learner plays a role, so "I'm a doctor" is not about them.
+    // An imported tutor's package is not the learner's: it must not write their memory (M5).
+    if (profile && !drill && remembersLearner(ch) && (rehearse || topic.goal.startsWith(FREE_GOAL))) void rememberSession(profile.id, profile.native_lang, "chat", rehearse ? name : inlineName(ch), msgs.map((m) => ({ from: m.from === "me" ? "me" : "other", text: m.text })))
       .then((n) => { if (n) toast(t("memory.saved", { count: n })); });
   };
   const turns = msgs.filter((m) => m.from === "me").map((m) => m.text);
@@ -440,7 +460,8 @@ export function Chat({ talk }: { talk: Talk }) {
   const end = rehearse ? stepOut : finish, endLabel = t(rehearse ? "roleplay.outOfRole" : "lesson.finish");
 
   const faceState: FaceState = busy ? "thinking" : voicing !== null ? "talking" : "idle";
-  const topicLabel = drill ? `${r432 ? t("practice.roundN", { n: r432.round, min: r432.minutes }) : drill.kind === "ladder" ? t("practice.rungN", { n: drill.rung }) : t(drill.kind === "structure" ? "practice.structure" : "practice.planning")} · ${drill.topic}` : rehearse ? rehearse.about ?? "" : topic.id ? t(`roleplay.topics.${who}.${topic.id}`) : topic.goal.slice(FREE_GOAL.length);
+  // A custom tutor's topics have no i18n entries, so they show their goal.
+  const topicLabel = drill ? `${r432 ? t("practice.roundN", { n: r432.round, min: r432.minutes }) : drill.kind === "ladder" ? t("practice.rungN", { n: drill.rung }) : t(drill.kind === "structure" ? "practice.structure" : "practice.planning")} · ${drill.topic}` : rehearse ? rehearse.about ?? "" : topic.id ? (isTutorId(who) ? topic.goal : t(`roleplay.topics.${who}.${topic.id}`)) : topic.goal.slice(FREE_GOAL.length);
   let body: React.ReactNode, footer: React.ReactNode;
   if (result) {
     body = deb ? <DebriefCard d={deb} r={result} turns={turns} /> : <>
@@ -465,12 +486,12 @@ export function Chat({ talk }: { talk: Talk }) {
     body = <>
       {voice ? (
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, marginBottom: 16, textAlign: "center" }}>
-          <Face spec={ch.face} color={ch.color} size={220} label={name} state={faceState} scene={rehearse ? undefined : who} />
+          <Face spec={ch.face} color={ch.color} size={220} label={name} state={faceState} scene={rehearse ? undefined : who} image={ch.avatar} sceneImage={rehearse ? undefined : ch.scene} />
           <b>{rehearse ? t("roleplay.rehearseWith", { who: name }) : name}</b><span className="muted small">{topicLabel}</span>
         </div>
       ) : (
         <div className="od-row" style={{ ...gap("12px"), marginBottom: 16 }}>
-          <Face spec={ch.face} color={ch.color} size={96} label={name} state={faceState} />
+          <Face spec={ch.face} color={ch.color} size={96} label={name} state={faceState} image={ch.avatar} />
           <span className="od-field od-fill"><b>{rehearse ? t("roleplay.rehearseWith", { who: name }) : name}</b><span className="muted small">{topicLabel}</span></span>
         </div>
       )}
@@ -478,7 +499,7 @@ export function Chat({ talk }: { talk: Talk }) {
       <div className="chat">
         {msgs.map((m, i) => m.from === "ai" ? (
           <button key={i} className="bubble" lang={lang} aria-busy={voicing === i} onClick={() => { say(m.text, i); setOpen((s) => new Set(s).add(i)); }}>
-            <span>{m.text}</span>{open.has(i) && <small>{m.translation}</small>}
+            <span>{m.text}</span>{open.has(i) && <small>{m.translation || t("roleplay.noTranslation")}</small>}
             {voicing === i && <small className="voicing gen-pulse" role="status"><Icon name="headphones" /> {engine ? t("ai.speakingWith", { engine: t(`voice.engine.${engine}`) }) : t("ai.speaking")}</small>}
           </button>
         ) : (
@@ -491,7 +512,7 @@ export function Chat({ talk }: { talk: Talk }) {
       {err && <Failed msg={err} retry={stepping ? stepOut : () => turn(msgs)} quit={quit} />}
       {rehearse && mine >= REHEARSE_LONG && !busy && <p className="muted small" style={{ textAlign: "center", marginTop: 16 }}>{t("roleplay.rehearseLong")}</p>}
       {over && !busy && <p className="muted small" style={{ textAlign: "center", marginTop: 16 }}>{t(goal ? "roleplay.goalReached" : "roleplay.limit")}</p>}
-      {voice && !over && <MicButton lang={lang} native={native} disabled={busy} onText={(said, m) => { if (m) spoken.current.push(m); if (said.trim()) heard.current.push(said.trim()); send(said); }} />}
+      {voice && !over && stt && s.speakOn && <MicButton lang={lang} native={native} disabled={busy} onText={(said, m) => { if (m) spoken.current.push(m); if (said.trim()) heard.current.push(said.trim()); send(said); }} />}
       <div ref={endRef} />
     </>;
     footer = over || voice

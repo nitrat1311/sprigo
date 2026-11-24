@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { readFileSync } from "node:fs";
 import { ANSWER, BANK, FORM, PAIRS, mockOllama } from "./mockAi";
 
 test.beforeEach(async ({ page }) => { await mockOllama(page); });
@@ -77,6 +78,18 @@ async function runLesson(page: Page, step: RegExp) {
   await expect(lesson).toBeHidden();
 }
 
+/** Onboards, reads a lesson to put "hola" in the word list, then opens the first story. */
+async function openStory(page: Page) {
+  await onboard(page);
+  await page.getByRole("button", { name: "Learn" }).click();
+  await runLesson(page, /Basic Greetings/);
+  await page.getByRole("button", { name: "Stories", exact: true }).click();
+  await page.getByRole("button", { name: /^Greetings & Introductions/ }).click();
+  const story = page.getByRole("dialog", { name: "ok" }); // the mock's story title
+  await expect(story.locator(".tap-word.known", { hasText: "Hola" }).first()).toBeVisible();
+  return story;
+}
+
 // The first two steps cover all five renderers: learn, choice, match, speak (skipped), then input and word bank.
 test("first lessons run every exercise type", async ({ page }) => {
   await onboard(page);
@@ -85,14 +98,90 @@ test("first lessons run every exercise type", async ({ page }) => {
   await runLesson(page, /Introduce Yourself/);
 });
 
-test("a story opens from Stories, marks known words and can be finished", async ({ page }) => {
+test("a double-click checks a selected answer and a click advances after feedback", async ({ page }) => {
   await onboard(page);
   await page.getByRole("button", { name: "Learn" }).click();
-  await runLesson(page, /Basic Greetings/); // puts "hola" in the word list
-  await page.getByRole("button", { name: "Stories", exact: true }).click();
-  await page.getByRole("button", { name: /^Greetings & Introductions/ }).click();
-  const story = page.getByRole("dialog", { name: "ok" }); // the mock's story title
-  await expect(story.locator(".tap-word.known", { hasText: "Hola" }).first()).toBeVisible();
+  await page.getByRole("button", { name: /Basic Greetings/ }).click();
+  const lesson = page.getByRole("dialog", { name: "Lesson" });
+  const option = lesson.locator(".opt", { hasText: /^\d?hola$/ });
+  for (let i = 0; !(await option.isVisible()); i++) {
+    expect(i).toBeLessThan(10);
+    await lesson.getByRole("button", { name: "Continue", exact: true }).click();
+  }
+  await option.click(); // select it first: the double-click gesture only checks a selected answer
+  await expect(lesson.getByText("Correct!")).toBeHidden();
+  await option.dblclick();
+  await expect(lesson.getByText("Correct!")).toBeVisible();
+  await expect(option).toHaveClass(/correct/);
+  await option.click(); // after feedback a normal click is enough to advance
+  await expect(lesson.getByText("Correct!")).toBeHidden();
+});
+
+test("a double-click on an unselected answer selects it without grading it", async ({ page }) => {
+  await onboard(page);
+  await page.getByRole("button", { name: "Learn" }).click();
+  await page.getByRole("button", { name: /Basic Greetings/ }).click();
+  const lesson = page.getByRole("dialog", { name: "Lesson" });
+  const option = lesson.locator(".opt", { hasText: /^\d?hola$/ });
+  for (let i = 0; !(await option.isVisible()); i++) {
+    expect(i).toBeLessThan(10);
+    await lesson.getByRole("button", { name: "Continue", exact: true }).click();
+  }
+  await option.dblclick();
+  await expect(option).toHaveClass(/sel/);
+  await expect(lesson.getByText("Correct!")).toBeHidden();
+  await expect(lesson.locator(".hearts-box")).toHaveText("5"); // nothing was graded, so no heart went
+});
+
+test("a double-click keeps wrong-answer feedback available before a click advances", async ({ page }) => {
+  await onboard(page);
+  await page.getByRole("button", { name: "Learn" }).click();
+  await page.getByRole("button", { name: /Basic Greetings/ }).click();
+  const lesson = page.getByRole("dialog", { name: "Lesson" });
+  const wrong = lesson.locator(".opt", { hasText: /^\d?adiós$/ });
+  for (let i = 0; !(await wrong.isVisible()); i++) {
+    expect(i).toBeLessThan(10);
+    await lesson.getByRole("button", { name: "Continue", exact: true }).click();
+  }
+  await expect(lesson.locator(".hearts-box")).toHaveText("5");
+  await wrong.click(); // select the wrong answer, then check it with a double-click
+  await wrong.dblclick();
+  await expect(lesson.locator(".hearts-box")).toHaveText("4");
+  await expect(lesson.locator(".fb.bad")).toBeVisible();
+  await expect(wrong).toHaveClass(/wrong/);
+  await expect(lesson.locator(".opt.correct")).toBeVisible();
+  await wrong.click(); // a normal click advances
+  await expect(lesson.locator(".fb.bad")).toBeHidden();
+  await expect(lesson.locator(".hearts-box")).toHaveText("4");
+});
+
+test("a story opens from Stories, marks known words and can be finished", async ({ page }) => {
+  const story = await openStory(page);
+  const option = story.locator(".opt", { hasText: /^\d?hola$/ });
+  await story.getByRole("button", { name: "Continue", exact: true }).click(); // the mock's question follows the first line
+  await expect(option).toBeVisible();
+  await option.click();
+  await story.getByRole("button", { name: "Check" }).click();
+  await expect(story.getByText("Correct!")).toBeVisible();
+  for (let i = 0; !(await story.getByText("Story complete!").isVisible()); i++) {
+    expect(i).toBeLessThan(40);
+    await story.getByRole("button", { name: /^(Continue|Finish)$/ }).click();
+  }
+  await story.getByRole("button", { name: "Done" }).click();
+  await expect(page.getByRole("button", { name: /Greetings & Introductions.*Read again/ })).toBeVisible(); // remembered
+});
+
+test("a story answer checks with a selected double-click and advances on a click", async ({ page }) => {
+  const story = await openStory(page);
+  const option = story.locator(".opt", { hasText: /^\d?hola$/ });
+  await story.getByRole("button", { name: "Continue", exact: true }).click(); // the mock's question follows the first line
+  await expect(option).toBeVisible();
+  await option.click(); // select it first: the double-click gesture only checks a selected answer
+  await expect(story.getByText("Correct!")).toBeHidden();
+  await option.dblclick();
+  await expect(story.getByText("Correct!")).toBeVisible();
+  await option.click(); // after feedback a normal click is enough to advance
+  await expect(story.getByText("Correct!")).toBeHidden();
   for (let i = 0; !(await story.getByText("Story complete!").isVisible()); i++) {
     expect(i).toBeLessThan(40);
     const opt = story.locator(".opt", { hasText: /^\d?hola$/ });
@@ -100,7 +189,6 @@ test("a story opens from Stories, marks known words and can be finished", async 
     else await story.getByRole("button", { name: /^(Continue|Finish)$/ }).click();
   }
   await story.getByRole("button", { name: "Done" }).click();
-  await expect(page.getByRole("button", { name: /Greetings & Introductions.*Read again/ })).toBeVisible(); // remembered
 });
 
 test("Stories lists earlier levels once the learner moves up", async ({ page }) => {
@@ -192,6 +280,109 @@ test("the grammar reference searches every pattern and drills one", async ({ pag
   await expect(lesson.getByText("100%")).toBeVisible();
   await lesson.getByRole("button", { name: "Done" }).click();
   await expect(lesson).toBeHidden();
+});
+
+test("a custom tutor is created through the UI, listed and can hold a chat", async ({ page }) => {
+  await onboard(page);
+  await page.getByRole("button", { name: "Roleplay", exact: true }).click();
+  await page.getByRole("button", { name: /My tutors/ }).click();
+  const list = page.getByRole("dialog", { name: "My tutors" });
+  await expect(list.getByText("No tutors of your own yet.")).toBeVisible();
+  await list.getByRole("button", { name: "Create tutor" }).click();
+
+  const form = page.getByRole("dialog", { name: "New tutor" });
+  await form.getByLabel("Name").fill("Ada");
+  await form.getByLabel("Kokoro voice").selectOption("af_heart");
+  await form.getByLabel("Persona").fill("A patient neighbour who chats over tea.");
+  await form.getByLabel(/Topic 1/).fill("introduce yourself");
+  await form.getByRole("button", { name: "Create tutor" }).click();
+  await expect(list.getByText("Ada", { exact: true })).toBeVisible();
+  await list.getByRole("button", { name: "Close" }).click();
+
+  await page.reload(); // the tutor comes back from the database, not from this session
+  await page.getByRole("button", { name: "Live lesson" }).click();
+  const picker = page.getByRole("dialog");
+  await expect(picker.getByRole("heading", { name: "Who should teach you today?" })).toBeVisible();
+  await expect(picker.getByRole("button", { name: /Ada/ })).toBeVisible();
+  await picker.getByRole("button", { name: "Cancel" }).click();
+
+  await page.getByRole("button", { name: "Roleplay", exact: true }).click();
+  const card = page.locator(".rp-card", { hasText: "Ada" });
+  await expect(card).toBeVisible();
+  await expect(card.getByText("introduce yourself")).toBeVisible(); // a custom topic has no i18n key
+  await card.getByRole("button", { name: "Chat" }).click();
+  await page.getByRole("dialog").getByRole("button", { name: "introduce yourself" }).click();
+  const chat = page.getByRole("dialog", { name: "Ada" });
+  await expect(chat.getByText("introduce yourself")).toBeVisible();
+  await expect(chat.locator(".bubble", { hasText: "ok" })).toBeVisible(); // the mock's structured turn
+  await chat.locator(".bubble", { hasText: "ok" }).click();
+  await expect(chat.locator(".bubble small", { hasText: "hello" })).toBeVisible(); // translated after the reply, not before it
+});
+
+test("a tutor package is imported, edited and deleted from the tutor list", async ({ page }) => {
+  await onboard(page);
+  await page.getByRole("button", { name: "Roleplay", exact: true }).click();
+  await page.getByRole("button", { name: /My tutors/ }).click();
+  await page.getByRole("dialog", { name: "My tutors" }).getByRole("button", { name: "Import a tutor" }).click();
+  await page.getByRole("dialog").locator('input[type="file"]').setInputFiles("e2e/fixtures/boris-tutor.json");
+
+  const imported = page.getByRole("dialog", { name: "Import a tutor" });
+  await expect(imported.getByText("introduce yourself")).toBeVisible();
+  const confirm = imported.getByLabel("I am responsible for this content");
+  const action = imported.getByRole("button", { name: "Import tutor" });
+  await expect(action).toBeDisabled();
+  await confirm.check();
+  await action.click();
+
+  const list = page.getByRole("dialog", { name: "My tutors" });
+  await expect(list.getByText("Boris", { exact: true })).toBeVisible();
+  await expect(list.getByText("Imported")).toBeVisible();
+
+  await list.getByRole("button", { name: "Options for Boris" }).click();
+  await list.getByRole("menuitem", { name: "Edit" }).click();
+  const form = page.getByRole("dialog", { name: "Edit tutor" });
+  await form.getByLabel("Name").fill("Boris Petrov");
+  await form.getByRole("button", { name: "Save tutor" }).click();
+  await expect(list.getByText("Boris Petrov", { exact: true })).toBeVisible();
+
+  await list.getByRole("button", { name: "Options for Boris Petrov" }).click();
+  await list.getByRole("menuitem", { name: "Delete" }).click();
+  await page.getByRole("dialog", { name: "Delete Boris Petrov?" }).getByRole("button", { name: "Delete", exact: true }).click();
+  await expect(list.getByText("No tutors of your own yet.")).toBeVisible();
+});
+
+test("a tutor exports as a package the import flow takes again", async ({ page }) => {
+  await onboard(page);
+  await page.getByRole("button", { name: "Roleplay", exact: true }).click();
+  await page.getByRole("button", { name: /My tutors/ }).click();
+  const list = page.getByRole("dialog", { name: "My tutors" });
+  await list.getByRole("button", { name: "Import a tutor" }).click();
+  await page.getByRole("dialog").locator('input[type="file"]').setInputFiles("e2e/fixtures/boris-tutor.json");
+  const imported = page.getByRole("dialog", { name: "Import a tutor" });
+  await imported.getByLabel("I am responsible for this content").check();
+  await imported.getByRole("button", { name: "Import tutor" }).click();
+  await expect(list.getByText("Boris", { exact: true })).toBeVisible();
+
+  const more = list.getByRole("button", { name: "Options for Boris" });
+  await more.click();
+  await expect(more).toHaveAttribute("aria-expanded", "true");
+  const download = page.waitForEvent("download");
+  await list.getByRole("menuitem", { name: "Export" }).click();
+  const file = await download;
+  expect(file.suggestedFilename()).toBe("boris.sprigo-tutor.json");
+  const pkg = JSON.parse(readFileSync((await file.path())!, "utf8"));
+  expect(pkg).toMatchObject({ name: "Boris", gender: "m", kokoroVoice: "am_michael" });
+  for (const rowOnly of ["id", "profile_id", "source", "created_at"]) expect(pkg).not.toHaveProperty(rowOnly);
+  await expect(page.getByText("Boris exported.")).toBeVisible();
+
+  await list.getByRole("button", { name: "Import a tutor" }).click();
+  await page.getByRole("dialog").locator('input[type="file"]').setInputFiles({
+    name: "boris.sprigo-tutor.json", mimeType: "application/json", buffer: Buffer.from(JSON.stringify(pkg)),
+  });
+  const again = page.getByRole("dialog", { name: "Import a tutor" });
+  await again.getByLabel("I am responsible for this content").check();
+  await again.getByRole("button", { name: "Import tutor" }).click();
+  await expect(list.getByText("Boris", { exact: true })).toHaveCount(2);
 });
 
 test("readable font and text size apply at once and stay after a reload", async ({ page }) => {

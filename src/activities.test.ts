@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { REGISTRY, givesAway, hideAnswer, matchesAnswer, plannedActivities, lessonSchema, checkPrompt, rejected, sameWords, solvePrompt, toItems, type Item } from "./activities.ts";
+import { REGISTRY, givesAway, hideAnswer, matchesAnswer, plannedActivities, lessonSchema, checkPrompt, rejected, sameWords, solvePrompt, toItems, translationFor, validTranslation, isEchoCorrection, type Item } from "./activities.ts";
 
 test("answer check ignores case, punctuation and curly quotes; accepts variants", () => {
   const item = { answer: "I'm fine, thank you.", accepted: ["I am fine, thanks"] };
@@ -176,4 +176,39 @@ test("cedilla spellings match only in Romanian", async () => {
   assert.equal(matchesAnswer("șey", { answer: "şey", accepted: [] }), false);
   assert.deepEqual(speechMisses("Ce țară?", "Ce ţară?", "ro"), []);
   assert.deepEqual(speechMisses("şey", "șey", "tr"), ["şey"]);
+});
+
+test("a translation is usable unless it is empty or repeats the reply", () => {
+  assert.equal(validTranslation("Sigur, vă ajut.", "Конечно, помогу."), true);
+  assert.equal(validTranslation("Sigur, vă ajut.", ""), false);
+  assert.equal(validTranslation("Sigur, vă ajut.", "  SIGUR, VĂ AJUT.  "), false);
+  // "Taxi" is "Taxi" in both languages, so an identical text is a real translation there.
+  assert.equal(validTranslation("Taxi", "Taxi", true), true);
+});
+
+test("an echo of the reply is retried, and the retry's wording is kept even when it repeats it", async () => {
+  let calls = 0;
+  assert.equal(await translationFor("Bună", " Hello ", async () => { calls++; return "Hi"; }), "Hello");
+  assert.equal(calls, 0); // already usable
+  assert.equal(await translationFor("Taxi", "Taxi", async () => "Taxi"), "Taxi"); // the model insists: "Taxi" is right
+  assert.equal(await translationFor("Bună", "Bună", async () => "Hello"), "Hello");
+  assert.equal(await translationFor("Bună", "", async () => { throw new Error("offline"); }), "");
+});
+
+test("a correction that repeats the learner's sentence, even with an explanation, is an echo", () => {
+  const said = "Da, am o rezervare.";
+  assert.equal(isEchoCorrection(said, said), true);
+  assert.equal(isEchoCorrection("Da,  am   o rezervare.", "da, am o rezervare."), true);
+  assert.equal(isEchoCorrection(said, "Da, am o rezervare. This sentence is correct."), true);
+  assert.equal(isEchoCorrection(said, "Da, am o rezervare — all correct."), true);
+  assert.equal(isEchoCorrection(said, "Da, am o rezervare (correct as written)."), true);
+  assert.equal(isEchoCorrection("Şi în ţară", "Și în țară.", "ro"), true);
+});
+
+test("isEchoCorrection preserves genuine corrections and needs a learner message", () => {
+  assert.equal(isEchoCorrection("Da, am o rezervare pentru un noapte.", "Da, am o rezervare pentru o noapte. “Noapte” is feminine."), false);
+  assert.equal(isEchoCorrection("Rezervare am.", "Am o rezervare."), false);
+  assert.equal(isEchoCorrection("Bună", "Bună ziua! “Bună” alone is casual."), false);
+  assert.equal(isEchoCorrection("", "Anything."), false); // empty history, or the last message is the AI's
+  assert.equal(isEchoCorrection("anything", ""), false);
 });

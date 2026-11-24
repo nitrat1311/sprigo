@@ -12,8 +12,9 @@ import { listen, sttReady, type Listener } from "./stt";
 import { FREE_CONTEXT, RECENT, baselineOf, learnerState, nextHint, summarize, type LearnerState, type Utterance } from "./speech";
 import { Face, type FaceState } from "./face/Face";
 import { Avatar } from "./screens/Profiles";
-import { CHARACTERS, type CharacterId } from "./characters";
+import { type Character, type CharacterId } from "./characters";
 import { judge, learnerFacts, loadPractice, rememberSession, tutorTurn } from "./lessons";
+import { inlineName, remembersLearner } from "./tutors";
 import { warmUp } from "./ai";
 import { FILLER_MS, NOTES_MAX, currentUnit, filler, isNoise, mergeInput, partialSay, sentences, silenceDelay, type TutorEvent, type TutorMsg, type TutorReply } from "./tutor";
 import { recordSession, today, xpMult } from "./progress";
@@ -39,10 +40,9 @@ type Call = {
   mood: { state: LearnerState; turns: number }; // the learner's state at the last turn, so its hint isn't repeated every turn (SPR-26)
 };
 
-export function TutorCall({ who }: { who: CharacterId }) {
+export function TutorCall({ who, ch }: { who: CharacterId; ch: Character }) {
   const { t } = useTranslation();
   const { course, enrollment, profile, done, s, setS, gainXp, toast } = useApp();
-  const ch = CHARACTERS[who];
   const lang = course?.iso ?? "en";
   const levelDef = course && enrollment ? course.levels[enrollment.level] : undefined;
   const unit = levelDef ? currentUnit(levelDef, done) : undefined;
@@ -160,7 +160,7 @@ export function TutorCall({ who }: { who: CharacterId }) {
       const mood = nextHint(c.mood, learnerState(said, (await usual) ?? baselineOf(said.slice(0, -RECENT))));
       c.mood = mood.prev;
       mark("req");
-      const r = await tutorTurn({ course, level: enrollment.level, native: profile.native_lang, about: facts, coach: mood.hint }, who, unit, c.hist, c.notes, e, describePractice(c.pr, topics), onText);
+      const r = await tutorTurn({ course, level: enrollment.level, native: profile.native_lang, about: facts, coach: mood.hint }, ch, unit, c.hist, c.notes, e, describePractice(c.pr, topics), onText);
       mark("llm");
       if (c.over) return true;
       c.notes = r.notes.slice(0, NOTES_MAX); c.last = r; c.failed = null;
@@ -321,7 +321,7 @@ export function TutorCall({ who }: { who: CharacterId }) {
     sfx("done");
     setResult({ xp, gems: 0, fixes: [...c.fixes] });
     if (profile && c.speech.length) void db.saveSpeechSession(profile.id, enrollment?.id ?? null, summarize(c.speech, c.silences), { ...FREE_CONTEXT, mode: "tutor", topicFamiliarity: "prepared" }).catch(() => {});
-    if (profile) void rememberSession(profile.id, profile.native_lang, "tutor", ch.name, c.hist.map((m) => ({ from: m.from === "me" ? "me" : "other", text: m.text })))
+    if (profile && remembersLearner(ch)) void rememberSession(profile.id, profile.native_lang, "tutor", inlineName(ch), c.hist.map((m) => ({ from: m.from === "me" ? "me" : "other", text: m.text })))
       .then((n) => { if (n) toast(t("memory.saved", { count: n })); });
   };
   const end = () => (c.hist.some((m) => m.from === "me") || c.pxp ? finish() : quit());
@@ -367,7 +367,7 @@ export function TutorCall({ who }: { who: CharacterId }) {
           onTopic={(tp) => void chooseTopic(tp)} onAnswer={submit} onNext={advance} onHint={() => fire({ kind: "practice_stuck" })}
           onRetry={retryTopic} onClose={practiceClose} />}
         <section className="call-pane tutor" aria-label={ch.name}>
-          <Face spec={ch.face} color={ch.color} label={ch.name} state={faceState} scene={who} />
+          <Face spec={ch.face} color={ch.color} label={ch.name} state={faceState} scene={who} image={ch.avatar} sceneImage={ch.scene} />
           <b className="call-name">{ch.name}</b>
           {talking && engine && <small className="muted small" role="status">{t("ai.speakingWith", { engine: t(`voice.engine.${engine}`) })}</small>}
           {last?.correction.trim() && <p className="call-fix small"><Icon name="spark" /> {last.correction}</p>}

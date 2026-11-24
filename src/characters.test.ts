@@ -1,11 +1,15 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { CHARACTERS, parseTalkId, talkId, type CharacterId } from "./characters.ts";
+import { CHARACTERS, FREE_GOAL, parseTalkId, talkId, type BuiltinId, type CharacterId } from "./characters.ts";
+import { ladderDrill, drillId } from "./drills.ts";
+import { rehearseId } from "./rehearsal.ts";
+import { characterOf, type CustomTutor } from "./tutors.ts";
 
 const load = (l: string) => JSON.parse(readFileSync(new URL(`./locales/${l}.json`, import.meta.url), "utf8"));
 const locales = [load("en"), load("tr")];
-const ids = Object.keys(CHARACTERS) as CharacterId[];
+/** The built-in cast; custom tutors are per profile and only reach parseTalkId through a resolver. */
+const ids = Object.keys(CHARACTERS) as BuiltinId[];
 
 test("three women, three men, distinct names and voices", () => {
   assert.equal(ids.length, 6);
@@ -37,6 +41,23 @@ test("talk ids round-trip", () => {
     assert.deepEqual(parseTalkId(talkId(voice, k, x.id)), { voice, who: k, topic: x });
   const free = "Çay: şeker mi, limon mu?";
   assert.deepEqual(parseTalkId(talkId(true, "leo", { free })), { voice: true, who: "leo", topic: { goal: `have a natural conversation about: ${free}` } });
+});
+
+test("a custom tutor id needs the resolver, and round-trips through it", () => {
+  const ada: CustomTutor = {
+    id: "custom:ada-1", name: "Ada", gender: "f", color: "#2f80ed", kokoroVoice: "af_bella",
+    persona: "A patient neighbour.", topics: [{ id: "intro", goal: "introduce yourself" }],
+  };
+  const who = ada.id as CharacterId, resolve = (id: CharacterId) => characterOf(id, [ada]);
+  assert.deepEqual(parseTalkId(talkId(false, who, "intro"), resolve), { voice: false, who, topic: ada.topics[0] });
+  assert.deepEqual(parseTalkId(talkId(true, who, { free: "the weather" }), resolve), { voice: true, who, topic: { goal: `${FREE_GOAL}the weather` } });
+  const d = ladderDrill(1, "the weather");
+  assert.deepEqual(parseTalkId(drillId(ada.id, d), resolve)?.drill, d);
+  const brief = { who: "my neighbour", about: "the bins", formality: "neutral" as const };
+  assert.deepEqual(parseTalkId(rehearseId(true, who, brief), resolve), { voice: true, who, topic: { goal: "the bins" }, rehearse: brief });
+  assert.equal(parseTalkId(talkId(false, who, "intro")), null, "no resolver = no custom tutor");
+  assert.equal(parseTalkId("chat:custom:gone:intro", resolve), null, "a resolver that finds nothing rejects the id");
+  assert.equal(parseTalkId(talkId(false, who, "nope"), resolve), null, "a topic the tutor does not have");
 });
 
 test("broken talk ids are null", () => {

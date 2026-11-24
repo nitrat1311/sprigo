@@ -1,0 +1,9 @@
+.git
+node_modules
+src-tauri/target
+.private
+.env
+deploy/web/.env
+deploy/web/certs
+deploy/web/models
+deploy/web/__pycache__

@@ -65,3 +65,32 @@ export function concat(parts: Float32Array[]): Float32Array {
   parts.reduce((o, c) => (all.set(c, o), o + c.length), 0);
   return all;
 }
+
+const FADE_S = 0.01;
+/** `x` cut to `span` (seconds) widened by `before`/`after` and kept inside the take, with 10 ms fades so neither cut
+ *  clicks. A null span keeps the whole take (still faded). */
+export function cutTo(x: Float32Array, rate: number, span: [number, number] | null, before = 0.15, after = 0.3): Float32Array {
+  const from = span ? Math.max(0, Math.floor((span[0] - before) * rate)) : 0;
+  const to = span ? Math.min(x.length, Math.ceil((span[1] + after) * rate)) : x.length;
+  const y = x.slice(from, Math.max(from, to));
+  const f = Math.min(Math.round(FADE_S * rate), Math.floor(y.length / 2));
+  for (let i = 0; i < f; i++) { const g = i / f; y[i] *= g; y[y.length - 1 - i] *= g; }
+  return y;
+}
+
+/** Playback level: the speech (20 ms frames within 20 dB of the loudest) brought to `target` RMS (0.1 ≈ -20 dBFS),
+ *  by at most `maxGain` (×10 = +20 dB, so a near-silent take stays quiet instead of turning into hiss), and never
+ *  past a -1 dBFS peak. Loud takes are turned down the same way. Playback only: whisper does not need it. */
+export function loudness(x: Float32Array, rate = 16000, target = 0.1, maxGain = 10): Float32Array {
+  const n = Math.max(1, Math.round(0.02 * rate));
+  const frames: number[] = [];
+  for (let i = 0; i < x.length; i += n) frames.push(rms(x.subarray(i, i + n)));
+  const loudest = Math.max(0, ...frames);
+  if (!loudest) return x;
+  const speech = frames.filter((r) => r >= loudest / 10);
+  const level = Math.sqrt(speech.reduce((s, r) => s + r * r, 0) / speech.length);
+  let peak = 0;
+  for (const v of x) peak = Math.max(peak, Math.abs(v));
+  const gain = Math.min(target / level, maxGain, 0.89 / peak);
+  return x.map((v) => v * gain);
+}

@@ -7,6 +7,10 @@ on:
     branches: [master, test]
   pull_request:
 
+# Read-only token: the jobs run repo code (tests, build scripts) after checkout persists the token.
+permissions:
+  contents: read
+
 concurrency:
   group: check-${{ github.ref }}
   cancel-in-progress: true

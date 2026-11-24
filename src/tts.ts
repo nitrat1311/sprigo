@@ -8,6 +8,7 @@ import { fetch as tauriFetch } from "@tauri-apps/plugin-http";
 import { getSetting, isCompanion, isTauri } from "./db";
 import { ELEVEN_VOICES, LOCAL_TTS, elevenRequest, localRequest, type ByteRequest, type LocalTts } from "./ttsCloud";
 import { pickSystemVoice } from "./voices";
+import { unlockOnGesture } from "./audioUnlock";
 import { mouthBright, mouthLevel, remember, zcr } from "./audio";
 
 export type Voice = { gender: "f" | "m"; kokoro?: string };
@@ -47,6 +48,9 @@ const PIPER: Record<string, Record<"f" | "m", string>> = {
   tr: { f: "tr_TR-dfki-medium", m: "tr_TR-fahrettin-medium" },
   hu: { f: "hu_HU-anna-medium", m: "hu_HU-imre-medium" },
   ro: { f: "ro_RO-mihai-medium", m: "ro_RO-mihai-medium" },
+  // Flemish voices: the bundled library's only nl_NL voice (MLS) was reported to sound unnatural; the newer nl_NL
+  // voices (pim, ronnie, alex) need Piper 1.5, so switch to one of them once the Piper runtime is updated.
+  nl: { f: "nl_BE-nathalie-medium", m: "nl_BE-rdh-medium" },
 };
 // Accents (#35): where an engine has a voice for one, it is used; elsewhere the language's default voice speaks.
 const PIPER_ACCENT: Record<string, Record<"f" | "m", string>> = { "en-GB": { f: "en_GB-cori-medium", m: "en_GB-alan-medium" } };
@@ -135,12 +139,15 @@ export const loadPiper = async (lang: string, onProgress?: (p: number) => void, 
 /** Starts loading the local voice this language will use, so the first line is not waiting on the model. */
 export async function prewarm(lang: string, voice?: Voice) {
   const got = await engineFor(lang, voice, undefined, await ttsAccent(lang));
+  if (got) webAudio = true; // known before the first tap, so the gesture unlock can open the context
   if (got && (got[0] === "piper" || got[0] === "kokoro")) await load(got[0], got[0] === "kokoro" ? "" : got[1]);
 }
 
 let seq = 0;
 let sources: AudioBufferSourceNode[] = [];
 let actx: AudioContext | undefined;
+let webAudio = false; // a local engine plays through `actx`; the system voice does not
+let speechWarm = false; // speechSynthesis was started once from a gesture
 let analyser: AnalyserNode | undefined; // local-engine audio passes through it so faces can read the loudness
 const out = (ctx: AudioContext) => {
   if (!analyser) { analyser = ctx.createAnalyser(); analyser.fftSize = 1024; analyser.connect(ctx.destination); }
@@ -223,10 +230,40 @@ function player(ctx: AudioContext, mine: number, done: () => void) {
 }
 
 const audioCtx = async (mine: number) => {
+  webAudio = true;
   const ctx = (actx ??= new AudioContext());
-  await ctx.resume();
+  await ctx.resume().catch(() => {}); // iOS: may stay suspended until the next pointerup / touchend warms it
+  if (!isRunning(ctx)) watch(); // the tap that would have resumed it may already be gone
   return mine === seq ? ctx : null; // null: cut while waiting; `next` belongs to the newer speak now
 };
+/** Reads the state afresh: TypeScript keeps the narrowing across the awaits in `unlock`. */
+const isRunning = (ctx: AudioContext) => ctx.state === "running";
+
+// iOS Safari starts Web Audio and speechSynthesis only inside a user activation, and both are started after awaits
+// (the voice lookup), when it is gone. They are warmed from the first pointerup / touchend instead.
+async function unlock(): Promise<boolean> {
+  if (synth && !speechWarm) {
+    try {
+      const u = new SpeechSynthesisUtterance(" "); // silent: it only has to be spoken from a gesture, once
+      u.volume = 0;
+      synth.speak(u);
+      speechWarm = true;
+    } catch { /* no system voice here: nothing to unlock */ }
+  }
+  if (!webAudio) return true; // the system voice: speechSynthesis warmed above, no context to resume
+  const ctx = (actx ??= new AudioContext()); // created in the gesture, so iOS starts it running
+  if (isRunning(ctx)) return true;
+  try { await ctx.resume(); } catch { return true; } // a rejected resume cannot be retried: stop listening
+  return isRunning(ctx); // still suspended: keep listening for the next tap
+}
+// Passive listeners, removed once the context runs (or its resume is rejected), so a failed one keeps retrying.
+let listening = false;
+function watch() {
+  if (listening || typeof document === "undefined") return;
+  listening = true;
+  unlockOnGesture(async () => { const done = await unlock(); if (done) listening = false; return done; });
+}
+watch();
 
 /** Plays local-engine audio for `text`; resolves once the first sentence plays, throws before that to fall back. */
 async function viaWorker(e: Engine, text: string, voice: string, mine: number, done: () => void, speed: number) {
@@ -298,6 +335,13 @@ export async function sayWithEleven(text: string, lang: string, key: string, voi
   await viaBytes(`test:${voice}\n${text}`, elevenLine(text, lang, voice, key), seq, () => {});
 }
 
+/** The tutor form's preview: this Kokoro voice whatever the device's provider or accent is; no fallback, so a missing model throws. */
+export async function sayWithKokoro(text: string, voice: string) {
+  const speed = await ttsSpeed();
+  stopSpeaking();
+  await viaWorker("kokoro", text, voice, seq, () => {}, speed);
+}
+
 // ---- Which engine spoke, and one notice per session when the chosen one fell back to the system voice ----
 let lastEngine: TtsProvider | null = null; // null: nothing spoken yet
 export const speakingWith = () => lastEngine;
@@ -323,6 +367,7 @@ export async function speak(text: string, lang: string, voice?: Voice, started?:
   const [want, rate, accent] = await Promise.all([ttsProvider(), speed ?? ttsSpeed(), ttsAccent(lang)]);
   const local = await engineFor(lang, voice, want, accent);
   if (local) {
+    webAudio = true;
     try {
       lastEngine = local[0];
       if (local[0] === "elevenlabs") await viaBytes(`elevenlabs:${local[1]}:${rate}\n${text}`, elevenLine(text, lang, local[1], undefined, rate), mine, done);

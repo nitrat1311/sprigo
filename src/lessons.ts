@@ -3,8 +3,8 @@ import { crossChecked, formsPrompt, formsSchema, fromTable, pickAsks } from "./c
 import { z } from "zod";
 import { generate, generatePlain, generateStream } from "./ai";
 import { applyMemoryOps, cachedGuides, enrollmentProfile, getCached, listMemories, listMistakes, markMemoriesUsed, memoryOn, putCached } from "./db";
-import { REGISTRY, givesAway, langEn, lessonPrompt, mistakeLine, lessonSchema, plannedActivities, checkPrompt, checkSchema, rejected, reviewSystem, shuffleAnswer, solvePrompt, solveSchema, solveSystem, systemPrompt, toItems, type Item, type LessonContext } from "./activities";
-import { CHARACTERS, CHAT_MAX_TURNS, CHAT_MIN_TURNS, FREE_GOAL, type CharacterId } from "./characters";
+import { REGISTRY, givesAway, langEn, lessonPrompt, mistakeLine, lessonSchema, plannedActivities, checkPrompt, checkSchema, rejected, reviewSystem, shuffleAnswer, solvePrompt, solveSchema, solveSystem, systemPrompt, toItems, type Item, type LessonContext, isEchoCorrection } from "./activities";
+import { CHAT_MAX_TURNS, CHAT_MIN_TURNS, FREE_GOAL, type Character } from "./characters";
 import { CEFR, levelsOf, storyId, type Course, type CourseLevel, type Cefr } from "./course";
 import { looseTutor, tutorPrompt, tutorSchema, tutorSystem, type TutorEvent, type TutorMsg } from "./tutor";
 import { cleanOps, looseMemory, memoryPrompt, memorySchema, memorySystem, pickMemories, type MemorySource } from "./memory";
@@ -14,6 +14,7 @@ import { avoidancePrompt, avoidanceSchema, looseAvoidance } from "./drills";
 import { fromGuides, lookupSchema, wordKey, type Lookup } from "./lookup";
 import { feedbackPrompt, feedbackSchema, looseFeedback, taskPrompt, taskSchema, writeId, type WritingTask } from "./writing";
 import { cleanNote, noteFor, noteFresh, notePrompt, noteSystem, NOTE_KEY, type GardenNote, type NoteInfo } from "./gardenNote";
+import { goalInPrompt, inlineName, nameInPrompt, personaInPrompt } from "./tutors";
 
 /** `A1:checkpoint` (path node) and `A1:test` (skip-level test) share one flow (DECISIONS B8). */
 export const examLevel = (id: string) => /^([ABC][12]):(checkpoint|test)$/.exec(id)?.[1] as Cefr | undefined;
@@ -265,23 +266,26 @@ export const checkWriting = (c: Base, task: string, text: string) =>
 export type ChatMsg = { from: "ai" | "me"; text: string; translation?: string; correction?: string };
 
 const turnSchema = z.object({ correction: z.string(), reply: z.string(), translation: z.string(), goal_reached: z.boolean() });
-// Some models (glm on Ollama) drop goal_reached or correction every time, so retrying can't help; a missing one means "no".
-const looseTurn = turnSchema.extend({ correction: z.string().catch(""), goal_reached: z.boolean().catch(false) });
+// Some models (glm on Ollama) drop goal_reached, correction or translation every time, so retrying can't help; a missing one means "no".
+const looseTurn = turnSchema.extend({ correction: z.string().catch(""), translation: z.string().catch(""), goal_reached: z.boolean().catch(false) });
 
 /** The character's next turn; also corrects the learner's last message. Empty history = opening line.
  *  `opts.rules` add lines to the system prompt (drills); `opts.keep` caps how many past messages the prompt carries. */
-export function chatTurn(c: Base & { about?: string[] }, who: CharacterId, topic: { goal: string }, history: ChatMsg[], opts: { rules?: string[]; keep?: number } = {}) {
-  const ch = CHARACTERS[who], native = langEn(c.native);
+export async function chatTurn(c: Base & { about?: string[] }, ch: Character, topic: { goal: string }, history: ChatMsg[], opts: { rules?: string[]; keep?: number } = {}) {
+  const native = langEn(c.native);
   const free = topic.goal.startsWith(FREE_GOAL);
   const sent = history.filter((m) => m.from === "me").length;
+  const name = inlineName(ch);
+  const intro = `in a roleplay inside a language-learning app. The learner is a native ${native} speaker learning ${c.course.name} at CEFR level ${c.level}.`;
   const system = [
-    `You are ${ch.name} in a roleplay inside a language-learning app. The learner is a native ${native} speaker learning ${c.course.name} at CEFR level ${c.level}.`,
+    // A custom tutor's name is a data block, so it follows the sentence; history and prompts below use the plain name.
+    ch.custom ? `You are a character ${intro}\n${nameInPrompt(ch)}` : `You are ${name} ${intro}`,
     free
       // A free topic is the learner's own; the job in the persona must not pull it back into a work scene (a landlord asking about rent in a football chat).
-      ? `Your personality: ${ch.persona} The learner picked the topic, so this is a casual chat between two people, not a scene from your job. Keep your personality and manner, but never bring up your work, customers, place or tasks unless the learner does. Topic: ${topic.goal.slice(FREE_GOAL.length)}.`
-      : `${ch.persona} The learner's goal: ${topic.goal}.`,
+      ? `${personaInPrompt(ch, "Your personality: ")} The learner picked the topic, so this is a casual chat between two people, not a scene from your job. Keep your personality and manner, but never bring up your work, customers, place or tasks unless the learner does. Topic: ${goalInPrompt(ch, topic.goal.slice(FREE_GOAL.length))}.`
+      : `${personaInPrompt(ch)} The learner's goal: ${goalInPrompt(ch, topic.goal)}.`,
     c.about?.length ? `You have talked with this learner before and remember: ${c.about.join(" ")} Where it fits the chat, ask about one of these or link the topic to it, one thing at a time; never list what you know.` : "",
-    `Stay in character. \`reply\`: ${c.course.name} only, 1–2 short sentences suited to ${c.level}, in your own manner. Always ${c.course.name}, even when the learner or the goal is written in another language. \`translation\`: the reply in ${native}.`,
+    `Stay in character. \`reply\`: ${c.course.name} only, 1–2 short sentences suited to ${c.level}, in your own manner. Always ${c.course.name}, even when the learner or the goal is written in another language. \`translation\`: translate the complete reply into ${native}; do not repeat the ${c.course.name} text.`,
     free
       ? "Keep the chat going: react to what the learner just said and ask one follow-up question about the topic or their experience with it."
       : `Pace the scene so it lasts about ${CHAT_MIN_TURNS}–${CHAT_MAX_TURNS} learner messages: one small step per turn, with realistic details to sort out (names, dates, preferences, a small complication) and a question the learner has to answer. Never solve several steps at once.`,
@@ -294,11 +298,22 @@ export function chatTurn(c: Base & { about?: string[] }, who: CharacterId, topic
   ].filter(Boolean).join("\n");
   const last = history[history.length - 1];
   const prompt = last
-    ? `Conversation so far:\n${history.slice(-(opts.keep ?? history.length)).map((m) => `${m.from === "ai" ? ch.name : "Learner"}: ${m.text}`).join("\n")}\n\n` +
-      `Check only this last learner message for \`correction\` (earlier ones were already corrected): "${last.text}"\nThen write ${ch.name}'s next turn.`
+    ? `Conversation so far:\n${history.slice(-(opts.keep ?? history.length)).map((m) => `${m.from === "ai" ? name : "Learner"}: ${m.text}`).join("\n")}\n\n` +
+      `Check only this last learner message for \`correction\` (earlier ones were already corrected): "${last.text}"\nThen write ${name}'s next turn.`
     : free ? "Open the chat: a short, friendly greeting and a first question about the topic."
     : "Open the scene: a short greeting that leads straight into the goal and invites the learner to start.";
-  return generate(turnSchema, system, prompt, "tutor", undefined, looseTurn);
+  const r = await generate(turnSchema, system, prompt, "tutor", undefined, looseTurn);
+  // The model sometimes repeats the learner's sentence (often with a short explanation after it) and calls that a correction.
+  return r.correction && isEchoCorrection(last?.from === "me" ? last.text : "", r.correction, c.course.iso) ? { ...r, correction: "" } : r;
+}
+
+/** One extra pass for a reply whose own translation was missing or echoed it; "" when the model cannot translate it. */
+export function translateReply(c: Base, reply: string) {
+  return generate(z.object({ translation: z.string() }),
+    `Translate the text from ${c.course.name} into ${langEn(c.native)}. Return only the translation in the JSON field. Do not continue the conversation.`,
+    reply, "tutor")
+    .then((r) => r.translation.trim())
+    .catch(() => ""); // a chat reply still reads without its translation
 }
 
 /** Rehearsal: the next in-role turn as `brief.who`. No correction, no goal, and no learner facts: the brief is the whole context. */
@@ -372,14 +387,13 @@ export function lessonWord(enrollmentId: number, c: Base, word: string, sentence
 // ---- Tutor call: the tutor's reply to one event ----
 
 /** With `onText` the reply streams (SPR-13); see generateStream. */
-export function tutorTurn(c: Base & { about?: string[]; coach?: string }, who: CharacterId, unit: Unit, history: TutorMsg[], notes: string, event: TutorEvent, screen = "",
+export function tutorTurn(c: Base & { about?: string[]; coach?: string }, ch: Character, unit: Unit, history: TutorMsg[], notes: string, event: TutorEvent, screen = "",
   onText?: (raw: string) => boolean) {
-  const ch = CHARACTERS[who];
   const system = tutorSystem({
     name: ch.name, persona: ch.persona, target: c.course.name, native: langEn(c.native), level: c.level,
-    unit: unit.title, words: unitWords(unit), grammar: unitGrammar(unit), about: c.about ?? [],
+    unit: unit.title, words: unitWords(unit), grammar: unitGrammar(unit), about: c.about ?? [], custom: ch.custom,
   });
-  const prompt = tutorPrompt(ch.name, history, notes, event, screen, c.coach);
+  const prompt = tutorPrompt(inlineName(ch), history, notes, event, screen, c.coach);
   return onText ? generateStream(tutorSchema, system, prompt, "tutor", onText, looseTutor) : generate(tutorSchema, system, prompt, "tutor", undefined, looseTutor);
 }
 

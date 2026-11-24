@@ -14,7 +14,8 @@ import type { Update } from "@tauri-apps/plugin-updater";
 import { Chat, Story } from "./Talk";
 import { Flashcards } from "./Flashcards";
 import { TutorCall } from "./TutorCall";
-import { CHARACTERS, parseTalkId, type CharacterId } from "./characters";
+import { parseTalkId, type CharacterId } from "./characters";
+import { characterOf } from "./tutors";
 import { parseStoryId, type Cefr } from "./course";
 import { parseWriteId } from "./writing";
 import { Writing } from "./Write";
@@ -136,13 +137,17 @@ function FutureOrFailed({ e, future }: { e: BootError; future: boolean }) {
 
 export default function App() {
   const { t, i18n } = useTranslation();
-  const { ready, bootError, profile, route, sheet, openSheet, closeSheet, toastMsg, toastOn, lessonId, endLesson, s, setS, course, logout } = useApp();
+  const { ready, bootError, profile, route, sheet, openSheet, closeSheet, toastMsg, toastOn, lessonId, endLesson, s, setS, course, logout, tutors } = useApp();
   const langName = useLangName();
   const Screen = SCREENS[route];
-  const talk = lessonId && /^(chat|call|rehearse|drill):/.test(lessonId) ? parseTalkId(lessonId) : undefined;
+  const resolve = (id: CharacterId) => characterOf(id, tutors);
+  const talk = lessonId && /^(chat|call|rehearse|drill):/.test(lessonId) ? parseTalkId(lessonId, resolve) : undefined;
+  const talkCh = talk ? resolve(talk.who) : undefined;
+  const callWho = lessonId?.startsWith("tutor:") ? (lessonId.slice(6) as CharacterId) : undefined;
+  const callCh = callWho ? resolve(callWho) : undefined;
   const story = lessonId?.startsWith("story:") ? parseStoryId(lessonId) : undefined;
   const writing = lessonId?.startsWith("write:") ? parseWriteId(lessonId) : undefined;
-  const badTalk = talk === null || story === null || writing === null;
+  const badTalk = talk === null || story === null || writing === null || (!!callWho && !callCh);
   useEffect(() => { if (badTalk) endLesson(); }, [badTalk]);
 
   useEffect(() => {
@@ -258,8 +263,8 @@ export default function App() {
       {lessonId && (lessonId.startsWith("story:") ? (story && <Story key={lessonId} {...story} />)
         : lessonId.startsWith("write:") ? (writing && <Writing key={lessonId} level={writing.level as Cefr} unit={writing.unit} />)
         : lessonId.startsWith("cards:") ? <Flashcards key={lessonId} deck={lessonId.slice(6)} />
-        : lessonId.startsWith("tutor:") ? (lessonId.slice(6) in CHARACTERS && <TutorCall key={lessonId} who={lessonId.slice(6) as CharacterId} />)
-        : /^(chat|call|rehearse|drill):/.test(lessonId) ? (talk && <Chat key={lessonId} talk={talk} />) : <Lesson id={lessonId} />)}
+        : lessonId.startsWith("tutor:") ? (callCh && <TutorCall key={lessonId} who={callWho!} ch={callCh} />)
+        : /^(chat|call|rehearse|drill):/.test(lessonId) ? (talk && talkCh && <Chat key={lessonId} talk={talk} ch={talkCh} />) : <Lesson id={lessonId} />)}
       </div>
       </>}
 
