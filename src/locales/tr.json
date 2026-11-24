@@ -51,6 +51,17 @@
     "guide": "Rehber",
     "story": "Hikâye"
   },
+  "search": {
+    "label": "Derslerde ve rehberlerde ara",
+    "placeholder": "Ünite, kelime, dilbilgisi ara…",
+    "none": "“{{query}}” için sonuç yok.",
+    "more": "Yalnızca ilk {{count}} sonuç gösteriliyor. Daraltmak için yazmaya devam et.",
+    "unit": "Ünite",
+    "step": "Ders",
+    "vocabulary": "Kelimeler",
+    "grammar": "Dilbilgisi",
+    "guide": "Rehber"
+  },
   "learn": {
     "kicker": "{{level}} · Ünite {{unit}}",
     "start": "Başla",

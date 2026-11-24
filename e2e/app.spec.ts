@@ -98,6 +98,21 @@ test("first lessons run every exercise type", async ({ page }) => {
   await runLesson(page, /Introduce Yourself/);
 });
 
+test("search finds a lesson or word and opens its unit", async ({ page }) => {
+  await onboard(page);
+  await page.getByRole("button", { name: "Learn" }).click();
+  const search = page.getByLabel("Search lessons and guidebooks");
+  await search.fill("How Old");
+  const results = page.locator(".search-results");
+  await expect(results.getByRole("button", { name: /How Old Are You\?/ })).toBeVisible();
+  await results.getByRole("button", { name: /How Old Are You\?/ }).click();
+  await expect(results).toBeHidden();
+  await expect(page.getByRole("heading", { name: "Numbers & Colors" })).toBeInViewport();
+
+  await search.fill("adios"); // the query folds accents
+  await expect(results.getByRole("button", { name: /^adiós/ })).toBeVisible();
+});
+
 test("a double-click checks a selected answer and a click advances after feedback", async ({ page }) => {
   await onboard(page);
   await page.getByRole("button", { name: "Learn" }).click();

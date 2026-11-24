@@ -42,6 +42,17 @@
     "soonScreen": "Questa schermata è un’anteprima. I dati mostrati sono di esempio.",
     "soonToast": "Prossimamente"
   },
+  "search": {
+    "label": "Cerca lezioni e guide",
+    "placeholder": "Cerca unità, parole, grammatica…",
+    "none": "Nessun risultato per «{{query}}».",
+    "more": "Sono mostrate solo le prime {{count}} corrispondenze. Continua a scrivere per restringere.",
+    "unit": "Unità",
+    "step": "Lezione",
+    "vocabulary": "Vocabolario",
+    "grammar": "Grammatica",
+    "guide": "Guida"
+  },
   "learn": {
     "kicker": "{{level}} · Unità {{unit}}",
     "start": "Inizia",

@@ -51,6 +51,17 @@
     "guide": "Guía",
     "story": "Historia"
   },
+  "search": {
+    "label": "Buscar lecciones y guías",
+    "placeholder": "Buscar unidades, palabras, gramática…",
+    "none": "No hay resultados para «{{query}}».",
+    "more": "Solo se muestran las primeras {{count}} coincidencias. Sigue escribiendo para acotar la búsqueda.",
+    "unit": "Unidad",
+    "step": "Lección",
+    "vocabulary": "Vocabulario",
+    "grammar": "Gramática",
+    "guide": "Guía"
+  },
   "learn": {
     "kicker": "{{level}} · Unidad {{unit}}",
     "start": "Empezar",

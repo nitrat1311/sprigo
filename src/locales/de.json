@@ -51,6 +51,17 @@
     "guide": "Lernführer",
     "story": "Geschichte"
   },
+  "search": {
+    "label": "Lektionen und Lernführer durchsuchen",
+    "placeholder": "Einheiten, Wörter, Grammatik durchsuchen…",
+    "none": "Kein Treffer für „{{query}}“.",
+    "more": "Es werden nur die ersten {{count}} Treffer angezeigt. Tippe weiter, um die Suche einzugrenzen.",
+    "unit": "Einheit",
+    "step": "Lektion",
+    "vocabulary": "Vokabeln",
+    "grammar": "Grammatik",
+    "guide": "Lernführer"
+  },
   "learn": {
     "kicker": "{{level}} · Einheit {{unit}}",
     "start": "Start",
