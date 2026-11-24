@@ -94,7 +94,7 @@ function BootErrorScreen({ e }: { e: BootError }) {
   // Phone companion: one device at a time; continuing here reloads, which takes the data back (src/companion.ts).
   if (e.kind === "onPhone" || e.kind === "onDesktop") return (
     <div className="boot-error" role="alert">
-      <div className="card od-stack" style={{ "--od-gap": "10px" } as React.CSSProperties}>
+      <div className="card od-stack" style={{ "--od-gap": "var(--s-4)" } as React.CSSProperties}>
         <h3>{t(`boot.${e.kind}Title`)}</h3>
         <p className="muted">{t(`boot.${e.kind}Desc`)}</p>
         <button className="btn btn-primary btn-block" onClick={() => location.reload()}>{t("boot.continueHere")}</button>
@@ -104,7 +104,7 @@ function BootErrorScreen({ e }: { e: BootError }) {
   const retry = <button className="btn btn-primary btn-block" disabled={busy} onClick={() => location.reload()}>{t("boot.retry")}</button>;
   if (e.kind === "unreachable" || e.kind === "locked") return (
     <div className="boot-error" role="alert">
-      <div className="card od-stack" style={{ "--od-gap": "10px" } as React.CSSProperties}>
+      <div className="card od-stack" style={{ "--od-gap": "var(--s-4)" } as React.CSSProperties}>
         <h3>{t(e.kind === "locked" ? "boot.lockedTitle" : "boot.unreachableTitle", { device: e.detail })}</h3>
         <p className="muted">{t(e.kind === "locked" ? "boot.lockedDesc" : "boot.unreachableDesc")}</p>
         {e.kind === "unreachable" && <pre className="boot-detail">{e.detail}</pre>}
@@ -241,7 +241,7 @@ export default function App() {
           <nav>
             <LiveButton />
             {NAV.map((n) => <NavBtn key={n.id} {...n} />)}
-            <div style={{ margin: "14px 12px 6px", fontSize: 11, fontWeight: 900, letterSpacing: "1.2px", color: "var(--text-faint)", textTransform: "uppercase" }}>
+            <div className="nav-group-label">
               {t("nav.more")}
             </div>
             {MORE.map((n) => <NavBtn key={n.id} {...n} />)}

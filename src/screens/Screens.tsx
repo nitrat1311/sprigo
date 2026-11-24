@@ -29,7 +29,7 @@ import { BOOKMARKS_CHANGED, BookmarkButton } from "../BookmarkButton";
 import { GuideSheet, jumpTo } from "./Learn";
 import { TutorsSheet } from "./Tutors";
 
-const iconBox = (bg: string, fg: string, size = 48, radius: number | string = 12): React.CSSProperties => ({
+const iconBox = (bg: string, fg: string, size = 48, radius: number | string = "var(--r)"): React.CSSProperties => ({
   width: size, height: size, flex: "none", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: radius, background: bg, color: fg,
 });
 
@@ -56,7 +56,7 @@ export function TutorSheet() {
   const { closeSheet, tutors } = useApp();
   const start = useStartLesson();
   return (
-    <div className="od-stack" style={{ "--od-gap": "10px" } as React.CSSProperties}>
+    <div className="od-stack" style={{ "--od-gap": "var(--s-4)" } as React.CSSProperties}>
       <h3 style={{ textAlign: "center" }}>{t("tutor.pick")}</h3>
       {castOf(tutors).map(({ id, ch }) => (
         <button key={id} className="tutor-pick" onClick={() => { closeSheet(); start(`tutor:${id}`); }}>
@@ -124,14 +124,14 @@ export function Practice() {
     <button className="card row-item" onClick={onClick}>
       <span style={iconBox(bg, fg)}><Icon name={icon} /></span>
       <span className="od-field od-fill"><b>{title}</b><span className="muted small">{desc}</span></span>
-      <span className="btn btn-ghost" style={{ pointerEvents: "none" }}>{t("practice.start")}</span>
+      <span className="btn btn-ghost pe-none">{t("practice.start")}</span>
     </button>
   );
   return (
     <>
-      <h1 className="section-title" style={{ marginTop: 24 }}>{t("practice.title")}</h1>
-      <p className="muted" style={{ marginBottom: 20 }}>{t("practice.subtitle")}</p>
-      <div className="od-grid" style={{ "--od-cols": 1, "--od-gap": "14px" } as React.CSSProperties}>
+      <h1 className="section-title" style={{ marginTop: "var(--s-6)" }}>{t("practice.title")}</h1>
+      <p className="muted" style={{ marginBottom: "var(--s-6)" }}>{t("practice.subtitle")}</p>
+      <div className="od-grid" style={{ "--od-cols": 1, "--od-gap": "var(--s-4)" } as React.CSSProperties}>
         {card(() => openSheet(<TutorSheet />), "video", "var(--green-tint)", "var(--green)", t("tutor.card"), t("tutor.cardDesc"))}
         {card(() => mistakes ? start("practice-mistakes") : toast(t("practice.noMistakes")), "refresh", "var(--red-tint)", "var(--red)", t("practice.mistakes"),
           mistakes ? t("practice.mistakesCount", { count: mistakes }) : t("practice.noMistakes"))}
@@ -156,15 +156,15 @@ export function Practice() {
       </div>
       <h2 className="section-title">{t("practice.saved")} <span className="muted small" style={{ fontWeight: 700 }}>({savedItems.length})</span></h2>
       {!savedItems.length && <p className="muted small">{t("practice.savedEmpty")}</p>}
-      <div className="od-stack" style={{ "--od-gap": "10px" } as React.CSSProperties}>
+      <div className="od-stack" style={{ "--od-gap": "var(--s-4)" } as React.CSSProperties}>
         {savedItems.map((x) => (
           <div className="card row-item" key={x.key}>
-            <button className="od-row od-fill" style={{ "--od-gap": "12px", textAlign: "left" } as React.CSSProperties} onClick={() => {
+            <button className="od-row od-fill" style={{ "--od-gap": "var(--s-4)", textAlign: "left" } as React.CSSProperties} onClick={() => {
               if (x.kind === "story") return start(x.ref);
               if (x.kind === "guide") return openSheet(<GuideSheet unitId={x.unitId} level={x.level} />);
               Object.assign(jumpTo, { unit: x.unitId, until: Date.now() + 1000 }); setViewLevel(x.level); go("learn");
             }}>
-              <span style={iconBox("var(--gold-tint)", "var(--gold-dark)", 40, 10)}><Icon name={x.kind === "story" ? "story" : x.kind === "guide" ? "book" : "star"} /></span>
+              <span style={iconBox("var(--gold-tint)", "var(--gold-dark)", 40, "var(--r-sm)")}><Icon name={x.kind === "story" ? "story" : x.kind === "guide" ? "book" : "star"} /></span>
               <span className="od-field od-fill"><b>{x.title}</b><span className="muted small">{x.level} · {t(`bookmark.${x.kind}`)}</span></span>
             </button>
             <BookmarkButton kind={x.kind} target={x.ref} title={x.title} />
@@ -174,7 +174,7 @@ export function Practice() {
       <h2 className="section-title">{t("practice.myWords")} <span className="muted small" style={{ fontWeight: 700 }}>({words.length})</span></h2>
       {enrollment && <WordsFile enrollment={enrollment} words={words} onImported={() => reload((n) => n + 1)} />}
       {!words.length && <p className="muted small">{t("practice.noWords")}</p>}
-      <div className="od-cluster" style={{ "--od-gap": "10px" } as React.CSSProperties}>
+      <div className="od-cluster" style={{ "--od-gap": "var(--s-4)" } as React.CSSProperties}>
         {words.map((w) => {
           const col = w.strength >= 4 ? "var(--green)" : w.strength >= 2 ? "var(--gold)" : "var(--red)";
           return (
@@ -218,7 +218,7 @@ function WordsFile({ enrollment, words, onImported }: { enrollment: db.Enrollmen
     else toast(done);
   };
   return (
-    <div className="od-cluster" style={{ "--od-gap": "8px", marginBottom: 12 } as React.CSSProperties}>
+    <div className="od-cluster" style={{ "--od-gap": "var(--s-3)", marginBottom: "var(--s-4)" } as React.CSSProperties}>
       <button className="btn btn-ghost" disabled={!words.length} onClick={() => exportCsv().catch((e) => { console.error("export words", e); toast(t("practice.wordsFileFailed")); })}>{t("practice.wordsExport")}</button>
       <button className="btn btn-ghost" onClick={() => pick.current?.click()}>{t("practice.wordsImport")}</button>
       <input ref={pick} type="file" accept=".csv,.tsv,.txt,text/csv,text/tab-separated-values,text/plain" hidden
@@ -232,7 +232,7 @@ function ImportErrors({ done, errors }: { done: string; errors: CsvError[] }) {
   const { t } = useTranslation();
   const { closeSheet } = useApp();
   return (
-    <div className="od-stack" style={{ "--od-gap": "10px" } as React.CSSProperties}>
+    <div className="od-stack" style={{ "--od-gap": "var(--s-4)" } as React.CSSProperties}>
       <h3 style={{ textAlign: "center" }}>{done}</h3>
       <p className="small">{t("practice.wordsSkipped", { count: errors.length })}</p>
       <ul className="small" style={{ maxHeight: 240, overflow: "auto", margin: 0, textAlign: "left" }}>
@@ -276,17 +276,17 @@ export function League() {
   const days = Math.floor(left / 86_400_000), hours = Math.floor((left % 86_400_000) / 3_600_000);
   return (
     <>
-      {last && last !== "stay" && <div className={`guide-status ${last === "down" ? "bad" : ""}`} role="status" style={{ marginTop: 14 }}>
+      {last && last !== "stay" && <div className={`guide-status ${last === "down" ? "bad" : ""}`} role="status" style={{ marginTop: "var(--s-4)" }}>
         <span className="guide-status-ico"><Icon name={last === "up" ? "trophy" : "x"} /></span>
         <span><b>{t(last === "up" ? "league.promoted" : "league.demoted", { name })}</b></span>
       </div>}
-      <div className="card" style={{ marginTop: 14, textAlign: "center", padding: 28 }}>
+      <div className="card" style={{ marginTop: "var(--s-4)", textAlign: "center", padding: "var(--s-6)" }}>
         <TierRail tier={s.league?.tier ?? 0} />
-        <h1 style={{ fontSize: 22, fontWeight: 900, marginTop: 8 }}>{t("league.title", { name })}</h1>
+        <h1 style={{ fontSize: "var(--fs-24)", fontWeight: 900, marginTop: "var(--s-3)" }}>{t("league.title", { name })}</h1>
         <p className="muted small">{t(!down ? "league.rulesSeed" : !up ? "league.rulesTop" : "league.rules", { up, down })}</p>
-        <p style={{ marginTop: 8, fontWeight: 800, color: "var(--orange)" }}><Icon name="clock" /> {t("league.timeLeft", { days, hours })}</p>
+        <p style={{ marginTop: "var(--s-3)", fontWeight: 800, color: "var(--orange)" }}><Icon name="clock" /> {t("league.timeLeft", { days, hours })}</p>
       </div>
-      <div className="card" style={{ marginTop: 14, padding: 8 }}>
+      <div className="card" style={{ marginTop: "var(--s-4)", padding: "var(--s-3)" }}>
         {rows.map((p, i) => (
           <div className={`league-row ${p.me ? "me" : ""} ${up && i === up - 1 ? "cut-up" : down && i === rows.length - down - 1 ? "cut-down" : ""}`} key={p.n}>
             <span className={`league-rank ${i < 3 ? "top" : ""}`}>{i + 1}</span>
@@ -297,7 +297,7 @@ export function League() {
         ))}
       </div>
       <h2 className="section-title">{t("league.matchSection")}</h2>
-      <div className="card od-row" style={{ "--od-gap": "14px" } as React.CSSProperties}>
+      <div className="card od-row" style={{ "--od-gap": "var(--s-4)" } as React.CSSProperties}>
         <span style={iconBox("var(--gold-tint)", "var(--gold-dark)")}><Icon name="bolt" /></span>
         <span className="od-field od-fill"><b>{t("league.matchName")}</b><span className="muted small">{t("league.matchBest", { count: s.madnessBest })}</span></span>
         <button className="btn btn-primary" onClick={playMadness}>{t("league.play")}</button>
@@ -324,10 +324,10 @@ export function Shop() {
   const boostMin = Math.ceil((s.doubleXpUntil - Date.now()) / 60_000);
   return (
     <>
-      <h1 className="section-title" style={{ marginTop: 24 }}>{t("shop.title")}</h1>
-      <div className="card od-row" style={{ marginBottom: 18, "--od-gap": "10px" } as React.CSSProperties}>
+      <h1 className="section-title" style={{ marginTop: "var(--s-6)" }}>{t("shop.title")}</h1>
+      <div className="card od-row" style={{ marginBottom: "var(--s-5)", "--od-gap": "var(--s-4)" } as React.CSSProperties}>
         <span style={{ width: 26, height: 26, display: "inline-flex" }}><Icon name="gem" size={26} /></span>
-        <b style={{ fontSize: 18 }}>{s.gems}</b><span className="muted">{t("shop.gemsHave")}</span>
+        <b style={{ fontSize: "var(--fs-20)" }}>{s.gems}</b><span className="muted">{t("shop.gemsHave")}</span>
         {boostMin > 0 && <span className="price-tag owned" style={{ marginLeft: "auto" }}>{t("shop.doubleXpActive", { count: boostMin })}</span>}
       </div>
       {item("freeze", "greenhouse", "var(--green-tint)", "var(--green-dark)", 200, s.streakFreeze)}
@@ -354,10 +354,10 @@ function AchRow({ a }: { a: Achievement }) {
   const { t } = useTranslation();
   const done = Math.min(a.cur, a.goal);
   return (
-    <div className="card od-row" style={{ "--od-gap": "14px", textAlign: "left" } as React.CSSProperties}>
+    <div className="card od-row" style={{ "--od-gap": "var(--s-4)", textAlign: "left" } as React.CSSProperties}>
       <AchBadge a={a} size={44} />
       <span className="od-field od-fill"><b>{t(`profile.ach.${a.family}.title`)} {roman(a.tier)}</b><span className="muted small">{t(`profile.ach.${a.family}.desc`, { count: a.goal })}</span>
-        {!a.earned && <span className="progress-track" style={{ display: "block", height: 10, marginTop: 6 }}><i className="progress-fill" style={{ display: "block", width: `${(done / a.goal) * 100}%` }} /></span>}
+        {!a.earned && <span className="progress-track" style={{ display: "block", height: 10, marginTop: "var(--s-3)" }}><i className="progress-fill" style={{ display: "block", width: `${(done / a.goal) * 100}%` }} /></span>}
       </span>
       {a.earned ? <span style={{ color: "var(--gold-dark)" }} role="img" aria-label={t("profile.achDone")}><Icon name="check" /></span> : <span className="od-nowrap muted small" style={{ fontWeight: 800 }}>{done}/{a.goal}</span>}
     </div>
@@ -368,7 +368,7 @@ function AchievementsSheet({ list }: { list: Achievement[] }) {
   const { t } = useTranslation();
   const { closeSheet } = useApp();
   return (
-    <div className="od-stack" style={{ "--od-gap": "10px" } as React.CSSProperties}>
+    <div className="od-stack" style={{ "--od-gap": "var(--s-4)" } as React.CSSProperties}>
       <h3>{t("profile.achAllTitle")}</h3>
       <span className="muted small">{t("profile.achEarned", { count: list.filter((a) => a.earned).length, total: list.length })}</span>
       {list.map((a) => <AchRow key={a.id} a={a} />)}
@@ -394,8 +394,8 @@ export function Profile() {
   const stat = (v: React.ReactNode, k: string, c: string, onClick?: () => void) => {
     const Tag = onClick ? "button" : "div";
     return (
-      <Tag className="card od-stat" onClick={onClick} title={onClick && t("garden.open")} style={{ "--od-gap": "2px", textAlign: "center", padding: 14 } as React.CSSProperties}>
-        <span style={{ fontSize: 22, fontWeight: 900, color: c }} className="od-nowrap">{v}</span>
+      <Tag className="card od-stat" onClick={onClick} title={onClick && t("garden.open")} style={{ "--od-gap": "var(--s-1)", textAlign: "center", padding: "var(--s-5)" } as React.CSSProperties}>
+        <span style={{ fontSize: "var(--fs-24)", fontWeight: 900, color: c }} className="od-nowrap">{v}</span>
         <span className="muted small" style={{ fontWeight: 700 }}>{k}</span>
       </Tag>
     );
@@ -408,13 +408,13 @@ export function Profile() {
   const earned = ach.filter((a) => a.earned);
   return (
     <>
-      <div className="od-row profile-head" style={{ "--od-gap": "16px", marginTop: 24 } as React.CSSProperties}>
-        <span className="avatar" style={{ width: 72, height: 72, fontSize: 28, background: profile!.color }}>{profile!.name[0]}</span>
-        <span className="od-field od-fill"><b style={{ fontSize: 22 }}>{profile!.name}</b><span className="muted small">{t("profile.since", { date: since })}</span></span>
+      <div className="od-row profile-head" style={{ "--od-gap": "var(--s-5)", marginTop: "var(--s-6)" } as React.CSSProperties}>
+        <span className="avatar" style={{ width: 72, height: 72, fontSize: "var(--fs-24)", background: profile!.color }}>{profile!.name[0]}</span>
+        <span className="od-field od-fill"><b style={{ fontSize: "var(--fs-24)" }}>{profile!.name}</b><span className="muted small">{t("profile.since", { date: since })}</span></span>
         {/* The top bar's garden button is easy to miss and isn't there on phones. */}
-        <button className="btn btn-ghost od-row od-nowrap profile-garden" style={{ "--od-gap": "8px" } as React.CSSProperties} onClick={() => go("garden")}><Icon name="roots" />{t("profile.garden")}</button>
+        <button className="btn btn-ghost od-row od-nowrap profile-garden" style={{ "--od-gap": "var(--s-3)" } as React.CSSProperties} onClick={() => go("garden")}><Icon name="roots" />{t("profile.garden")}</button>
       </div>
-      <div className="od-grid" style={{ "--od-cols": 2, "--od-gap": "12px", marginTop: 18 } as React.CSSProperties}>
+      <div className="od-grid" style={{ "--od-cols": 2, "--od-gap": "var(--s-4)", marginTop: "var(--s-5)" } as React.CSSProperties}>
         {stat(t("profile.streakDays", { count: s.streak }), t("profile.streak"), "var(--green)", () => go("garden"))}
         {stat(xp, t("profile.totalXp"), "var(--gold-dark)")}
         {stat(league.name, t("profile.currentLeague"), "var(--blue)")}
@@ -424,18 +424,18 @@ export function Profile() {
       {/* today from todayXp too: profiles from before #31 have no xpDays yet */}
       <ProgressCharts xpDays={{ [s.day]: s.todayXp, ...s.xpDays }} wordDays={wordDays} accuracy={s.accuracy} speech={speech} />
       <h2 className="section-title">{t("profile.forYou")}</h2>
-      <div className="od-grid profile-cards" style={{ "--od-cols": 2, "--od-gap": "12px" } as React.CSSProperties}>
+      <div className="od-grid profile-cards" style={{ "--od-cols": 2, "--od-gap": "var(--s-4)" } as React.CSSProperties}>
         <CoachCard />
         <MemoryCard />
       </div>
-      <div className="od-row section-title" style={{ "--od-gap": "12px" } as React.CSSProperties}>
+      <div className="od-row section-title" style={{ "--od-gap": "var(--s-4)" } as React.CSSProperties}>
         <h2 className="od-fill" style={{ font: "inherit" }}>{t("profile.achievements")}</h2>
         <button className="small" style={{ fontWeight: 800, color: "var(--blue)" }} onClick={() => openSheet(<AchievementsSheet list={ach} />)}>{t("profile.achAll")}</button>
       </div>
       {earned.length > 0 && <div className="ach-badges" aria-label={t("profile.achEarned", { count: earned.length, total: ach.length })}>
         {earned.map((a) => <AchBadge key={a.id} a={a} />)}
       </div>}
-      <div className="od-stack" style={{ "--od-gap": "12px" } as React.CSSProperties}>
+      <div className="od-stack" style={{ "--od-gap": "var(--s-4)" } as React.CSSProperties}>
         {nearest(ach).map((a) => <AchRow key={a.id} a={a} />)}
       </div>
     </>
@@ -454,15 +454,15 @@ export function Stories() {
   return (
     <>
       <h1 className="section-title">{t("stories.title")}</h1>
-      <p className="muted" style={{ marginBottom: 18 }}>{t("stories.subtitle")}</p>
+      <p className="muted" style={{ marginBottom: "var(--s-5)" }}>{t("stories.subtitle")}</p>
       {levels.length > 1 && (
-        <label className="od-field" style={{ marginBottom: 14, maxWidth: 200 }}><b>{t("learn.levels")}</b>
+        <label className="od-field" style={{ marginBottom: "var(--s-4)", maxWidth: 200 }}><b>{t("learn.levels")}</b>
           <select className="select" value={lv} onChange={(e) => setLevel(e.target.value as Cefr)}>
             {levels.map((l) => <option key={l} value={l}>{l} · {course!.levels[l]!.title}</option>)}
           </select>
         </label>
       )}
-      <div className="od-stack" style={{ "--od-gap": "12px" } as React.CSSProperties}>
+      <div className="od-stack" style={{ "--od-gap": "var(--s-4)" } as React.CSSProperties}>
         {units.map((u, ui) => {
           // A unit's story opens once the unit is started (the first one is always open); earlier levels are all open.
           const open = lv !== enrollment!.level || ui === 0 || u.steps.some((st) => done.has(st.id));
@@ -470,10 +470,10 @@ export function Stories() {
           const read = done.has(id) || (lv === enrollment!.level && done.has(`story:${u.id}`)); // pre-1.9 id
           return (
             <div className="card row-item" key={u.id}>
-              <button className="od-row od-fill" style={{ "--od-gap": "12px", textAlign: "left" } as React.CSSProperties} onClick={() => open ? start(id) : toast(t("stories.lockedToast", { unit: ui }))}>
+              <button className="od-row od-fill" style={{ "--od-gap": "var(--s-4)", textAlign: "left" } as React.CSSProperties} onClick={() => open ? start(id) : toast(t("stories.lockedToast", { unit: ui }))}>
                 <span style={iconBox(open ? "var(--sky)" : "var(--surface)", open ? "var(--blue)" : "var(--text-faint)")}><Icon name={read ? "check" : open ? "story" : "lock"} /></span>
                 <span className="od-field od-fill"><b>{u.title}</b><span className="muted small">{t("learn.kicker", { level: lv, unit: ui + 1 })}{u.description ? ` · ${u.description}` : ""}</span></span>
-                {open && <span className="btn btn-ghost" style={{ pointerEvents: "none" }}>{t(read ? "stories.again" : "stories.read")}</span>}
+                {open && <span className="btn btn-ghost pe-none">{t(read ? "stories.again" : "stories.read")}</span>}
               </button>
               {open && <BookmarkButton kind="story" target={id} title={u.title} />}
             </div>
@@ -494,12 +494,12 @@ function TopicSheet({ who, voice }: { who: CharacterId; voice: boolean }) {
   const custom = isTutorId(who);
   const go = (topic: string | { free: string }) => { closeSheet(); start(talkId(voice, who, topic)); };
   return (
-    <div className="od-stack" style={{ "--od-gap": "14px", textAlign: "left" } as React.CSSProperties}>
+    <div className="od-stack" style={{ "--od-gap": "var(--s-4)", textAlign: "left" } as React.CSSProperties}>
       <h3 style={{ textAlign: "center" }}>{t("roleplay.pickTopic", { name: ch.name })}</h3>
       {ch.topics.map((x) => (
         <button key={x.id} className="btn btn-ghost btn-block" onClick={() => go(x.id)}>{custom ? x.goal : t(`roleplay.topics.${who}.${x.id}`)}</button>
       ))}
-      <label className="od-field" style={{ "--od-gap": "6px" } as React.CSSProperties}>
+      <label className="od-field" style={{ "--od-gap": "var(--s-3)" } as React.CSSProperties}>
         <b>{t("roleplay.ownTopic")}</b>
         <input className="input" value={own} maxLength={120} placeholder={t("roleplay.ownTopicPlaceholder")}
           onChange={(e) => setOwn(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter" && own.trim()) go({ free: own.trim() }); }} />
@@ -515,12 +515,12 @@ function CastPicker({ value, onChange }: { value: CharacterId; onChange: (c: Cha
   const { t } = useTranslation();
   const { tutors } = useApp();
   return (
-    <div className="od-field" style={{ "--od-gap": "6px" } as React.CSSProperties}>
+    <div className="od-field" style={{ "--od-gap": "var(--s-3)" } as React.CSSProperties}>
       <b id="cast-pick">{t("roleplay.briefCast")}</b>
       <div className="seg" role="radiogroup" aria-labelledby="cast-pick">
         {castOf(tutors).map(({ id, ch }) => (
           <button key={id} role="radio" aria-checked={value === id} aria-label={ch.name} title={ch.name} className={`btn ${value === id ? "btn-blue" : "btn-ghost"}`}
-            style={{ padding: 4 }} onClick={() => onChange(id)}>
+            style={{ padding: "var(--s-2)" }} onClick={() => onChange(id)}>
             <Face spec={ch.face} color={ch.color} size={44} label={ch.name} image={ch.avatar} />
           </button>
         ))}
@@ -545,9 +545,9 @@ function RehearseSheet() {
     closeSheet();
     start(rehearseId(voice, cast, { who: who.trim(), about: about.trim() || undefined, formality }));
   };
-  const field = { "--od-gap": "6px" } as React.CSSProperties;
+  const field = { "--od-gap": "var(--s-3)" } as React.CSSProperties;
   return (
-    <div className="od-stack" style={{ "--od-gap": "14px", textAlign: "left" } as React.CSSProperties}>
+    <div className="od-stack" style={{ "--od-gap": "var(--s-4)", textAlign: "left" } as React.CSSProperties}>
       <h3 style={{ textAlign: "center" }}>{t("roleplay.rehearse")}</h3>
       <label className="od-field" style={field}>
         <b>{t("roleplay.briefWho")}</b>
@@ -611,11 +611,11 @@ function DrillsSheet() {
       : { kind: "planning", topic: topic.trim(), planningSec: planSec, minutes: DRILL_MINUTES }));
   };
   if (!pick) return (
-    <div className="od-stack" style={{ "--od-gap": "12px", textAlign: "left" } as React.CSSProperties}>
+    <div className="od-stack" style={{ "--od-gap": "var(--s-4)", textAlign: "left" } as React.CSSProperties}>
       <h3 style={{ textAlign: "center" }}>{t("practice.drills")}</h3>
       {list.map((d) => (
         <button key={d.id} className="card row-item" onClick={() => setPick(d.id)}>
-          <span style={iconBox("var(--sky)", "var(--blue)", 40, 10)}><Icon name={d.icon} /></span>
+          <span style={iconBox("var(--sky)", "var(--blue)", 40, "var(--r-sm)")}><Icon name={d.icon} /></span>
           <span className="od-field od-fill"><b>{d.title}</b><span className="muted small">{d.desc}</span></span>
         </button>
       ))}
@@ -623,9 +623,9 @@ function DrillsSheet() {
     </div>
   );
   return (
-    <div className="od-stack" style={{ "--od-gap": "14px", textAlign: "left" } as React.CSSProperties}>
+    <div className="od-stack" style={{ "--od-gap": "var(--s-4)", textAlign: "left" } as React.CSSProperties}>
       <h3 style={{ textAlign: "center" }}>{list.find((d) => d.id === pick)!.title}</h3>
-      {pick === "ladder" && <div className="od-field" style={{ "--od-gap": "6px" } as React.CSSProperties}>
+      {pick === "ladder" && <div className="od-field" style={{ "--od-gap": "var(--s-3)" } as React.CSSProperties}>
         <b id="rung-pick">{t("practice.ladderRung")}</b>
         <div className="seg" role="radiogroup" aria-labelledby="rung-pick">
           {[1, 2, 3].map((r) => (
@@ -634,7 +634,7 @@ function DrillsSheet() {
         </div>
         <span className="muted small">{t(`practice.rung${rung}`)}</span>
       </div>}
-      {!(pick === "ladder" && rung === 3) && <label className="od-field" style={{ "--od-gap": "6px" } as React.CSSProperties}>
+      {!(pick === "ladder" && rung === 3) && <label className="od-field" style={{ "--od-gap": "var(--s-3)" } as React.CSSProperties}>
         <b>{t("practice.drillTopic")}</b>
         <input className="input" value={topic} maxLength={120} placeholder={t("practice.drillTopicPlaceholder")}
           onChange={(e) => setTopic(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") go(); }} />
@@ -659,16 +659,16 @@ export function Roleplay() {
   return (
     <>
       <h1 className="section-title">{t("roleplay.title")}</h1>
-      <p className="muted" style={{ marginBottom: 18 }}>{t("roleplay.subtitle")}</p>
-      <button className="card row-item" style={{ marginBottom: 18, width: "100%" }} onClick={() => openSheet(<RehearseSheet />)}>
+      <p className="muted" style={{ marginBottom: "var(--s-5)" }}>{t("roleplay.subtitle")}</p>
+      <button className="card row-item" style={{ marginBottom: "var(--s-5)", width: "100%" }} onClick={() => openSheet(<RehearseSheet />)}>
         <span style={iconBox("var(--sky)", "var(--blue)")}><Icon name="users" /></span>
         <span className="od-field od-fill"><b>{t("roleplay.rehearse")}</b><span className="muted small">{t("roleplay.rehearseDesc")}</span></span>
-        <span className="btn btn-blue" style={{ pointerEvents: "none" }}>{t("roleplay.start")}</span>
+        <span className="btn btn-blue pe-none">{t("roleplay.start")}</span>
       </button>
-      <button className="card row-item" style={{ marginBottom: 18, width: "100%" }} onClick={() => openSheet(<TutorsSheet />)}>
+      <button className="card row-item" style={{ marginBottom: "var(--s-5)", width: "100%" }} onClick={() => openSheet(<TutorsSheet />)}>
         <span style={iconBox("var(--purple-tint)", "var(--purple-dark)")}><Icon name="user" /></span>
         <span className="od-field od-fill"><b>{t("tutorManage.title")}</b><span className="muted small">{t("tutorManage.cardDesc")}</span></span>
-        <span className="btn btn-ghost" style={{ pointerEvents: "none" }}>{t("tutorManage.manage")}</span>
+        <span className="btn btn-ghost pe-none">{t("tutorManage.manage")}</span>
       </button>
       <div className="rp-grid">
         {castOf(tutors).map(({ id, ch, tutor }) => (
@@ -702,19 +702,19 @@ export function Friends() {
   const friends = useOtherProfiles();
   return (
     <>
-      <h1 className="section-title" style={{ marginTop: 24 }}>{t("friends.title")}</h1>
-      <p className="muted" style={{ marginBottom: 14 }}>{t("friends.subtitle")}</p>
+      <h1 className="section-title" style={{ marginTop: "var(--s-6)" }}>{t("friends.title")}</h1>
+      <p className="muted" style={{ marginBottom: "var(--s-4)" }}>{t("friends.subtitle")}</p>
       {!friends.length && <p className="muted small">{t("friends.empty")}</p>}
-      <div className="od-stack" style={{ "--od-gap": "12px" } as React.CSSProperties}>
+      <div className="od-stack" style={{ "--od-gap": "var(--s-4)" } as React.CSSProperties}>
         {friends.map((f) => (
-          <div className="card od-row" style={{ "--od-gap": "14px" } as React.CSSProperties} key={f.id}>
+          <div className="card od-row" style={{ "--od-gap": "var(--s-4)" } as React.CSSProperties} key={f.id}>
             <span className="avatar" style={{ background: f.color }}>{f.name[0]}</span>
             <span className="od-field od-fill"><b>{f.name}</b><span className="muted small">{t("friends.weekXp", { count: f.weekXp })}</span></span>
-            <span className="od-row" style={{ "--od-gap": "4px", color: "var(--green)", fontWeight: 900 } as React.CSSProperties} aria-label={t("friends.streak", { count: f.stats.streak })}><Icon name="roots" />{f.stats.streak}</span>
+            <span className="od-row" style={{ "--od-gap": "var(--s-2)", color: "var(--green)", fontWeight: 900 } as React.CSSProperties} aria-label={t("friends.streak", { count: f.stats.streak })}><Icon name="roots" />{f.stats.streak}</span>
           </div>
         ))}
       </div>
-      <button className="btn btn-primary btn-block" style={{ marginTop: 18 }} onClick={logout}>{t("friends.add")}</button>
+      <button className="btn btn-primary btn-block" style={{ marginTop: "var(--s-5)" }} onClick={logout}>{t("friends.add")}</button>
     </>
   );
 }
@@ -737,11 +737,11 @@ export function Notifications() {
   if (s.chests) items.push({ icon: "basket", title: t("notifications.chest"), desc: t("notifications.chestDesc") });
   return (
     <>
-      <h1 className="section-title" style={{ marginTop: 24 }}>{t("notifications.title")}</h1>
-      <div className="od-stack" style={{ "--od-gap": "10px", marginTop: 14 } as React.CSSProperties}>
+      <h1 className="section-title" style={{ marginTop: "var(--s-6)" }}>{t("notifications.title")}</h1>
+      <div className="od-stack" style={{ "--od-gap": "var(--s-4)", marginTop: "var(--s-4)" } as React.CSSProperties}>
         {items.map((n) => (
-          <div className="card od-row-top" style={{ "--od-gap": "12px" } as React.CSSProperties} key={n.title}>
-            <span style={iconBox("var(--surface)", "inherit", 40, 10)}><Icon name={n.icon} /></span>
+          <div className="card od-row-top" style={{ "--od-gap": "var(--s-4)" } as React.CSSProperties} key={n.title}>
+            <span style={iconBox("var(--surface)", "inherit", 40, "var(--r-sm)")}><Icon name={n.icon} /></span>
             <span className="od-field od-fill"><b>{n.title}</b>{n.desc && <span className="muted small">{n.desc}</span>}</span>
           </div>
         ))}

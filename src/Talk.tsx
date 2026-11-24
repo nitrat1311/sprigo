@@ -59,7 +59,7 @@ export function Loading({ title }: { title: string }) {
   return (
     <div className="result-wrap" role="status">
       <div className="result-badge gen-pulse" style={{ background: "var(--blue)", boxShadow: "0 6px 0 var(--blue-dark)", color: "var(--on-accent)" }}><Icon name="spark" /></div>
-      <h2 style={{ fontSize: 22, fontWeight: 900 }}>{t("ai.preparing")}</h2>
+      <h2 style={{ fontSize: "var(--fs-24)", fontWeight: 900 }}>{t("ai.preparing")}</h2>
       <p className="muted small">{title} · {ai?.model}</p>
     </div>
   );
@@ -70,9 +70,9 @@ export function Failed({ msg, retry, quit }: { msg: string; retry: () => void; q
   const { go } = useApp();
   return (
     <div className="result-wrap" role="alert">
-      <h2 style={{ fontSize: 22, fontWeight: 900 }}>{t("ai.failed")}</h2>
+      <h2 style={{ fontSize: "var(--fs-24)", fontWeight: 900 }}>{t("ai.failed")}</h2>
       <p className="muted small" style={{ maxWidth: 480, overflowWrap: "anywhere" }}>{msg}</p>
-      <div className="od-row" style={gap("10px")}>
+      <div className="od-row" style={gap("var(--s-4)")}>
         <button className="btn btn-primary" onClick={retry}>{t("ai.retry")}</button>
         <button className="btn btn-ghost" onClick={() => { quit(); go("settings"); }}>{t("ai.openSettings")}</button>
       </div>
@@ -85,7 +85,7 @@ export function Done({ title, r }: { title: string; r: Result }) {
   return (
     <div className="result-wrap">
       <div className="result-badge" style={{ color: "var(--on-gold)" }}><Icon name="trophy" /></div>
-      <h2 style={{ fontSize: 26, fontWeight: 900 }}>{title}</h2>
+      <h2 style={{ fontSize: "var(--fs-24)", fontWeight: 900 }}>{title}</h2>
       <div className="result-stats">
         <span className="result-stat gold"><span className="rs-k">{t("lesson.totalXp")}</span><span className="rs-v">+{r.xp}</span></span>
         <span className="result-stat blue"><span className="rs-k">{t("lesson.gems")}</span><span className="rs-v">+{r.gems}</span></span>
@@ -223,8 +223,8 @@ export function Story({ level, unit: unitId }: { level: Cefr; unit: string }) {
           </SpeakButton>
         ))}
       </div>
-      {q && <div style={{ marginTop: 20 }}>
-        <h3 style={{ fontWeight: 900, marginBottom: 12 }}>{q.prompt}</h3>
+      {q && <div style={{ marginTop: "var(--s-6)" }}>
+        <h3 style={{ fontWeight: 900, marginBottom: "var(--s-4)" }}>{q.prompt}</h3>
         <div className="opt-grid">
           {q.options.map((o, oi) => (
             <button key={oi} disabled={checked && oi !== sel} onClick={(e) => {
@@ -267,11 +267,11 @@ function DebriefCard({ d, r, turns }: { d: Debrief; r: Result; turns: string[] }
   };
   return (
     <div className="result-wrap">
-      <h2 style={{ fontSize: 26, fontWeight: 900 }}>{t("roleplay.debriefTitle")}</h2>
+      <h2 style={{ fontSize: "var(--fs-24)", fontWeight: 900 }}>{t("roleplay.debriefTitle")}</h2>
       <div className="result-stats">
         <span className="result-stat gold"><span className="rs-k">{t("lesson.totalXp")}</span><span className="rs-v">+{r.xp}</span></span>
       </div>
-      <div className="od-stack" style={{ ...gap("10px"), textAlign: "start", width: "100%", maxWidth: 520 }}>
+      <div className="od-stack" style={{ ...gap("var(--s-4)"), textAlign: "start", width: "100%", maxWidth: 520 }}>
         <h3 style={{ fontWeight: 900 }}>{t("roleplay.stuckTitle")}</h3>
         {d.stuck.length ? d.stuck.map((x, i) => (
           <div className="card" key={i}>
@@ -281,8 +281,8 @@ function DebriefCard({ d, r, turns }: { d: Debrief; r: Result; turns: string[] }
           </div>
         )) : <p className="muted">{t("roleplay.debriefSmooth")}</p>}
         {d.phrases.length > 0 && <>
-          <h3 style={{ fontWeight: 900, marginTop: 8 }}>{t("roleplay.phrasesTitle")}</h3>
-          <div className="od-row" style={{ ...gap("8px"), flexWrap: "wrap" }}>
+          <h3 style={{ fontWeight: 900, marginTop: "var(--s-3)" }}>{t("roleplay.phrasesTitle")}</h3>
+          <div className="od-row" style={{ ...gap("var(--s-3)"), flexWrap: "wrap" }}>
             {d.phrases.map((p, i) => (
               <button key={i} className="word-chip" disabled={saved.has(i)} aria-pressed={saved.has(i)} onClick={() => save(i)} title={p.translation} style={{ textAlign: "start" }}>
                 <Icon name={saved.has(i) ? "check" : "book"} /><span lang={lang}>{p.text}</span><span className="muted small">{p.translation}</span>
@@ -307,15 +307,15 @@ function Rounds({ stats }: { stats: RoundStat[] }) {
     [t("practice.roundsFillers"), (s) => String(s.fillers)],
   ];
   return (
-    <div className="card" style={{ marginTop: 16 }}>
+    <div className="card" style={{ marginTop: "var(--s-5)" }}>
       <b>{t("practice.roundsTitle")}</b>
-      <table style={{ width: "100%", marginTop: 8, textAlign: "center", fontVariantNumeric: "tabular-nums" }}>
+      <table style={{ width: "100%", marginTop: "var(--s-3)", textAlign: "center", fontVariantNumeric: "tabular-nums" }}>
         <thead><tr><th />{FOUR_THREE_TWO_MINUTES.map((min, i) => <th key={i} className="small">{t("practice.roundN", { n: i + 1, min })}</th>)}</tr></thead>
         <tbody>{rows.map(([k, f]) => (
           <tr key={k}><th className="small" style={{ textAlign: "left" }}>{k}</th>{[0, 1, 2].map((i) => <td key={i}>{stats[i] ? f(stats[i]!) : "—"}</td>)}</tr>
         ))}</tbody>
       </table>
-      <p className="muted small" style={{ marginTop: 8 }}>{t("practice.roundsNote")}</p>
+      <p className="muted small" style={{ marginTop: "var(--s-3)" }}>{t("practice.roundsNote")}</p>
       {[0, 1, 2].some((i) => !stats[i]) && <p className="muted small">{t("practice.roundsUnmeasured")}</p>}
     </div>
   );
@@ -477,7 +477,7 @@ export function Chat({ talk, ch }: { talk: Talk; ch: Character }) {
     body = (
       <div className="result-wrap">
         <span className="muted">{t("practice.planningTitle")}</span>
-        <h2 style={{ fontSize: 24, fontWeight: 900 }}>{drill!.topic}</h2>
+        <h2 style={{ fontSize: "var(--fs-24)", fontWeight: 900 }}>{drill!.topic}</h2>
         <span role="timer" style={{ fontSize: 56, fontWeight: 900, fontVariantNumeric: "tabular-nums" }}>{mmss(plan)}</span>
       </div>
     );
@@ -485,17 +485,17 @@ export function Chat({ talk, ch }: { talk: Talk; ch: Character }) {
   } else {
     body = <>
       {voice ? (
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, marginBottom: 16, textAlign: "center" }}>
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "var(--s-3)", marginBottom: "var(--s-5)", textAlign: "center" }}>
           <Face spec={ch.face} color={ch.color} size={220} label={name} state={faceState} scene={rehearse ? undefined : who} image={ch.avatar} sceneImage={rehearse ? undefined : ch.scene} />
           <b>{rehearse ? t("roleplay.rehearseWith", { who: name }) : name}</b><span className="muted small">{topicLabel}</span>
         </div>
       ) : (
-        <div className="od-row" style={{ ...gap("12px"), marginBottom: 16 }}>
+        <div className="od-row" style={{ ...gap("var(--s-4)"), marginBottom: "var(--s-5)" }}>
           <Face spec={ch.face} color={ch.color} size={96} label={name} state={faceState} image={ch.avatar} />
           <span className="od-field od-fill"><b>{rehearse ? t("roleplay.rehearseWith", { who: name }) : name}</b><span className="muted small">{topicLabel}</span></span>
         </div>
       )}
-      {drill?.named && <p className="muted small" style={{ textAlign: "center", marginBottom: 12 }}>{t("practice.namedStructure", { structure: drill.named })}</p>}
+      {drill?.named && <p className="muted small" style={{ textAlign: "center", marginBottom: "var(--s-4)" }}>{t("practice.namedStructure", { structure: drill.named })}</p>}
       <div className="chat">
         {msgs.map((m, i) => m.from === "ai" ? (
           <button key={i} className="bubble" lang={lang} aria-busy={voicing === i} onClick={() => { say(m.text, i); setOpen((s) => new Set(s).add(i)); }}>
@@ -510,8 +510,8 @@ export function Chat({ talk, ch }: { talk: Talk; ch: Character }) {
         {busy && <div className="bubble typing" role="status" aria-label={t("ai.thinking")}>…</div>}
       </div>
       {err && <Failed msg={err} retry={stepping ? stepOut : () => turn(msgs)} quit={quit} />}
-      {rehearse && mine >= REHEARSE_LONG && !busy && <p className="muted small" style={{ textAlign: "center", marginTop: 16 }}>{t("roleplay.rehearseLong")}</p>}
-      {over && !busy && <p className="muted small" style={{ textAlign: "center", marginTop: 16 }}>{t(goal ? "roleplay.goalReached" : "roleplay.limit")}</p>}
+      {rehearse && mine >= REHEARSE_LONG && !busy && <p className="muted small" style={{ textAlign: "center", marginTop: "var(--s-5)" }}>{t("roleplay.rehearseLong")}</p>}
+      {over && !busy && <p className="muted small" style={{ textAlign: "center", marginTop: "var(--s-5)" }}>{t(goal ? "roleplay.goalReached" : "roleplay.limit")}</p>}
       {voice && !over && stt && s.speakOn && <MicButton lang={lang} native={native} disabled={busy} onText={(said, m) => { if (m) spoken.current.push(m); if (said.trim()) heard.current.push(said.trim()); send(said); }} />}
       <div ref={endRef} />
     </>;
@@ -520,9 +520,9 @@ export function Chat({ talk, ch }: { talk: Talk; ch: Character }) {
         ? <><span className="muted small">{t("roleplay.callHint")}</span>{mine > 0 ? <button className="btn btn-ghost" disabled={busy} onClick={end}>{endLabel}</button> : <span />}</>
         : <><span className="muted small">{t("roleplay.tapHint")}</span><button className="btn btn-primary" disabled={busy} onClick={finish}>{t("lesson.finish")}</button></>
       : <>
-        <input className="input" style={{ flex: 1, fontSize: 17 }} lang={lang} value={text} autoFocus aria-label={t("roleplay.message")} placeholder={t("roleplay.placeholder")}
+        <input className="input" style={{ flex: 1, fontSize: "var(--fs-17)" }} lang={lang} value={text} autoFocus aria-label={t("roleplay.message")} placeholder={t("roleplay.placeholder")}
           onChange={(e) => setText(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") send(); }} />
-        <span className="od-row" style={gap("10px")}>
+        <span className="od-row" style={gap("var(--s-4)")}>
           {mine > 0 && <button className="btn btn-ghost" disabled={busy} onClick={end}>{endLabel}</button>}
           <button className="btn btn-primary" disabled={busy || !text.trim()} onClick={() => send()}>{t("roleplay.send")}</button>
         </span>

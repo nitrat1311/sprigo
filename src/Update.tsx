@@ -41,8 +41,8 @@ export function WhatsNewSheet({ version, notes }: { version: string; notes: stri
   const { t } = useTranslation();
   const { closeSheet } = useApp();
   return (
-    <div className="od-stack" style={{ "--od-gap": "14px", textAlign: "left" } as React.CSSProperties}>
-      <h3 style={{ textAlign: "center" }}>{t("update.whatsNew", { version })}</h3>
+    <div className="od-stack" style={{ "--od-gap": "var(--s-5)", textAlign: "left" } as React.CSSProperties}>
+      <h3 className="od-center">{t("update.whatsNew", { version })}</h3>
       {/* ponytail: GitHub's markdown shown as plain text; render it if the notes get rich */}
       <p className="small" style={{ whiteSpace: "pre-wrap", maxHeight: "50vh", overflow: "auto" }}>{notes}</p>
       <button className="btn btn-primary btn-block" onClick={closeSheet}>{t("update.gotIt")}</button>
@@ -68,8 +68,8 @@ export function UpdateSheet({ update, inline }: { update: Update; inline?: boole
     } catch (e) { setErr((e as Error).message ?? String(e)); setPct(null); }
   };
   return (
-    <div className="od-stack" style={{ "--od-gap": "14px", textAlign: "left" } as React.CSSProperties}>
-      <h3 style={{ textAlign: "center" }}>{t("update.title", { version: update.version })}</h3>
+    <div className="od-stack" style={{ "--od-gap": "var(--s-5)", textAlign: "left" } as React.CSSProperties}>
+      <h3 className="od-center">{t("update.title", { version: update.version })}</h3>
       {update.body && <p className="small" style={{ whiteSpace: "pre-wrap" }}>{update.body}</p>}
       {pct !== null && <>
         <div className="progress-track"><div className="progress-fill green" style={{ width: `${pct}%` }} /></div>

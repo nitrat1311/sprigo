@@ -729,3 +729,11 @@ html[data-theme="dark"] .garden-hero{background:var(--btd)}
 .ctx-cells span+span{border-inline-start:2px solid var(--border)}
 .ctx-cells span{display:flex;flex-direction:column;gap:var(--s-1)}
 .ctx-cells small{font-size:var(--fs-12);font-weight:600}
+
+/* phase 2b: promoted inline styles (A) */
+.nav-group-label{margin:var(--s-4) var(--s-4) var(--s-3);font-size:var(--fs-11);font-weight:900;letter-spacing:var(--tr-wide);color:var(--text-faint);text-transform:uppercase}
+.pe-none{pointer-events:none}
+
+/* phase 2b: promoted inline styles (B) */
+.od-center{text-align:center}
+.od-anywhere{overflow-wrap:anywhere}
