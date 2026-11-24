@@ -35,7 +35,8 @@
     "friends": "Amigos",
     "notifications": "Avisos",
     "settings": "Ajustes",
-    "grammar": "Gramática"
+    "grammar": "Gramática",
+    "notes": "Notas"
   },
   "common": {
     "soon": "Próximamente",
@@ -1160,5 +1161,35 @@
     "notInGuide": "La guía de la IA omitió esta estructura. Inténtalo de nuevo.",
     "alsoIn": "También en: {{units}}",
     "practise": "Practicar"
+  },
+  "notes": {
+    "title": "Notas y diario",
+    "subtitle": "Tus propias palabras: una entrada breve en el idioma que estudias y una nota en cualquier unidad. Se guarda en este dispositivo y se incluye en la exportación de datos.",
+    "tabs": {
+      "journal": "Diario",
+      "units": "Notas de unidades"
+    },
+    "today": "Hoy",
+    "writeIn": "Unas frases en {{lang}}.",
+    "entryLabel": "Entrada del diario de hoy",
+    "pastEntryLabel": "Entrada del diario del {{date}}",
+    "past": "Entradas anteriores",
+    "empty": "Aún no has escrito nada. Empieza por hoy.",
+    "noCourse": "Elige un curso para tomar notas de sus unidades.",
+    "unitsHint": "Tus propias notas sobre las unidades de {{lang}}.",
+    "unitLabel": "{{level}} · tu nota",
+    "noteLabel": "Nota sobre {{unit}}",
+    "notePlaceholder": "Palabras, reglas, ejemplos…",
+    "noNote": "Aún sin nota",
+    "save": "Guardar",
+    "saved": "Guardado",
+    "saveFailed": "No se pudo guardar la nota.",
+    "delete": "Eliminar",
+    "deleted": "Eliminado",
+    "check": "Revisar mi entrada",
+    "checking": "Revisando…",
+    "checkTitle": "Tu entrada, revisada",
+    "checkNoAi": "Configura la IA para que revise tu entrada.",
+    "checkFailed": "No se pudo revisar la entrada."
   }
 }

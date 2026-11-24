@@ -16,6 +16,7 @@ import { evictIds, type Memory, type MemoryOps, type MemorySource } from "./memo
 import { grade, newCard, review, strengthOf, type Grade, type WordCard } from "./srs";
 import { USAGE_SQL, type AiFeature, type UsageRow } from "./usage";
 import { newTutorId, parseTutorPackage, type CustomTutor, type TutorPackage, type TutorProfile, type TutorSource } from "./tutors";
+import { cleanEntry, cleanNote } from "./notes";
 export { NEW_STATS, type Stats };
 
 type Row = Record<string, any>;
@@ -205,6 +206,38 @@ export async function toggleBookmark(enrollmentId: number, kind: BookmarkKind, r
   }
   await d.execute("INSERT INTO bookmarks(enrollment_id, kind, ref) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING", [enrollmentId, kind, ref]);
   return true;
+}
+
+// ---- Notes and journal (#46; the learner's own words, src/notes.ts) ----
+
+export type UnitNote = { unit_ref: string; text: string; updated_at: string };
+export async function listUnitNotes(enrollmentId: number) {
+  return (await db()).select<UnitNote>("SELECT unit_ref, text, updated_at FROM unit_notes WHERE enrollment_id = $1 ORDER BY updated_at DESC", [enrollmentId]);
+}
+/** Saves the unit's note; an empty text removes it, like an emptied memory. */
+export async function saveUnitNote(enrollmentId: number, unitRef: string, text: string) {
+  const d = await db(), clean = cleanNote(text);
+  if (!clean) return d.execute("DELETE FROM unit_notes WHERE enrollment_id = $1 AND unit_ref = $2", [enrollmentId, unitRef]);
+  await d.execute(
+    "INSERT INTO unit_notes(enrollment_id, unit_ref, text) VALUES ($1, $2, $3) ON CONFLICT DO UPDATE SET text = $3, updated_at = CURRENT_TIMESTAMP",
+    [enrollmentId, unitRef, clean]);
+}
+
+export type JournalEntry = { day: string; text: string; updated_at: string };
+/** The profile's entries, newest day first; a year is enough for the list (older ones stay in the export). */
+export async function listJournal(profileId: number, limit = 365) {
+  return (await db()).select<JournalEntry>("SELECT day, text, updated_at FROM journal WHERE profile_id = $1 ORDER BY day DESC LIMIT $2", [profileId, limit]);
+}
+/** Saves the day's entry; an empty text removes it. One entry per local day. */
+export async function saveJournalEntry(profileId: number, day: string, text: string) {
+  const d = await db(), clean = cleanEntry(text);
+  if (!clean) return d.execute("DELETE FROM journal WHERE profile_id = $1 AND day = $2", [profileId, day]);
+  await d.execute(
+    "INSERT INTO journal(profile_id, day, text) VALUES ($1, $2, $3) ON CONFLICT DO UPDATE SET text = $3, updated_at = CURRENT_TIMESTAMP",
+    [profileId, day, clean]);
+}
+export async function deleteJournalEntry(profileId: number, day: string) {
+  await (await db()).execute("DELETE FROM journal WHERE profile_id = $1 AND day = $2", [profileId, day]);
 }
 
 // ---- AI usage (#48; global like the AI config, cost is estimated in src/usage.ts) ----

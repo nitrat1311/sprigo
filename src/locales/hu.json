@@ -35,7 +35,8 @@
     "friends": "Barátok",
     "notifications": "Értesítések",
     "settings": "Beállítások",
-    "grammar": "Nyelvtan"
+    "grammar": "Nyelvtan",
+    "notes": "Jegyzetek"
   },
   "common": {
     "soon": "Hamarosan",
@@ -1128,5 +1129,35 @@
     "notInGuide": "Az MI útmutatója kihagyta ezt a mintát. Próbáld újra.",
     "alsoIn": "Szerepel még: {{units}}",
     "practise": "Gyakorold"
+  },
+  "notes": {
+    "title": "Jegyzetek és napló",
+    "subtitle": "A saját szavaid: rövid bejegyzés a tanult nyelven, és jegyzet bármelyik leckéhez. Ezen az eszközön marad, és az adatexport része.",
+    "tabs": {
+      "journal": "Napló",
+      "units": "Leckejegyzetek"
+    },
+    "today": "Ma",
+    "writeIn": "Néhány mondat ezen a nyelven: {{lang}}.",
+    "entryLabel": "Mai naplóbejegyzés",
+    "pastEntryLabel": "Naplóbejegyzés: {{date}}",
+    "past": "Korábbi bejegyzések",
+    "empty": "Még nincs semmi. Kezdd a mával.",
+    "noCourse": "Válassz kurzust, hogy jegyzetet írhass a leckéihez.",
+    "unitsHint": "A saját jegyzeteid ehhez: {{lang}}.",
+    "unitLabel": "{{level}} · a jegyzeted",
+    "noteLabel": "Jegyzet ehhez: {{unit}}",
+    "notePlaceholder": "Szavak, szabályok, példák…",
+    "noNote": "Még nincs jegyzet",
+    "save": "Mentés",
+    "saved": "Mentve",
+    "saveFailed": "A jegyzetet nem sikerült menteni.",
+    "delete": "Törlés",
+    "deleted": "Törölve",
+    "check": "Bejegyzés ellenőrzése",
+    "checking": "Ellenőrzés…",
+    "checkTitle": "Az ellenőrzött bejegyzésed",
+    "checkNoAi": "Állítsd be az AI-t a bejegyzés ellenőrzéséhez.",
+    "checkFailed": "A bejegyzést nem sikerült ellenőrizni."
   }
 }

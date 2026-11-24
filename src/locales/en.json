@@ -35,7 +35,8 @@
     "friends": "Friends",
     "notifications": "Notifications",
     "settings": "Settings",
-    "grammar": "Grammar"
+    "grammar": "Grammar",
+    "notes": "Notes"
   },
   "common": {
     "soon": "Coming soon",
@@ -1128,5 +1129,35 @@
     "notInGuide": "The AI's guide left this pattern out. Try again.",
     "alsoIn": "Also in: {{units}}",
     "practise": "Practise this"
+  },
+  "notes": {
+    "title": "Notes & journal",
+    "subtitle": "Your own words: a short entry in the language you're learning, and a note on any unit. Kept on this device and included in your data export.",
+    "tabs": {
+      "journal": "Journal",
+      "units": "Unit notes"
+    },
+    "today": "Today",
+    "writeIn": "A few sentences in {{lang}}.",
+    "entryLabel": "Today's journal entry",
+    "pastEntryLabel": "Journal entry from {{date}}",
+    "past": "Earlier entries",
+    "empty": "Nothing written yet. Start with today.",
+    "noCourse": "Choose a course to keep notes on its units.",
+    "unitsHint": "Your own notes on the units of {{lang}}.",
+    "unitLabel": "{{level}} · your note",
+    "noteLabel": "Note on {{unit}}",
+    "notePlaceholder": "Words, rules, examples…",
+    "noNote": "No note yet",
+    "save": "Save",
+    "saved": "Saved",
+    "saveFailed": "The note could not be saved.",
+    "delete": "Delete",
+    "deleted": "Deleted",
+    "check": "Check my entry",
+    "checking": "Checking…",
+    "checkTitle": "Your entry, checked",
+    "checkNoAi": "Set up the AI to have your entry checked.",
+    "checkFailed": "The entry could not be checked."
   }
 }

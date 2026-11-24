@@ -22,6 +22,7 @@ import { Writing } from "./Write";
 import { Learn } from "./screens/Learn";
 import { Garden } from "./screens/Garden";
 import { Grammar } from "./screens/Grammar";
+import { Notes } from "./screens/Notes";
 import { Settings } from "./screens/Settings";
 import { Avatar, ProfileGate, useLangName } from "./screens/Profiles";
 import { Practice, League, Shop, Profile, Stories, Roleplay, Friends, Notifications, LiveButton } from "./screens/Screens";
@@ -32,12 +33,12 @@ const NAV: { id: Route; icon: IconName }[] = [
 ];
 const MORE: { id: Route; icon: IconName }[] = [
   { id: "stories", icon: "story" }, { id: "roleplay", icon: "video" }, { id: "friends", icon: "users" }, { id: "grammar", icon: "book" },
-  { id: "notifications", icon: "bell" }, { id: "settings", icon: "gear" },
+  { id: "notes", icon: "pen" }, { id: "notifications", icon: "bell" }, { id: "settings", icon: "gear" },
 ];
 const SCREENS: Record<Route, () => React.ReactNode> = {
   learn: Learn, practice: Practice, league: League, shop: Shop, profile: Profile,
   stories: Stories, roleplay: Roleplay, friends: Friends, notifications: Notifications, settings: Settings,
-  garden: Garden, grammar: Grammar,
+  garden: Garden, grammar: Grammar, notes: Notes,
 };
 
 /** Text size (#34): the webview's own zoom in the app, so vh and px scale together. Zoom hotkeys stay off (tauri.conf default), so nothing fights it.

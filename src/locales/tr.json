@@ -35,7 +35,8 @@
     "friends": "Arkadaşlar",
     "notifications": "Bildirimler",
     "settings": "Ayarlar",
-    "grammar": "Dilbilgisi"
+    "grammar": "Dilbilgisi",
+    "notes": "Notlar"
   },
   "common": {
     "soon": "Yakında",
@@ -1122,5 +1123,35 @@
     "notInGuide": "Yapay zekânın rehberi bu kalıbı atlamış. Tekrar dene.",
     "alsoIn": "Şunlarda da var: {{units}}",
     "practise": "Bunu çalış"
+  },
+  "notes": {
+    "title": "Notlar ve günlük",
+    "subtitle": "Kendi sözlerin: öğrendiğin dilde kısa bir giriş ve istediğin ünite için not. Bu cihazda saklanır ve veri dışa aktarımına dahildir.",
+    "tabs": {
+      "journal": "Günlük",
+      "units": "Ünite notları"
+    },
+    "today": "Bugün",
+    "writeIn": "{{lang}} dilinde birkaç cümle.",
+    "entryLabel": "Bugünün günlük girişi",
+    "pastEntryLabel": "{{date}} tarihli günlük girişi",
+    "past": "Önceki girişler",
+    "empty": "Henüz bir şey yazılmadı. Bugünle başla.",
+    "noCourse": "Ünitelerine not tutmak için bir kurs seç.",
+    "unitsHint": "{{lang}} üniteleri için kendi notların.",
+    "unitLabel": "{{level}} · notun",
+    "noteLabel": "{{unit}} notu",
+    "notePlaceholder": "Kelimeler, kurallar, örnekler…",
+    "noNote": "Henüz not yok",
+    "save": "Kaydet",
+    "saved": "Kaydedildi",
+    "saveFailed": "Not kaydedilemedi.",
+    "delete": "Sil",
+    "deleted": "Silindi",
+    "check": "Girişimi kontrol et",
+    "checking": "Kontrol ediliyor…",
+    "checkTitle": "Girişin, kontrol edildi",
+    "checkNoAi": "Girişinin kontrol edilmesi için yapay zekâyı ayarla.",
+    "checkFailed": "Giriş kontrol edilemedi."
   }
 }

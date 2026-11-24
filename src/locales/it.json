@@ -35,7 +35,8 @@
     "friends": "Amici",
     "notifications": "Notifiche",
     "settings": "Impostazioni",
-    "grammar": "Grammatica"
+    "grammar": "Grammatica",
+    "notes": "Note"
   },
   "common": {
     "soon": "Prossimamente",
@@ -1160,5 +1161,35 @@
     "saved": "Salvato",
     "story": "Storia",
     "unit": "Unità"
+  },
+  "notes": {
+    "title": "Note e diario",
+    "subtitle": "Le tue parole: una breve voce nella lingua che studi e una nota su ogni unità. Restano su questo dispositivo e sono incluse nell'esportazione dei dati.",
+    "tabs": {
+      "journal": "Diario",
+      "units": "Note delle unità"
+    },
+    "today": "Oggi",
+    "writeIn": "Qualche frase in {{lang}}.",
+    "entryLabel": "Voce del diario di oggi",
+    "pastEntryLabel": "Voce del diario del {{date}}",
+    "past": "Voci precedenti",
+    "empty": "Non hai ancora scritto nulla. Inizia da oggi.",
+    "noCourse": "Scegli un corso per prendere note sulle sue unità.",
+    "unitsHint": "Le tue note sulle unità di {{lang}}.",
+    "unitLabel": "{{level}} · la tua nota",
+    "noteLabel": "Nota su {{unit}}",
+    "notePlaceholder": "Parole, regole, esempi…",
+    "noNote": "Ancora nessuna nota",
+    "save": "Salva",
+    "saved": "Salvato",
+    "saveFailed": "Non è stato possibile salvare la nota.",
+    "delete": "Elimina",
+    "deleted": "Eliminato",
+    "check": "Controlla la mia voce",
+    "checking": "Controllo…",
+    "checkTitle": "La tua voce, controllata",
+    "checkNoAi": "Configura l'IA per far controllare la voce.",
+    "checkFailed": "Non è stato possibile controllare la voce."
   }
 }
