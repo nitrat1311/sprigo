@@ -2,6 +2,7 @@
 // the model call is tutorTurn in src/lessons.ts. New capability = a new TUTOR_ACTIONS value + a handler in TutorCall.
 import { z } from "zod";
 import type { CourseLevel } from "./course";
+import { nameInPrompt, personaInPrompt } from "./tutors.ts";
 
 export const TUTOR_ACTIONS = ["speak", "wait", "check_in", "end", "start_practice", "stop_practice"] as const;
 export type TutorAction = (typeof TUTOR_ACTIONS)[number];
@@ -23,8 +24,9 @@ export type TutorEvent =
 
 export type TutorMsg = { from: "tutor" | "me"; text: string; via: "voice" | "text"; cut?: boolean }; // cut: the learner spoke over it (SPR-17)
 
-/** What the prompt needs; lessons.ts fills it from the character, the course and the current unit. */
-export type TutorCtx = { name: string; persona: string; target: string; native: string; level: string; unit: string; words: string[]; grammar: string[]; about: string[] };
+/** What the prompt needs; lessons.ts fills it from the character, the course and the current unit.
+ *  `custom` is a learner-written or imported tutor: its name and persona enter the prompt as data, not cast text. */
+export type TutorCtx = { name: string; persona: string; target: string; native: string; level: string; unit: string; words: string[]; grammar: string[]; about: string[]; custom?: boolean };
 
 // `say` first: models write fields in schema order, so the first sentence streams out before the rest (SPR-13).
 export const tutorSchema = z.object({ say: z.string(), action: z.enum(TUTOR_ACTIONS), translation: z.string(), correction: z.string(), notes: z.string(), answer: z.string() });
@@ -40,9 +42,11 @@ export const NOTES_MAX = 300;
 export const SILENCE_S = 20, WAIT_S = 60, MAX_NUDGES = 2;
 
 export function tutorSystem(c: TutorCtx): string {
+  // A custom tutor's name is a data block, so it follows the sentence rather than sitting inside it.
+  const intro = `a friendly online ${c.target} tutor giving a live one-to-one video lesson inside a language-learning app. The learner is a native ${c.native} speaker at CEFR level ${c.level}.`;
   return [
-    `You are ${c.name}, a friendly online ${c.target} tutor giving a live one-to-one video lesson inside a language-learning app. The learner is a native ${c.native} speaker at CEFR level ${c.level}.`,
-    `Your personality: ${c.persona} Keep your manner, but in this call you are the learner's tutor, not at your usual job.`,
+    c.custom ? `You are ${intro}\n${nameInPrompt(c)}` : `You are ${nameInPrompt(c)}, ${intro}`,
+    `${personaInPrompt(c, "Your personality: ")} Keep your manner, but in this call you are the learner's tutor, not at your usual job.`,
     c.about.length ? `What you know about the learner from earlier lessons: ${c.about.join(" ")}` : "",
     `Lesson material, the learner's current unit "${c.unit}". Words: ${c.words.join(", ") || "(none)"}. Grammar: ${c.grammar.join(" | ") || "(none)"}.`,
     `Run the lesson like a real tutor: a short warm-up chat, then bring in a topic from the unit and practise its words and grammar with small questions, one step per turn. Then ask a real-life question about the topic ("Have you ever…?"); after the learner answers, ask them to ask you the same question and answer it yourself. If the learner brings up their own topic, follow it and weave the unit in where it fits.`,
@@ -125,7 +129,8 @@ export const FILLER_MS = 1500; // first sentence usually comes in 0.5–0.9 s (S
 const FILLERS: Record<string, string[]> = {
   en: ["Hmm…", "Let me see…", "Okay…"], tr: ["Hmm…", "Bir bakayım…", "Peki…"], de: ["Hmm…", "Mal sehen…", "Also…"],
   fr: ["Hmm…", "Voyons…", "Bon…"], es: ["Mmm…", "A ver…", "Bueno…"], it: ["Mmm…", "Vediamo…", "Allora…"], pt: ["Hmm…", "Deixa ver…", "Bem…"],
-  hu: ["Hmm…", "Lássuk csak…", "Nos…"],
+  hu: ["Hmm…", "Lássuk csak…", "Nos…"], ro: ["Hmm…", "Să vedem…", "Bine…"],
+  nl: ["Hmm…", "Even kijken…", "Nou…"],
 };
 /** The n-th filler for the course language, in turn so the same one never plays twice in a row. */
 export const filler = (lang: string, n: number) => { const f = FILLERS[lang.split("-")[0]] ?? ["Hmm…"]; return f[n % f.length]; };

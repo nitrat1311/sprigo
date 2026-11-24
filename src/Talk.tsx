@@ -7,8 +7,10 @@ import { mark } from "./latency";
 import { sfx, useStartLesson } from "./Lesson";
 import { onTtsFallback, prewarm, resetTtsNotice, speak, speakingWith, stopSpeaking } from "./tts";
 import { MicButton } from "./Mic";
+import { sttReady } from "./stt";
 import { Face, type FaceState } from "./face/Face";
-import { CHARACTERS, CHAT_MAX_TURNS as CHAT_TURNS, CHAT_MIN_TURNS, FREE_GOAL, type Talk } from "./characters";
+import { CHAT_MAX_TURNS as CHAT_TURNS, CHAT_MIN_TURNS, FREE_GOAL, type Character, type Talk } from "./characters";
+import { inlineName, isTutorId, remembersLearner } from "./tutors";
 import { avoidancePass, chatTurn, debrief, learnerFacts, loadStory, rehearseTurn, rememberSession, type ChatMsg, type Story as StoryData } from "./lessons";
 import { REHEARSE_LONG, type Debrief } from "./rehearsal";
 import * as db from "./db";
@@ -307,14 +309,15 @@ function Rounds({ stats }: { stats: RoundStat[] }) {
   );
 }
 
-export function Chat({ talk }: { talk: Talk }) {
+export function Chat({ talk, ch }: { talk: Talk; ch: Character }) {
   const { who, topic, voice, rehearse, drill } = talk;
   const { t } = useTranslation();
   const { course, enrollment, profile, s, setS, gainXp, toast } = useApp();
-  const ch = CHARACTERS[who];
   const name = rehearse ? rehearse.who : ch.name;
   const lang = course?.iso ?? "en";
   const [voicing, setVoicing] = useState<number | null>(null); // AI message being spoken (or its voice being made)
+  const [stt, setStt] = useState(false); // the mic only opens once speaking can work, as in Lesson and Write
+  useEffect(() => { sttReady().then(setStt); }, []);
   const [engine, setEngine] = useState<string | null>(null); // which voice engine is speaking it, once audio starts
   const say = (text: string, i: number) => {
     setVoicing(i); setEngine(null);
@@ -373,7 +376,7 @@ export function Chat({ talk }: { talk: Talk }) {
         say(r.reply, history.length);
         return;
       }
-      const r = await chatTurn({ course, level: enrollment.level, native: profile.native_lang, about: await about }, who, topic, history,
+      const r = await chatTurn({ course, level: enrollment.level, native: profile.native_lang, about: await about }, ch, topic, history,
         drill ? { rules: drillRules(drill), keep: DRILL_KEEP } : {});
       if (ending.current) return;
       if (req.current !== myReq) return;
@@ -408,8 +411,9 @@ export function Chat({ talk }: { talk: Talk }) {
     turn([...msgs, { from: "me", text: v }]);
   };
   const remember = () => {
-    // ponytail: only free-topic chats and rehearsals, never drills; in a scene the learner plays a role, so "I'm a doctor" is not about them
-    if (profile && !drill && (rehearse || topic.goal.startsWith(FREE_GOAL))) void rememberSession(profile.id, profile.native_lang, "chat", name, msgs.map((m) => ({ from: m.from === "me" ? "me" : "other", text: m.text })))
+    // ponytail: only free-topic chats and rehearsals, never drills; in a scene the learner plays a role, so "I'm a doctor" is not about them.
+    // An imported tutor's package is not the learner's: it must not write their memory (M5).
+    if (profile && !drill && remembersLearner(ch) && (rehearse || topic.goal.startsWith(FREE_GOAL))) void rememberSession(profile.id, profile.native_lang, "chat", rehearse ? name : inlineName(ch), msgs.map((m) => ({ from: m.from === "me" ? "me" : "other", text: m.text })))
       .then((n) => { if (n) toast(t("memory.saved", { count: n })); });
   };
   const turns = msgs.filter((m) => m.from === "me").map((m) => m.text);
@@ -448,7 +452,8 @@ export function Chat({ talk }: { talk: Talk }) {
   const end = rehearse ? stepOut : finish, endLabel = t(rehearse ? "roleplay.outOfRole" : "lesson.finish");
 
   const faceState: FaceState = busy ? "thinking" : voicing !== null ? "talking" : "idle";
-  const topicLabel = drill ? `${r432 ? t("practice.roundN", { n: r432.round, min: r432.minutes }) : drill.kind === "ladder" ? t("practice.rungN", { n: drill.rung }) : t(drill.kind === "structure" ? "practice.structure" : "practice.planning")} · ${drill.topic}` : rehearse ? rehearse.about ?? "" : topic.id ? t(`roleplay.topics.${who}.${topic.id}`) : topic.goal.slice(FREE_GOAL.length);
+  // A custom tutor's topics have no i18n entries, so they show their goal.
+  const topicLabel = drill ? `${r432 ? t("practice.roundN", { n: r432.round, min: r432.minutes }) : drill.kind === "ladder" ? t("practice.rungN", { n: drill.rung }) : t(drill.kind === "structure" ? "practice.structure" : "practice.planning")} · ${drill.topic}` : rehearse ? rehearse.about ?? "" : topic.id ? (isTutorId(who) ? topic.goal : t(`roleplay.topics.${who}.${topic.id}`)) : topic.goal.slice(FREE_GOAL.length);
   let body: React.ReactNode, footer: React.ReactNode;
   if (result) {
     body = deb ? <DebriefCard d={deb} r={result} turns={turns} /> : <>
@@ -473,12 +478,12 @@ export function Chat({ talk }: { talk: Talk }) {
     body = <>
       {voice ? (
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, marginBottom: 16, textAlign: "center" }}>
-          <Face spec={ch.face} color={ch.color} size={220} label={name} state={faceState} scene={rehearse ? undefined : who} />
+          <Face spec={ch.face} color={ch.color} size={220} label={name} state={faceState} scene={rehearse ? undefined : who} image={ch.avatar} sceneImage={rehearse ? undefined : ch.scene} />
           <b>{rehearse ? t("roleplay.rehearseWith", { who: name }) : name}</b><span className="muted small">{topicLabel}</span>
         </div>
       ) : (
         <div className="od-row" style={{ ...gap("12px"), marginBottom: 16 }}>
-          <Face spec={ch.face} color={ch.color} size={96} label={name} state={faceState} />
+          <Face spec={ch.face} color={ch.color} size={96} label={name} state={faceState} image={ch.avatar} />
           <span className="od-field od-fill"><b>{rehearse ? t("roleplay.rehearseWith", { who: name }) : name}</b><span className="muted small">{topicLabel}</span></span>
         </div>
       )}
@@ -499,7 +504,7 @@ export function Chat({ talk }: { talk: Talk }) {
       {err && <Failed msg={err} retry={stepping ? stepOut : () => turn(msgs)} quit={quit} />}
       {rehearse && mine >= REHEARSE_LONG && !busy && <p className="muted small" style={{ textAlign: "center", marginTop: 16 }}>{t("roleplay.rehearseLong")}</p>}
       {over && !busy && <p className="muted small" style={{ textAlign: "center", marginTop: 16 }}>{t(goal ? "roleplay.goalReached" : "roleplay.limit")}</p>}
-      {voice && !over && <MicButton lang={lang} native={native} disabled={busy} onText={(said, m) => { if (m) spoken.current.push(m); if (said.trim()) heard.current.push(said.trim()); send(said); }} />}
+      {voice && !over && stt && s.speakOn && <MicButton lang={lang} native={native} disabled={busy} onText={(said, m) => { if (m) spoken.current.push(m); if (said.trim()) heard.current.push(said.trim()); send(said); }} />}
       <div ref={endRef} />
     </>;
     footer = over || voice

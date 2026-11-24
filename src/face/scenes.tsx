@@ -167,8 +167,19 @@ const city = (
   </>
 );
 
-const SCENES: Record<CharacterId, React.ReactNode> = { mia: hotel, kai: kitchen, nora: clinic, tom: flat, emma: office, leo: city };
+// A plain room for a character with no scene of its own (custom tutors).
+const neutral = (
+  <>
+    <rect x={0} y={0} width={400} height={300} fill="#eef1f4" />
+    <Window x={40} y={40} w={90} h={70} />
+    <Plant x={350} y={230} />
+    <rect x={0} y={230} width={400} height={70} fill="#d8dde2" />
+    <rect x={0} y={226} width={400} height={6} fill="#c3cad1" />
+  </>
+);
+
+const SCENES: Partial<Record<CharacterId, React.ReactNode>> = { mia: hotel, kai: kitchen, nora: clinic, tom: flat, emma: office, leo: city };
 
 export const Scene = ({ who }: { who: CharacterId }) => (
-  <svg className="scene" viewBox="0 0 400 300" preserveAspectRatio="xMidYMax slice" aria-hidden="true">{SCENES[who]}</svg>
+  <svg className="scene" viewBox="0 0 400 300" preserveAspectRatio="xMidYMax slice" aria-hidden="true">{SCENES[who] ?? neutral}</svg>
 );

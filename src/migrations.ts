@@ -94,4 +94,14 @@ CREATE TABLE ai_usage(
   input_tokens INTEGER NOT NULL, output_tokens INTEGER NOT NULL, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP);
 CREATE INDEX ai_usage_created ON ai_usage(created_at)`,
   },
+  {
+    v: 9, // #167: custom tutors, per profile like memories (src/tutors.ts). `data` is the package without the images,
+    // which get their own columns; `source` is "local" | "imported" (imported tutors get no memory writes later).
+    sql: `
+CREATE TABLE tutors(
+  id TEXT PRIMARY KEY, profile_id INTEGER NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  data TEXT NOT NULL, avatar TEXT, scene TEXT, source TEXT NOT NULL DEFAULT 'local',
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP);
+CREATE INDEX tutors_profile ON tutors(profile_id)`,
+  },
 ];

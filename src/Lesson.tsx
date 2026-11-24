@@ -380,7 +380,7 @@ export function Lesson({ id }: { id: string }) {
         <p className="muted" style={{ fontWeight: 700, margin: "4px 0 12px" }}>{it.translation}</p>
         {listenBtn(it.phrase)}
       </div>
-      <MicButton lang={lang} disabled={!!fb} trigger={micPress} onText={(txt) => {
+      <MicButton item={i} playback lang={lang} disabled={!!fb} trigger={micPress} onText={(txt) => {
         setHeard(txt);
         const miss = speechMisses(it.phrase, txt, lang);
         if (txt) grade(speechScore(it.phrase, txt, lang) >= SPEECH_PASS, it.phrase, txt,
@@ -431,7 +431,7 @@ export function Lesson({ id }: { id: string }) {
       <textarea key={i} className="input" rows={3} value={text} disabled={!!fb || checking} autoFocus aria-label={t("lesson.yourAnswer")} placeholder={t("lesson.typeHere")}
         style={{ width: "100%", resize: "none", fontSize: 18 }}
         onChange={(e) => setText(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); if (canCheck) check(); } }} />
-      {speakOk && profile && <MicButton key={`mic${i}`} lang={answerLang(it, lang, profile.native_lang)} disabled={!!fb || checking}
+      {speakOk && profile && <MicButton item={i} lang={answerLang(it, lang, profile.native_lang)} disabled={!!fb || checking}
         onText={(said) => { if (said.trim()) setText((x) => [x.trim(), said.trim()].filter(Boolean).join(" ")); }} />}
     </>
   );

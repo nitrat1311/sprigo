@@ -166,3 +166,14 @@ test("listening practice can ask a few words and draw wrong options from a large
   assert.deepEqual(listenItems([], "?", 10, pool), []);
   assert.deepEqual(listenItems([pool[0]], "?", 10, pool.slice(0, 3)), []);
 });
+
+test("cedilla spellings match only in Romanian", async () => {
+  const { speechMisses } = await import("./activities.ts");
+  const item = { answer: "Și în țară", accepted: [] };
+  assert.equal(matchesAnswer("Şi în ţară", item, "ro"), true);
+  assert.equal(matchesAnswer("Si în tara", item, "ro"), false);
+  assert.equal(matchesAnswer("șey", { answer: "şey", accepted: [] }, "tr"), false);
+  assert.equal(matchesAnswer("șey", { answer: "şey", accepted: [] }), false);
+  assert.deepEqual(speechMisses("Ce țară?", "Ce ţară?", "ro"), []);
+  assert.deepEqual(speechMisses("şey", "șey", "tr"), ["şey"]);
+});

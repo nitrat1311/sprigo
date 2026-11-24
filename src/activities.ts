@@ -215,7 +215,7 @@ export function rejected(items: Item[], checked: z.infer<typeof checkSchema> | n
 /** `lang`: the course language, so Turkish İ/I lower to i/ı (#96). Without it the system locale decides; the
  *  stray dot (U+0307) "İ" leaves outside Turkish is dropped so it still matches "i". */
 export const normalize = (t: string, lang?: string) =>
-  t.normalize("NFKC").toLocaleLowerCase(lang).replace(/\u0307/g, "").replace(/[’`]/g, "'").replace(/[\p{P}\p{S}]/gu, (ch) => (ch === "'" ? ch : " ")).replace(/\s+/g, " ").trim();
+  (lang === "ro" ? t.normalize("NFKC").toLocaleLowerCase(lang).replace(/ş/g, "ș").replace(/ţ/g, "ț") : t.normalize("NFKC").toLocaleLowerCase(lang)).replace(/\u0307/g, "").replace(/[’`]/g, "'").replace(/[\p{P}\p{S}]/gu, (ch) => (ch === "'" ? ch : " ")).replace(/\s+/g, " ").trim();
 
 /** Whether `given` has exactly the words of `answer`, in any order: only then can word tiles in another order be right. */
 export const sameWords = (given: string, answer: string, lang?: string) => {
