@@ -20,7 +20,28 @@ export type SearchHit = {
 export type Guidebook = { unit: string; guide: Guide };
 
 /** Case and accents fold, so "adios" finds "adiós". */
-const fold = (s: string) => s.toLocaleLowerCase().normalize("NFD").replace(/\p{Diacritic}/gu, "");
+const fold = (s: string) => s.toLowerCase().normalize("NFD").replace(/\p{Diacritic}/gu, "");
+
+const str = (v: unknown) => (typeof v === "string" ? v : "");
+const objects = (v: unknown) =>
+  Array.isArray(v) ? v.filter((x): x is Record<string, unknown> => !!x && typeof x === "object") : [];
+
+type SafeGuide = {
+  vocabulary: { word: string; translation: string; example: string; example_translation: string }[];
+  grammar: { pattern: string; explanation: string; example: string }[];
+};
+/** A cached guidebook is model output: keep only entries with the fields the search reads. */
+function safeGuide(guide: Guide): SafeGuide {
+  const g = (typeof guide === "object" && guide ? guide : {}) as { vocabulary?: unknown; grammar?: unknown };
+  return {
+    vocabulary: objects(g.vocabulary)
+      .map((v) => ({ word: str(v.word), translation: str(v.translation), example: str(v.example), example_translation: str(v.example_translation) }))
+      .filter((v) => v.word),
+    grammar: objects(g.grammar)
+      .map((v) => ({ pattern: str(v.pattern), explanation: str(v.explanation), example: str(v.example) }))
+      .filter((v) => v.pattern),
+  };
+}
 
 const NOTE_MAX = 160;
 /** One line, so a guidebook explanation stays a caption rather than a paragraph. */
@@ -35,9 +56,14 @@ export function searchCourse(course: Course, query: string, guidebooks: Guideboo
   if (needle.length < 2) return [];
   const hit = (s: string) => fold(s).includes(needle);
   const hits: SearchHit[] = [];
-  for (const level of levelsOf(course)) {
+  const levels = levelsOf(course);
+  // `guide:<unit>` carries no level, so an id used at two levels would show one level's guidebook at the other.
+  const idCount = new Map<string, number>();
+  for (const level of levels) for (const unit of course.levels[level]!.units) idCount.set(unit.id, (idCount.get(unit.id) ?? 0) + 1);
+  const books = guidebooks.map((g) => ({ unit: g.unit, guide: safeGuide(g.guide) }));
+  for (const level of levels) {
     for (const unit of course.levels[level]!.units) {
-      const guides = guidebooks.filter((g) => g.unit === unit.id).map((g) => g.guide);
+      const guides = (idCount.get(unit.id) ?? 0) > 1 ? [] : books.filter((g) => g.unit === unit.id).map((g) => g.guide);
       // A guidebook repeats the YAML lists and adds a translation or explanation to each entry.
       const words = new Map(guides.flatMap((g) => g.vocabulary).map((v) => [fold(v.word), v]));
       const patterns = new Map(guides.flatMap((g) => g.grammar).map((g) => [fold(g.pattern), g]));

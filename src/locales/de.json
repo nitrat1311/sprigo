@@ -56,6 +56,8 @@
     "placeholder": "Einheiten, Wörter, Grammatik durchsuchen…",
     "none": "Kein Treffer für „{{query}}“.",
     "more": "Es werden nur die ersten {{count}} Treffer angezeigt. Tippe weiter, um die Suche einzugrenzen.",
+    "count_one": "{{count}} Treffer",
+    "count_other": "{{count}} Treffer",
     "unit": "Einheit",
     "step": "Lektion",
     "vocabulary": "Vokabeln",

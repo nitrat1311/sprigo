@@ -56,6 +56,8 @@
     "placeholder": "Ünite, kelime, dilbilgisi ara…",
     "none": "“{{query}}” için sonuç yok.",
     "more": "Yalnızca ilk {{count}} sonuç gösteriliyor. Daraltmak için yazmaya devam et.",
+    "count_one": "{{count}} sonuç",
+    "count_other": "{{count}} sonuç",
     "unit": "Ünite",
     "step": "Ders",
     "vocabulary": "Kelimeler",

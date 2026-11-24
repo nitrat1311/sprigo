@@ -75,6 +75,32 @@ test("a guidebook match shows its translation or explanation, and does not repea
   ]);
 });
 
+test("a unit id used at two levels gets no guidebook text", () => {
+  const repeated = {
+    levels: {
+      A1: { title: "Beginner", units: [unit("society-and-environment", "Society", [step("society", "Society", ["agua"], [])])] },
+      B1: { title: "Intermediate", units: [unit("society-and-environment", "Environment", [step("environment", "Environment", ["bosque"], [])])] },
+    },
+  } as unknown as Course;
+  const books: Guidebook[] = [{ unit: "society-and-environment", guide: guide([{ word: "agua", translation: "water", example: "", example_translation: "" }]) }];
+  // `guide:<unit>` carries no level, so neither level may claim the other's guidebook.
+  assert.deepEqual(searchCourse(repeated, "water", books), []);
+  assert.deepEqual(searchCourse(repeated, "society", books).map((h) => [h.level, h.kind, h.text]), [
+    ["A1", "unit", "Society"],
+    ["A1", "step", "Society"],
+  ]);
+});
+
+test("a malformed cached guidebook does not throw", () => {
+  const bad = [
+    { unit: "travel", guide: { vocabulary: "nope", grammar: { pattern: 42 } } },
+    { unit: "travel", guide: null },
+    { unit: "travel", guide: { vocabulary: [{ word: 7, translation: null }, null], grammar: [] } },
+  ] as unknown as Guidebook[];
+  assert.deepEqual(searchCourse(course, "train", bad), []);
+  assert.deepEqual(searchCourse(course, "tren", bad).map((h) => [h.kind, h.text]), [["vocabulary", "el tren"]]);
+});
+
 test("a guidebook hit is a single caption line", () => {
   const long = guide([], [{ pattern: "ser + adjetivo", explanation: "line one\nline two  ".repeat(30), example: "" }]);
   const [hit] = searchCourse(course, "line", [{ unit: "travel", guide: long }]);

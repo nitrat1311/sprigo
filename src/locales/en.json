@@ -56,6 +56,8 @@
     "placeholder": "Search units, words, grammar…",
     "none": "No match for “{{query}}”.",
     "more": "Showing the first {{count}} matches. Keep typing to narrow it down.",
+    "count_one": "{{count}} result",
+    "count_other": "{{count}} results",
     "unit": "Unit",
     "step": "Lesson",
     "vocabulary": "Vocabulary",

@@ -285,11 +285,13 @@ function SearchBox() {
     // The next frame has rendered this level; then bring the unit's header into view (a whole unit is taller than the screen).
     requestAnimationFrame(() => document.querySelector(`[data-unit="${h.unitId}"] .unit-head`)?.scrollIntoView({ block: "center", behavior: "smooth" }));
   };
-  return <div role="search" style={{ marginTop: 20 }}>
+  return <div className="search-box" role="search">
     <input className="input" type="search" value={q} onChange={(e) => setQ(e.target.value)}
       placeholder={t("search.placeholder")} aria-label={t("search.label")} />
-    {active && <div className="search-results" aria-live="polite" style={{ marginTop: 10 }}>
-      {!hits.length && <p className="muted small" style={{ margin: 0 }}>{t("search.none", { query })}</p>}
+    <p className="search-status muted small" role="status">
+      {active ? (hits.length ? t("search.count", { count: hits.length }) : t("search.none", { query })) : ""}
+    </p>
+    {active && <div className="search-results">
       {hits.length > 0 && <div className="od-stack" style={{ "--od-gap": "8px" } as React.CSSProperties}>
         {hits.slice(0, MAX_HITS).map((h) => (
           <button className="card row-item" key={`${h.level}:${h.unitId}:${h.kind}:${h.text}`} onClick={() => open(h)}>

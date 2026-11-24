@@ -102,6 +102,8 @@ test("search finds a lesson or word and opens its unit", async ({ page }) => {
   await onboard(page);
   await page.getByRole("button", { name: "Learn" }).click();
   const search = page.getByLabel("Search lessons and guidebooks");
+  // Learn opens on the current lesson, far down the path; the sticky search must still be on screen.
+  await expect(search).toBeInViewport();
   await search.fill("How Old");
   const results = page.locator(".search-results");
   await expect(results.getByRole("button", { name: /How Old Are You\?/ })).toBeVisible();
