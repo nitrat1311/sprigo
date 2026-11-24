@@ -40,7 +40,7 @@ export const NEW_STATS: Stats = {
   gems: 0, todayXp: 0, bestDayXp: 0, chests: 0, day: "", lastActive: null, quests: QUESTS,
   doubleXpUntil: 0, legendTickets: 0, madnessBest: 0, league: null, weekXp: 0,
   reminderOn: false, reminded: "", speakOn: true, bargeIn: true, memoryOn: true, speechOn: true, xpDays: {}, accuracy: {},
-  goals: DEFAULT_GOALS, reportedWeek: "",
+  goals: { week: { ...DEFAULT_GOALS.week }, month: { ...DEFAULT_GOALS.month } }, reportedWeek: "",
 };
 
 /** Shop "Double XP": 15 minutes of ×2 on everything earned. */

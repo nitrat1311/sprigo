@@ -237,11 +237,11 @@
     "weekShort": "Woche",
     "monthShort": "Monat",
     "measure": "Messgröße",
-    "measureAria": "Was jede {{period}} gezählt wird",
     "target": "Ziel",
     "targetAria": "Ziel pro {{period}}",
     "progress": "{{n}} von {{goal}} {{unit}}",
-    "previous": "Vorher: {{n}} {{unit}}",
+    "lastWeek": "Letzte Woche: {{n}} {{unit}}",
+    "lastMonth": "Letzter Monat: {{n}} {{unit}}",
     "report": "Bericht",
     "weekReport": "Wochenbericht",
     "monthReport": "Monatsbericht",
@@ -253,11 +253,13 @@
     },
     "units": {
       "xp": "XP",
-      "words": "Wörter",
+      "words_one": "Wort",
+      "words_other": "Wörter",
       "speak": "Min."
     },
     "goalDone": "Ziel erreicht",
     "goalLeft": "Noch {{n}} {{unit}}",
+    "goalShort": "{{n}} {{unit}} zu wenig",
     "notifyTitle": "Deine Woche in Sprigo",
     "notifyBody": "Letzte Woche {{n}} XP. Den ganzen Bericht findest du im Profil."
   },

@@ -237,11 +237,11 @@
     "weekShort": "week",
     "monthShort": "month",
     "measure": "Measure",
-    "measureAria": "What to measure each {{period}}",
     "target": "Target",
     "targetAria": "Target each {{period}}",
     "progress": "{{n}} of {{goal}} {{unit}}",
-    "previous": "Before: {{n}} {{unit}}",
+    "lastWeek": "Last week: {{n}} {{unit}}",
+    "lastMonth": "Last month: {{n}} {{unit}}",
     "report": "Report",
     "weekReport": "Weekly report",
     "monthReport": "Monthly report",
@@ -253,11 +253,13 @@
     },
     "units": {
       "xp": "XP",
-      "words": "words",
+      "words_one": "word",
+      "words_other": "words",
       "speak": "min"
     },
     "goalDone": "Goal reached",
     "goalLeft": "{{n}} {{unit}} to go",
+    "goalShort": "{{n}} {{unit}} short",
     "notifyTitle": "Your week in Sprigo",
     "notifyBody": "{{n}} XP last week. See your profile for the full report."
   },

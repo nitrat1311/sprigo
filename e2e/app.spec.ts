@@ -255,11 +255,11 @@ test("weekly and monthly goals show progress, a report and stay after a reload",
   await expect(page.locator("section.card", { hasText: "Monthly goal" })).toBeVisible();
 
   // A weekly goal in new words, saved when the field loses focus.
-  await week.getByLabel("What to measure each week").selectOption("words");
+  await week.getByLabel("Measure").selectOption("words");
   await week.getByLabel("Target each week").fill("20");
   await week.getByLabel("Target each week").blur();
   await expect(week.getByText(/^\d+ of 20 words$/)).toBeVisible();
-  await expect(week.getByText(/^Before: \d+ words$/)).toBeVisible();
+  await expect(week.getByText(/^Last week: \d+ words$/)).toBeVisible();
 
   // The report compares this week with the week before, for every metric.
   await week.getByRole("button", { name: "Report" }).click();
@@ -271,8 +271,23 @@ test("weekly and monthly goals show progress, a report and stay after a reload",
   await page.reload();
   await page.getByRole("button", { name: "Profile", exact: true }).click();
   const weekAgain = page.locator("section.card", { hasText: "Weekly goal" });
-  await expect(weekAgain.getByLabel("What to measure each week")).toHaveValue("words");
+  await expect(weekAgain.getByLabel("Measure")).toHaveValue("words");
   await expect(weekAgain.getByLabel("Target each week")).toHaveValue("20");
+});
+
+test("changing what a goal measures keeps the target already typed", async ({ page }) => {
+  await onboard(page);
+  await page.getByRole("button", { name: "Profile", exact: true }).click();
+  const week = page.locator("section.card", { hasText: "Weekly goal" });
+
+  await week.getByLabel("Target each week").fill("35"); // typed, not yet blurred
+  await week.getByLabel("Measure").selectOption("words"); // commits the typed target with the new measure
+
+  await page.reload();
+  await page.getByRole("button", { name: "Profile", exact: true }).click();
+  const again = page.locator("section.card", { hasText: "Weekly goal" });
+  await expect(again.getByLabel("Measure")).toHaveValue("words");
+  await expect(again.getByLabel("Target each week")).toHaveValue("35");
 });
 
 test("a weekly summary opens once after the week turns", async ({ page }) => {

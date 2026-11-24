@@ -6,6 +6,7 @@ import { useApp } from "./store";
 import {
   clampTarget, metricTotals, periodEnd, periodStart, type Goal, type GoalData, type GoalMetric, type GoalPeriod, type Goals,
 } from "./goals";
+import { today } from "./progress";
 
 /** Local short date for a YYYY-MM-DD day, e.g. "Nov 23". */
 const dayLabel = (day: string, lang: string) => new Date(day + "T12:00").toLocaleDateString(lang, { month: "short", day: "numeric" });
@@ -18,8 +19,16 @@ function GoalCard({ period, goal, goals, day, data, onChange }:
   const [target, setTarget] = useState(String(goal.target));
   useEffect(() => setTarget(String(goal.target)), [goal.target]);
   const start = periodStart(period, day), total = metricTotals(goal.metric, period, day, data);
-  const unit = t(`goals.units.${goal.metric}`);
+  const unit = (n: number) => t(`goals.units.${goal.metric}`, { count: n }); // "1 word", "2 words"
   const pct = Math.min(100, Math.round((total.cur / goal.target) * 100));
+  // One commit for the field and the measure: the typed target travels with a new metric instead of being
+  // dropped by a stale `goal` prop, and empty or invalid input keeps the saved target (no clamp to 1).
+  const commit = (patch: Partial<Goal> = {}) => {
+    const typed = target.trim(), n = typed === "" ? NaN : Number(typed);
+    const next: Goal = { ...goal, ...(Number.isFinite(n) ? { target: clampTarget(n) } : {}), ...patch };
+    setTarget(String(next.target));
+    if (next.metric !== goal.metric || next.target !== goal.target) onChange(period, next);
+  };
   return (
     <section className="card od-stack" style={{ "--od-gap": "10px" } as React.CSSProperties} aria-labelledby={`goal-${period}`}>
       <div className="od-row" style={{ "--od-gap": "10px" } as React.CSSProperties}>
@@ -29,26 +38,26 @@ function GoalCard({ period, goal, goals, day, data, onChange }:
       </div>
       <div className="progress-track"><i className={`progress-fill${pct >= 100 ? " green" : ""}`} style={{ display: "block", width: `${pct}%` }} /></div>
       <div className="od-row" style={{ "--od-gap": "10px" } as React.CSSProperties}>
-        <span className="small">{t("goals.progress", { n: total.cur, goal: goal.target, unit })}</span>
-        <span className="muted small" style={{ marginLeft: "auto" }}>{t("goals.previous", { n: total.prev, unit })}</span>
+        <span className="small">{t("goals.progress", { n: total.cur, goal: goal.target, unit: unit(goal.target) })}</span>
+        <span className="muted small" style={{ marginLeft: "auto" }}>{t(period === "week" ? "goals.lastWeek" : "goals.lastMonth", { n: total.prev, unit: unit(total.prev) })}</span>
       </div>
       <div className="od-row" style={{ "--od-gap": "10px" } as React.CSSProperties}>
         <label className="od-row od-fill" style={{ "--od-gap": "8px" } as React.CSSProperties}>
           <span className="muted small">{t("goals.measure")}</span>
-          <select className="select" aria-label={t("goals.measureAria", { period: t(`goals.${period}Short`) })} value={goal.metric}
-            onChange={(e) => onChange(period, { ...goal, metric: e.target.value as GoalMetric })}>
+          <select className="select" value={goal.metric}
+            onChange={(e) => commit({ metric: e.target.value as GoalMetric })}>
             {(["xp", "words", "speak"] as GoalMetric[]).map((m) => <option key={m} value={m}>{t(`goals.metrics.${m}`)}</option>)}
           </select>
         </label>
         <label className="od-row od-fill" style={{ "--od-gap": "8px" } as React.CSSProperties}>
           <span className="muted small">{t("goals.target")}</span>
-          <input className="input" type="number" min={1} max={10_000} step={10} value={target}
+          <input className="input" type="number" min={1} max={10_000} step={1} value={target}
             aria-label={t("goals.targetAria", { period: t(`goals.${period}Short`) })}
             onChange={(e) => setTarget(e.target.value)}
-            onBlur={() => {
-              const n = clampTarget(Number(target));
-              setTarget(String(n));
-              if (n !== goal.target) onChange(period, { ...goal, target: n });
+            onBlur={() => commit()}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") e.currentTarget.blur(); // leaving the field commits
+              else if (e.key === "Escape") setTarget(String(goal.target)); // discard what was typed
             }} />
         </label>
       </div>
@@ -64,6 +73,9 @@ export function ReportSheet({ period, start, goals, data }: { period: GoalPeriod
   const rows = (["xp", "words", "speak"] as GoalMetric[]).map((m) => ({ m, ...metricTotals(m, period, start, data) }));
   const mine = rows.find((r) => r.m === goal.metric)!;
   const left = Math.max(0, goal.target - mine.cur);
+  const unit = (m: GoalMetric, n: number) => t(`goals.units.${m}`, { count: n });
+  // A finished period cannot be "to go": say what was reached, or by how much it fell short.
+  const finished = periodEnd(period, start) < today();
   return (
     <div className="od-stack" style={{ "--od-gap": "12px" } as React.CSSProperties}>
       <h3 style={{ textAlign: "center" }}>{t(`goals.${period}Report`)}</h3>
@@ -73,12 +85,12 @@ export function ReportSheet({ period, start, goals, data }: { period: GoalPeriod
       {rows.map((r) => (
         <div className="card od-row" key={r.m} style={{ "--od-gap": "10px" } as React.CSSProperties}>
           <span className="od-field od-fill"><b>{t(`goals.metrics.${r.m}`)}</b>
-            <span className="muted small">{t("goals.previous", { n: r.prev, unit: t(`goals.units.${r.m}`) })}</span></span>
-          <b style={{ fontSize: 18 }}>{r.cur} <span className="muted small">{t(`goals.units.${r.m}`)}</span></b>
+            <span className="muted small">{t(period === "week" ? "goals.lastWeek" : "goals.lastMonth", { n: r.prev, unit: unit(r.m, r.prev) })}</span></span>
+          <b style={{ fontSize: 18 }}>{r.cur} <span className="muted small">{unit(r.m, r.cur)}</span></b>
         </div>
       ))}
       <p role="status" className="small" style={{ fontWeight: 800, color: left ? "var(--text-muted)" : "var(--green-dark)" }}>
-        {left ? t("goals.goalLeft", { n: left, unit: t(`goals.units.${goal.metric}`) }) : t("goals.goalDone")}
+        {left ? t(finished ? "goals.goalShort" : "goals.goalLeft", { n: left, unit: unit(goal.metric, left) }) : t("goals.goalDone")}
       </p>
       <button className="btn btn-ghost btn-block" onClick={closeSheet}>{t("sheet.close")}</button>
     </div>

@@ -237,11 +237,11 @@
     "weekShort": "hét",
     "monthShort": "hónap",
     "measure": "Mérőszám",
-    "measureAria": "Mérőszám: {{period}}",
     "target": "Cél értéke",
     "targetAria": "Cél értéke: {{period}}",
     "progress": "{{n}} / {{goal}} {{unit}}",
-    "previous": "Előző: {{n}} {{unit}}",
+    "lastWeek": "Múlt héten: {{n}} {{unit}}",
+    "lastMonth": "Múlt hónapban: {{n}} {{unit}}",
     "report": "Jelentés",
     "weekReport": "Heti jelentés",
     "monthReport": "Havi jelentés",
@@ -253,11 +253,13 @@
     },
     "units": {
       "xp": "XP",
-      "words": "szó",
+      "words_one": "szó",
+      "words_other": "szó",
       "speak": "perc"
     },
     "goalDone": "Cél teljesítve",
     "goalLeft": "Még {{n}} {{unit}}",
+    "goalShort": "{{n}} {{unit}} hiányzott",
     "notifyTitle": "A heti összefoglalód",
     "notifyBody": "Múlt héten {{n}} XP-t szereztél. A teljes jelentés a profilodban vár."
   },
