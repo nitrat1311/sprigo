@@ -581,6 +581,10 @@
     "qLessons_other": "Schließe {{count}} Lektionen ab",
     "chestTitle": "Du hast einen ungeöffneten Erntekorb",
     "chestTap": "Zum Öffnen tippen",
+    "gems_one": "{{count}} Münze",
+    "gems_other": "{{count}} Münzen",
+    "hearts_one": "{{count}} Tropfen",
+    "hearts_other": "{{count}} Tropfen",
     "qPractice_one": "Beende {{count}} Übungseinheit",
     "qPractice_other": "Beende {{count}} Übungseinheiten"
   },

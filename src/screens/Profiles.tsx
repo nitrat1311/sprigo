@@ -182,7 +182,7 @@ export function ProfileGate() {
               <button className="row-item od-fill" onClick={() => p.pin_hash ? openSheet(<PinSheet p={p} />) : login(p)}>
                 <Avatar p={p} />
                 <span className="od-field od-fill"><b>{p.name}</b></span>
-                {p.pin_hash && <span className="muted" aria-label={t("profiles.locked")} style={{ width: 22, height: 22, display: "inline-flex" }}><Icon name="lock" size={22} /></span>}
+                {p.pin_hash && <span className="muted" aria-label={t("profiles.locked")} style={{ width: 24, height: 24, display: "inline-flex" }}><Icon name="lock" size={24} /></span>}
               </button>
               {/* ponytail: WebKit (Tauri on macOS) doesn't focus clicked buttons, so the menu keeps focus on mousedown or it closes before the click lands */}
               <div className="menu-wrap" onBlur={(e) => e.currentTarget.contains(e.relatedTarget) || setMenu(null)}>

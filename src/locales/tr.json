@@ -576,6 +576,8 @@
     "qLessons": "{{count}} ders tamamla",
     "chestTitle": "Açılmamış bir hasat sepetin var",
     "chestTap": "Dokunarak aç",
+    "gems": "{{count}} jeton",
+    "hearts": "{{count}} damla",
     "qPractice": "{{count}} pratik oturumu bitir"
   },
   "sheet": {

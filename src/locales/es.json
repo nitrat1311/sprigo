@@ -608,6 +608,12 @@
     "qLessons_other": "Completa {{count}} lecciones",
     "chestTitle": "Tienes una cesta de cosecha sin abrir",
     "chestTap": "Toca para abrir",
+    "gems_one": "{{count}} moneda",
+    "gems_many": "{{count}} monedas",
+    "gems_other": "{{count}} monedas",
+    "hearts_one": "{{count}} gota",
+    "hearts_many": "{{count}} gotas",
+    "hearts_other": "{{count}} gotas",
     "qPractice_one": "Termina {{count}} sesión de práctica",
     "qPractice_many": "Termina {{count}} sesiones de práctica",
     "qPractice_other": "Termina {{count}} sesiones de práctica"

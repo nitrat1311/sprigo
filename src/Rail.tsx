@@ -30,8 +30,8 @@ export function Rail() {
           aria-label={`${t("garden.open")} · ${t("profile.streakDays", { count: s.streak })}`}>
           <span style={{ display: "contents" }} dangerouslySetInnerHTML={{ __html: treeSvg(tree, true) }} />{s.streak}
         </button>
-        <span className="stat-chip" style={{ color: "var(--gold-dark)" }}><Icon name="gem" />{s.gems}</span>
-        {s.heartsOn && <span className="stat-chip" style={{ color: "var(--blue)" }}><Icon name="drop" />{s.hearts}</span>}
+        <span className="stat-chip" role="img" aria-label={t("rail.gems", { count: s.gems })} style={{ color: "var(--gold-dark)" }}><Icon name="gem" />{s.gems}</span>
+        {s.heartsOn && <span className="stat-chip" role="img" aria-label={t("rail.hearts", { count: s.hearts })} style={{ color: "var(--blue)" }}><Icon name="drop" />{s.hearts}</span>}
       </div></div>
 
       <div className="rail-card">
@@ -55,7 +55,7 @@ export function Rail() {
       <div className="rail-card">
         <div className="od-row" style={{ justifyContent: "space-between", marginBottom: "var(--s-3)" }}>
           <h3>{t("league.title", { name: league.name })}</h3>
-          <button className="small" style={{ fontWeight: 800, color: "var(--blue)" }} onClick={() => go("league")}>{t("league.all")}</button>
+          <button className="small link-btn" onClick={() => go("league")}>{t("league.all")}</button>
         </div>
         {league.rows.slice(0, 5).map((p, i) => (
           <div className={`league-row ${p.me ? "me" : ""}`} key={p.n}>

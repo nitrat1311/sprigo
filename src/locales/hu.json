@@ -581,6 +581,10 @@
     "qLessons_other": "Fejezz be {{count}} leckét",
     "chestTitle": "Van egy bontatlan szüreti kosarad",
     "chestTap": "Koppints a kinyitáshoz",
+    "gems_one": "{{count}} érme",
+    "gems_other": "{{count}} érme",
+    "hearts_one": "{{count}} csepp",
+    "hearts_other": "{{count}} csepp",
     "qPractice_one": "Fejezz be {{count}} gyakorlást",
     "qPractice_other": "Fejezz be {{count}} gyakorlást"
   },

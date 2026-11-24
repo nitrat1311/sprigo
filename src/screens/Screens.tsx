@@ -311,12 +311,12 @@ export function Shop() {
   const { s } = useApp();
   const buy = useBuy();
   const item = (id: "freeze" | "refill" | "doubleXp" | "legendary", ic: IconName, bg: string, fg: string, price: number, owned?: number) => (
-    <div className="shop-item">
+    <div className="card shop-item">
       <span className="s-icon" style={{ background: bg, color: fg }}><Icon name={ic} /></span>
       <span className="s-body"><h4>{t(`shop.${id}`)}</h4><p className="muted small">{t(`shop.${id}Desc`)}</p></span>
       {owned ? <span className="price-tag owned">{t("shop.owned", { count: owned })}</span> : (
         <button className="btn btn-blue" onClick={() => buy(id, price)}>
-          <span style={{ width: 18, height: 18, display: "inline-flex" }}><Icon name="gem" size={18} /></span>{price}
+          <span style={{ width: 20, height: 20, display: "inline-flex" }}><Icon name="gem" size={20} /></span>{price}
         </button>
       )}
     </div>
@@ -326,7 +326,7 @@ export function Shop() {
     <>
       <h1 className="section-title" style={{ marginTop: "var(--s-6)" }}>{t("shop.title")}</h1>
       <div className="card od-row" style={{ marginBottom: "var(--s-5)", "--od-gap": "var(--s-4)" } as React.CSSProperties}>
-        <span style={{ width: 26, height: 26, display: "inline-flex" }}><Icon name="gem" size={26} /></span>
+        <span style={{ width: 24, height: 24, display: "inline-flex" }}><Icon name="gem" size={24} /></span>
         <b style={{ fontSize: "var(--fs-20)" }}>{s.gems}</b><span className="muted">{t("shop.gemsHave")}</span>
         {boostMin > 0 && <span className="price-tag owned" style={{ marginLeft: "auto" }}>{t("shop.doubleXpActive", { count: boostMin })}</span>}
       </div>
@@ -430,7 +430,7 @@ export function Profile() {
       </div>
       <div className="od-row section-title" style={{ "--od-gap": "var(--s-4)" } as React.CSSProperties}>
         <h2 className="od-fill" style={{ font: "inherit" }}>{t("profile.achievements")}</h2>
-        <button className="small" style={{ fontWeight: 800, color: "var(--blue)" }} onClick={() => openSheet(<AchievementsSheet list={ach} />)}>{t("profile.achAll")}</button>
+        <button className="small link-btn" onClick={() => openSheet(<AchievementsSheet list={ach} />)}>{t("profile.achAll")}</button>
       </div>
       {earned.length > 0 && <div className="ach-badges" aria-label={t("profile.achEarned", { count: earned.length, total: ach.length })}>
         {earned.map((a) => <AchBadge key={a.id} a={a} />)}

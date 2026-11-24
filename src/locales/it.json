@@ -599,6 +599,12 @@
     "qLessons_other": "Completa {{count}} lezioni",
     "chestTitle": "Hai un cesto del raccolto non aperto",
     "chestTap": "Tocca per aprire",
+    "gems_one": "{{count}} moneta",
+    "gems_many": "{{count}} monete",
+    "gems_other": "{{count}} monete",
+    "hearts_one": "{{count}} goccia",
+    "hearts_many": "{{count}} gocce",
+    "hearts_other": "{{count}} gocce",
     "qPractice_one": "Completa {{count}} sessione di pratica",
     "qPractice_many": "Completa {{count}} sessioni di pratica",
     "qPractice_other": "Completa {{count}} sessioni di pratica"

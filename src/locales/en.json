@@ -581,6 +581,10 @@
     "qLessons_other": "Complete {{count}} lessons",
     "chestTitle": "You have an unopened harvest basket",
     "chestTap": "Tap to open",
+    "gems_one": "{{count}} coin",
+    "gems_other": "{{count}} coins",
+    "hearts_one": "{{count}} drop",
+    "hearts_other": "{{count}} drops",
     "qPractice_one": "Finish {{count}} practice session",
     "qPractice_other": "Finish {{count}} practice sessions"
   },
