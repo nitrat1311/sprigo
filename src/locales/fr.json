@@ -768,6 +768,7 @@
   },
   "stt": {
     "idle": "Touche pour parler",
+    "starting": "Préparation…",
     "rec": "J'écoute… touche à nouveau quand tu as fini",
     "busy": "Transcription…",
     "record": "Enregistrer",

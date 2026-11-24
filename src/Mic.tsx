@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Icon } from "./icons";
-import { startRecording, sttReady, type Recording } from "./stt";
+import { openMic, startRecording, sttReady, type Mic, type Recording } from "./stt";
 import { useApp } from "./store";
 import { type Utterance } from "./speech";
 import { HelpButton } from "./Help";
@@ -14,30 +14,96 @@ export function useSpeakBlock() {
   return ready === false ? "stt.unavailable" : !s.speakOn ? "stt.off" : null;
 }
 
-/** Tap to talk, tap again to stop (design: round blue button + status line). Calls `onText` with the transcript. */
-export function MicButton({ lang, onText, disabled, trigger = 0, native }: { lang: string; onText: (text: string, m?: Utterance) => void; disabled?: boolean; trigger?: number; native?: string }) {
+/** Tap to talk, tap again to stop (design: round blue button + status line). Calls `onText` with the transcript.
+ *  The mic opens when the button appears and closes when it goes away (see `openMic`), so a take has no dead start.
+ *  It also closes while the window is hidden or in the background (keep-alive keeps the screen mounted), dropping a
+ *  take in progress, and opens again when the window comes back.
+ *  `item`: what is being answered. When it changes, a take in progress and any error are dropped, without reopening
+ *  the mic (remounting the button per item would reopen it every time). */
+export function MicButton({ lang, onText, disabled, trigger = 0, native, item }: { lang: string; onText: (text: string, m?: Utterance) => void; disabled?: boolean; trigger?: number; native?: string; item?: unknown }) {
   const { t } = useTranslation();
-  const [state, setState] = useState<"idle" | "rec" | "busy">("idle");
+  const [state, setState] = useState<"idle" | "starting" | "rec" | "busy">("idle");
   const [err, setErr] = useState("");
+  const mic = useRef<Promise<Mic> | undefined>(undefined);
+  const gone = useRef(false);
+  const away = useRef(false); // window hidden or unfocused: the mic stays closed
   const rec = useRef<Recording | undefined>(undefined);
+  const epoch = useRef(0); // bumped when the window goes away or the item changes: a mic still opening is then stale
+  const shown = useRef(item);
+  useEffect(() => {
+    if (item === shown.current) return;
+    shown.current = item;
+    epoch.current++;
+    rec.current?.stop(false); rec.current = undefined;
+    setErr("");
+    setState((s) => (s === "rec" || s === "starting" ? "idle" : s)); // "busy": the take already stopped, let it finish
+  }, [item]);
+  /** The open mic, opened on first need; a failed open is forgotten so the next tap asks again. */
+  const getMic = () => {
+    if (mic.current) return mic.current;
+    const p: Promise<Mic> = openMic().catch((e) => { if (mic.current === p) mic.current = undefined; throw e; });
+    return (mic.current = p);
+  };
+  const release = () => {
+    rec.current?.stop(false); rec.current = undefined;
+    void mic.current?.then((m) => m.close(), () => {});
+    mic.current = undefined;
+  };
+  useEffect(() => {
+    gone.current = false;
+    away.current = document.hidden || !document.hasFocus();
+    if (!away.current) getMic().catch(() => {}); // early, so it has settled by the first tap; a refusal shows on that tap
+    const leave = () => {
+      if (away.current) return;
+      away.current = true;
+      epoch.current++;
+      release();
+      setState((s) => (s === "rec" || s === "starting" ? "idle" : s)); // "busy": the take already stopped, let it finish
+    };
+    const back = () => {
+      if (document.hidden || !document.hasFocus() || !away.current) return;
+      away.current = false;
+      getMic().catch(() => {});
+    };
+    const vis = () => (document.hidden ? leave() : back());
+    document.addEventListener("visibilitychange", vis);
+    window.addEventListener("blur", leave);
+    window.addEventListener("focus", back);
+    return () => {
+      gone.current = true;
+      document.removeEventListener("visibilitychange", vis);
+      window.removeEventListener("blur", leave);
+      window.removeEventListener("focus", back);
+      release();
+    };
+  }, []);
 
   const stop = async () => {
     const r = rec.current;
     if (!r) return;
     rec.current = undefined;
     setState("busy");
-    try { const r2 = await r.stop(); onText(r2.text, r2.m); }
-    catch (e) { setErr(`${t("stt.failed")}: ${(e as Error).message ?? e}`); }
-    finally { setState("idle"); }
+    const asked = shown.current;
+    try { const r2 = await r.stop(); if (!gone.current && asked === shown.current) onText(r2.text, r2.m); } // not for a newer item
+    catch (e) { if (!gone.current) setErr(`${t("stt.failed")}: ${(e as Error).message ?? e}`); }
+    finally { if (!gone.current) setState("idle"); }
   };
   const toggle = async () => {
     if (state === "rec") return stop();
     if (state !== "idle") return;
+    if (!document.hidden) away.current = false; // a tap means the window is in front, even if no focus event came
     setErr("");
-    try { rec.current = await startRecording(lang, stop, native); setState("rec"); }
-    catch { setErr(t("stt.noMic")); }
+    setState("starting");
+    const run = epoch.current;
+    try {
+      let m = await getMic();
+      if (!m.alive()) { void m.close(); mic.current = undefined; m = await getMic(); } // e.g. the mic was unplugged
+      if (gone.current || run !== epoch.current) return; // window went away or item changed while it opened: already reset
+      rec.current = startRecording(m, lang, stop, native);
+      setState("rec");
+    }
+    catch { if (!gone.current && run === epoch.current) { setErr(t("stt.noMic")); setState("idle"); } }
   };
-  useEffect(() => () => { rec.current?.stop(false); }, []);
   // Keyboard: each bump of `trigger` presses the button.
   // Starts at the mount value so a leftover count from an earlier speak item does not press it on mount.
   const seen = useRef(trigger);
@@ -45,7 +111,7 @@ export function MicButton({ lang, onText, disabled, trigger = 0, native }: { lan
 
   return (
     <div className="mic-wrap">
-      <button className={`mic-btn ${state}`} onClick={toggle} disabled={disabled || state === "busy"} aria-pressed={state === "rec"}
+      <button className={`mic-btn ${state}`} onClick={toggle} disabled={disabled || state === "busy" || state === "starting"} aria-pressed={state === "rec"}
         aria-label={t(state === "rec" ? "stt.stop" : "stt.record")}><Icon name="mic" /></button>
       <p className="muted small" role="status" style={{ textAlign: "center", color: err ? "var(--red)" : undefined }}>{err || t(`stt.${state}`)}</p>
       {err && <div style={{ display: "flex", justifyContent: "center" }}><HelpButton topic="mic" /></div>}

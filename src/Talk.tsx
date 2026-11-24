@@ -6,6 +6,7 @@ import { useApp } from "./store";
 import { sfx, useStartLesson } from "./Lesson";
 import { onTtsFallback, prewarm, resetTtsNotice, speak, speakingWith, stopSpeaking } from "./tts";
 import { MicButton } from "./Mic";
+import { sttReady } from "./stt";
 import { Face, type FaceState } from "./face/Face";
 import { CHAT_MAX_TURNS as CHAT_TURNS, CHAT_MIN_TURNS, FREE_GOAL, type Character, type Talk } from "./characters";
 import { inlineName, isTutorId, remembersLearner } from "./tutors";
@@ -314,6 +315,8 @@ export function Chat({ talk, ch }: { talk: Talk; ch: Character }) {
   const name = rehearse ? rehearse.who : ch.name;
   const lang = course?.iso ?? "en";
   const [voicing, setVoicing] = useState<number | null>(null); // AI message being spoken (or its voice being made)
+  const [stt, setStt] = useState(false); // the mic only opens once speaking can work, as in Lesson and Write
+  useEffect(() => { sttReady().then(setStt); }, []);
   const [engine, setEngine] = useState<string | null>(null); // which voice engine is speaking it, once audio starts
   const say = (text: string, i: number) => {
     setVoicing(i); setEngine(null);
@@ -493,7 +496,7 @@ export function Chat({ talk, ch }: { talk: Talk; ch: Character }) {
       {err && <Failed msg={err} retry={stepping ? stepOut : () => turn(msgs)} quit={quit} />}
       {rehearse && mine >= REHEARSE_LONG && !busy && <p className="muted small" style={{ textAlign: "center", marginTop: 16 }}>{t("roleplay.rehearseLong")}</p>}
       {over && !busy && <p className="muted small" style={{ textAlign: "center", marginTop: 16 }}>{t(goal ? "roleplay.goalReached" : "roleplay.limit")}</p>}
-      {voice && !over && <MicButton lang={lang} native={native} disabled={busy} onText={(said, m) => { if (m) spoken.current.push(m); if (said.trim()) heard.current.push(said.trim()); send(said); }} />}
+      {voice && !over && stt && s.speakOn && <MicButton lang={lang} native={native} disabled={busy} onText={(said, m) => { if (m) spoken.current.push(m); if (said.trim()) heard.current.push(said.trim()); send(said); }} />}
       <div ref={endRef} />
     </>;
     footer = over || voice
