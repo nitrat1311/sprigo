@@ -10,7 +10,9 @@ export type FaceSpec = {
   outfit: "shirt" | "chef" | "coat" | "blazer" | "tshirt"; accessory: "none" | "glasses" | "chefHat" | "cap" | "earrings";
   skin: number; hairColor: number; // SKIN 0–4, HAIR 0–5; brows and facial hair use the hair color
 };
-export type Character = { name: string; gender: "f" | "m"; color: string; kokoroVoice: string; persona: string; face: FaceSpec; topics: Topic[]; avatar?: string; scene?: string };
+/** `custom`: written or imported by the learner (#167), so prompts take its persona, name and goal as data (src/tutors.ts).
+ *  `imported`: came from a package, so it may not write learner memory. */
+export type Character = { name: string; gender: "f" | "m"; color: string; kokoroVoice: string; persona: string; face: FaceSpec; topics: Topic[]; avatar?: string; scene?: string; custom?: boolean; imported?: boolean };
 
 export const CHARACTERS = {
   mia: {
