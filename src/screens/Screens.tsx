@@ -15,7 +15,8 @@ import { parseWords, toCsv, type CsvError } from "../wordsCsv";
 import { LISTEN_MIN_WORDS, MADNESS_MIN_WORDS } from "../activities";
 import { DOUBLE_XP_MS, rollDay, today } from "../progress";
 import { LEGEND_PRICE, unitGrammar } from "../lessons";
-import { CHARACTERS, talkId, type BuiltinId, type CharacterId } from "../characters";
+import { CHARACTERS, talkId, type BuiltinId, type Character, type CharacterId } from "../characters";
+import { isTutorId, toCharacter, type CustomTutor } from "../tutors";
 import { rehearseId, type Formality } from "../rehearsal";
 import { currentUnit } from "../tutor";
 import { DRILL_MINUTES, FOUR_THREE_TWO_MINUTES, type Drill, drillId, goalToName, ladderDrill, nextPlanningSec, planningHistory, structureDrill } from "../drills";
@@ -31,6 +32,12 @@ const iconBox = (bg: string, fg: string, size = 48, radius: number | string = 12
   width: size, height: size, flex: "none", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: radius, background: bg, color: fg,
 });
 
+/** The built-in cast plus this profile's custom tutors (#167). */
+const castOf = (tutors: CustomTutor[]) => [
+  ...(Object.keys(CHARACTERS) as BuiltinId[]).map((id) => ({ id: id as CharacterId, ch: CHARACTERS[id] as Character, tutor: undefined })),
+  ...tutors.map((tutor) => ({ id: tutor.id as CharacterId, ch: toCharacter(tutor), tutor })),
+];
+
 /** The eye-catching entry to a tutor call: top of the sidebar, and top of Learn on phones. */
 export function LiveButton({ className = "" }: { className?: string }) {
   const { t } = useTranslation();
@@ -45,20 +52,17 @@ export function LiveButton({ className = "" }: { className?: string }) {
 /** Picks the tutor for a video lesson; also opened from the live lesson button. */
 export function TutorSheet() {
   const { t } = useTranslation();
-  const { closeSheet } = useApp();
+  const { closeSheet, tutors } = useApp();
   const start = useStartLesson();
   return (
     <div className="od-stack" style={{ "--od-gap": "10px" } as React.CSSProperties}>
       <h3 style={{ textAlign: "center" }}>{t("tutor.pick")}</h3>
-      {(Object.keys(CHARACTERS) as BuiltinId[]).map((k) => {
-        const { name, color, face } = CHARACTERS[k];
-        return (
-          <button key={k} className="tutor-pick" onClick={() => { closeSheet(); start(`tutor:${k}`); }}>
-            <Face spec={face} color={color} label={name} scene={k} />
-            <b className="call-name">{name}</b>
-          </button>
-        );
-      })}
+      {castOf(tutors).map(({ id, ch }) => (
+        <button key={id} className="tutor-pick" onClick={() => { closeSheet(); start(`tutor:${id}`); }}>
+          <Face spec={ch.face} color={ch.color} label={ch.name} scene={id} image={ch.avatar} sceneImage={ch.scene} />
+          <b className="call-name">{ch.name}</b>
+        </button>
+      ))}
       <button className="btn btn-ghost btn-block" onClick={closeSheet}>{t("sheet.cancel")}</button>
     </div>
   );
@@ -479,17 +483,20 @@ export function Stories() {
   );
 }
 
-function TopicSheet({ who, voice }: { who: BuiltinId; voice: boolean }) {
+function TopicSheet({ who, voice }: { who: CharacterId; voice: boolean }) {
   const { t } = useTranslation();
-  const { closeSheet } = useApp();
+  const { closeSheet, tutors } = useApp();
   const start = useStartLesson();
   const [own, setOwn] = useState("");
+  const ch = castOf(tutors).find((c) => c.id === who)?.ch;
+  if (!ch) return null;
+  const custom = isTutorId(who);
   const go = (topic: string | { free: string }) => { closeSheet(); start(talkId(voice, who, topic)); };
   return (
     <div className="od-stack" style={{ "--od-gap": "14px", textAlign: "left" } as React.CSSProperties}>
-      <h3 style={{ textAlign: "center" }}>{t("roleplay.pickTopic", { name: CHARACTERS[who].name })}</h3>
-      {CHARACTERS[who].topics.map((x) => (
-        <button key={x.id} className="btn btn-ghost btn-block" onClick={() => go(x.id)}>{t(`roleplay.topics.${who}.${x.id}`)}</button>
+      <h3 style={{ textAlign: "center" }}>{t("roleplay.pickTopic", { name: ch.name })}</h3>
+      {ch.topics.map((x) => (
+        <button key={x.id} className="btn btn-ghost btn-block" onClick={() => go(x.id)}>{custom ? x.goal : t(`roleplay.topics.${who}.${x.id}`)}</button>
       ))}
       <label className="od-field" style={{ "--od-gap": "6px" } as React.CSSProperties}>
         <b>{t("roleplay.ownTopic")}</b>
@@ -505,19 +512,17 @@ function TopicSheet({ who, voice }: { who: BuiltinId; voice: boolean }) {
 /** The cast as a row of faces; one is picked. */
 function CastPicker({ value, onChange }: { value: CharacterId; onChange: (c: CharacterId) => void }) {
   const { t } = useTranslation();
+  const { tutors } = useApp();
   return (
     <div className="od-field" style={{ "--od-gap": "6px" } as React.CSSProperties}>
       <b id="cast-pick">{t("roleplay.briefCast")}</b>
       <div className="seg" role="radiogroup" aria-labelledby="cast-pick">
-        {(Object.keys(CHARACTERS) as BuiltinId[]).map((k) => {
-          const { name, color, face } = CHARACTERS[k];
-          return (
-            <button key={k} role="radio" aria-checked={value === k} aria-label={name} title={name} className={`btn ${value === k ? "btn-blue" : "btn-ghost"}`}
-              style={{ padding: 4 }} onClick={() => onChange(k)}>
-              <Face spec={face} color={color} size={44} label={name} />
-            </button>
-          );
-        })}
+        {castOf(tutors).map(({ id, ch }) => (
+          <button key={id} role="radio" aria-checked={value === id} aria-label={ch.name} title={ch.name} className={`btn ${value === id ? "btn-blue" : "btn-ghost"}`}
+            style={{ padding: 4 }} onClick={() => onChange(id)}>
+            <Face spec={ch.face} color={ch.color} size={44} label={ch.name} image={ch.avatar} />
+          </button>
+        ))}
       </div>
     </div>
   );
@@ -648,7 +653,7 @@ function DrillsSheet() {
 
 export function Roleplay() {
   const { t } = useTranslation();
-  const { toast, openSheet } = useApp();
+  const { toast, openSheet, tutors } = useApp();
   const speakBlock = useSpeakBlock();
   return (
     <>
@@ -660,19 +665,16 @@ export function Roleplay() {
         <span className="btn btn-blue" style={{ pointerEvents: "none" }}>{t("roleplay.start")}</span>
       </button>
       <div className="rp-grid">
-        {(Object.keys(CHARACTERS) as BuiltinId[]).map((k) => {
-          const { name, color, face } = CHARACTERS[k];
-          return (
-            <div className="card rp-card" key={k}>
-              <div className="rp-face"><Face spec={face} color={color} label={name} scene={k} /></div>
-              <span className="od-field"><b>{name}</b><span className="muted">{t(`roleplay.roles.${k}`)}</span></span>
-              <span className="rp-actions">
-                <button className="btn btn-ghost" onClick={() => openSheet(<TopicSheet who={k} voice={false} />)}>{t("roleplay.chat")}</button>
-                <button className="btn btn-blue" onClick={() => speakBlock ? toast(t(speakBlock)) : openSheet(<TopicSheet who={k} voice />)}><Icon name="video" /> {t("roleplay.call")}</button>
-              </span>
-            </div>
-          );
-        })}
+        {castOf(tutors).map(({ id, ch, tutor }) => (
+          <div className="card rp-card" key={id}>
+            <div className="rp-face"><Face spec={ch.face} color={ch.color} label={ch.name} scene={id} image={ch.avatar} sceneImage={ch.scene} /></div>
+            <span className="od-field"><b>{ch.name}</b><span className="muted">{tutor ? ch.topics[0]?.goal : t(`roleplay.roles.${id}`)}</span></span>
+            <span className="rp-actions">
+              <button className="btn btn-ghost" onClick={() => openSheet(<TopicSheet who={id} voice={false} />)}>{t("roleplay.chat")}</button>
+              <button className="btn btn-blue" onClick={() => speakBlock ? toast(t(speakBlock)) : openSheet(<TopicSheet who={id} voice />)}><Icon name="video" /> {t("roleplay.call")}</button>
+            </span>
+          </div>
+        ))}
       </div>
     </>
   );

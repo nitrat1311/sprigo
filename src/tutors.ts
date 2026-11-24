@@ -123,10 +123,13 @@ export const TUTOR_FACE: FaceSpec = {
   hair: "short", facialHair: "none", outfit: "shirt", accessory: "none", skin: 2, hairColor: 1,
 };
 
-/** A custom tutor as the engine and the screens take a character. */
+/** A custom tutor as the engine and the screens take a character; its images travel with it for the face. */
 export function toCharacter(t: CustomTutor): Character {
   const { name, gender, color, kokoroVoice, persona, topics } = t;
-  return { name, gender, color, kokoroVoice, persona, face: t.face ?? TUTOR_FACE, topics };
+  return {
+    name, gender, color, kokoroVoice, persona, face: t.face ?? TUTOR_FACE, topics,
+    ...(t.avatar ? { avatar: t.avatar } : {}), ...(t.scene ? { scene: t.scene } : {}),
+  };
 }
 
 /** The character a talk id names: a built-in, or one of `customs` (a profile's tutors). Undefined when neither has it. */

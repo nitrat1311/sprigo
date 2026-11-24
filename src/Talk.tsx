@@ -7,8 +7,8 @@ import { sfx, useStartLesson } from "./Lesson";
 import { onTtsFallback, prewarm, resetTtsNotice, speak, speakingWith, stopSpeaking } from "./tts";
 import { MicButton } from "./Mic";
 import { Face, type FaceState } from "./face/Face";
-import { CHAT_MAX_TURNS as CHAT_TURNS, CHAT_MIN_TURNS, FREE_GOAL, type Talk } from "./characters";
-import { characterOf } from "./tutors";
+import { CHAT_MAX_TURNS as CHAT_TURNS, CHAT_MIN_TURNS, FREE_GOAL, type Character, type Talk } from "./characters";
+import { isTutorId } from "./tutors";
 import { avoidancePass, chatTurn, debrief, learnerFacts, loadStory, rehearseTurn, rememberSession, type ChatMsg, type Story as StoryData } from "./lessons";
 import { REHEARSE_LONG, type Debrief } from "./rehearsal";
 import * as db from "./db";
@@ -307,13 +307,10 @@ function Rounds({ stats }: { stats: RoundStat[] }) {
   );
 }
 
-export function Chat({ talk }: { talk: Talk }) {
+export function Chat({ talk, ch }: { talk: Talk; ch: Character }) {
   const { who, topic, voice, rehearse, drill } = talk;
   const { t } = useTranslation();
   const { course, enrollment, profile, s, setS, gainXp, toast } = useApp();
-  // App only opens a talk for an id it could resolve; a tutor deleted mid-chat renders nothing.
-  const ch = characterOf(who);
-  if (!ch) return null;
   const name = rehearse ? rehearse.who : ch.name;
   const lang = course?.iso ?? "en";
   const [voicing, setVoicing] = useState<number | null>(null); // AI message being spoken (or its voice being made)
@@ -443,7 +440,8 @@ export function Chat({ talk }: { talk: Talk }) {
   const end = rehearse ? stepOut : finish, endLabel = t(rehearse ? "roleplay.outOfRole" : "lesson.finish");
 
   const faceState: FaceState = busy ? "thinking" : voicing !== null ? "talking" : "idle";
-  const topicLabel = drill ? `${r432 ? t("practice.roundN", { n: r432.round, min: r432.minutes }) : drill.kind === "ladder" ? t("practice.rungN", { n: drill.rung }) : t(drill.kind === "structure" ? "practice.structure" : "practice.planning")} · ${drill.topic}` : rehearse ? rehearse.about ?? "" : topic.id ? t(`roleplay.topics.${who}.${topic.id}`) : topic.goal.slice(FREE_GOAL.length);
+  // A custom tutor's topics have no i18n entries, so they show their goal.
+  const topicLabel = drill ? `${r432 ? t("practice.roundN", { n: r432.round, min: r432.minutes }) : drill.kind === "ladder" ? t("practice.rungN", { n: drill.rung }) : t(drill.kind === "structure" ? "practice.structure" : "practice.planning")} · ${drill.topic}` : rehearse ? rehearse.about ?? "" : topic.id ? (isTutorId(who) ? topic.goal : t(`roleplay.topics.${who}.${topic.id}`)) : topic.goal.slice(FREE_GOAL.length);
   let body: React.ReactNode, footer: React.ReactNode;
   if (result) {
     body = deb ? <DebriefCard d={deb} r={result} turns={turns} /> : <>
@@ -468,12 +466,12 @@ export function Chat({ talk }: { talk: Talk }) {
     body = <>
       {voice ? (
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, marginBottom: 16, textAlign: "center" }}>
-          <Face spec={ch.face} color={ch.color} size={220} label={name} state={faceState} scene={rehearse ? undefined : who} />
+          <Face spec={ch.face} color={ch.color} size={220} label={name} state={faceState} scene={rehearse ? undefined : who} image={ch.avatar} sceneImage={ch.scene} />
           <b>{rehearse ? t("roleplay.rehearseWith", { who: name }) : name}</b><span className="muted small">{topicLabel}</span>
         </div>
       ) : (
         <div className="od-row" style={{ ...gap("12px"), marginBottom: 16 }}>
-          <Face spec={ch.face} color={ch.color} size={96} label={name} state={faceState} />
+          <Face spec={ch.face} color={ch.color} size={96} label={name} state={faceState} image={ch.avatar} />
           <span className="od-field od-fill"><b>{rehearse ? t("roleplay.rehearseWith", { who: name }) : name}</b><span className="muted small">{topicLabel}</span></span>
         </div>
       )}

@@ -10,7 +10,7 @@ export type FaceSpec = {
   outfit: "shirt" | "chef" | "coat" | "blazer" | "tshirt"; accessory: "none" | "glasses" | "chefHat" | "cap" | "earrings";
   skin: number; hairColor: number; // SKIN 0–4, HAIR 0–5; brows and facial hair use the hair color
 };
-export type Character = { name: string; gender: "f" | "m"; color: string; kokoroVoice: string; persona: string; face: FaceSpec; topics: Topic[] };
+export type Character = { name: string; gender: "f" | "m"; color: string; kokoroVoice: string; persona: string; face: FaceSpec; topics: Topic[]; avatar?: string; scene?: string };
 
 export const CHARACTERS = {
   mia: {

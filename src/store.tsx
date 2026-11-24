@@ -51,6 +51,8 @@ type Ctx = {
   aiBackup: AiConfig | null; setAiBackup: (c: AiConfig | null) => Promise<void>;
   courses: Course[]; courseErrors: string[];
   profile: Profile | null; enrollments: Enrollment[];
+  /** The signed-in profile's custom tutors (#167); reload after an import or edit. */
+  tutors: db.Tutor[]; reloadTutors: () => Promise<void>;
   enrollment: Enrollment | null; course: Course | null; done: Set<string>; legendary: Set<string>;
   login: (p: Profile) => Promise<void>; logout: () => Promise<void>;
   createProfile: (p: db.NewProfile, courseIso: string) => Promise<void>;
@@ -83,6 +85,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [courseErrors, setCourseErrors] = useState<string[]>([]);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [enrollments, setEnrollments] = useState<Enrollment[]>([]);
+  const [tutors, setTutors] = useState<db.Tutor[]>([]);
   const [done, setDone] = useState<Set<string>>(new Set());
   const [legendary, setLegendary] = useState<Set<string>>(new Set());
   const [viewLevel, setViewLevel] = useState<Cefr | null>(null);
@@ -106,6 +109,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const stats = rollDay(fresh.stats, today(), { id: fresh.id, lang: fresh.ui_lang });
     if (stats !== fresh.stats) { fresh.stats = stats; await db.updateProfile(p.id, { stats }); }
     setEnrollments(await db.listEnrollments(p.id));
+    setTutors(await db.listTutors(p.id)); // before the profile, so a custom tutor route never resolves against an empty list
     setViewLevel(null);
     setProfile(fresh);
     applyTheme(fresh.theme);
@@ -163,11 +167,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
     },
     aiBackup,
     setAiBackup: async (c) => { await saveAiBackup(c); await activateConfig(ai, c); setAiBackupState(c); },
-    courses, courseErrors, profile, enrollments, enrollment, course, done, legendary,
+    courses, courseErrors, profile, enrollments, enrollment, course, done, legendary, tutors,
+    reloadTutors: async () => { if (profile) setTutors(await db.listTutors(profile.id)); },
     login,
     logout: async () => {
       await db.setSetting(LAST_PROFILE, null);
-      setProfile(null); setEnrollments([]); setSheet(null); setLessonId(null);
+      setProfile(null); setEnrollments([]); setTutors([]); setSheet(null); setLessonId(null);
       location.hash = "learn";
     },
     createProfile: async (p, iso) => {

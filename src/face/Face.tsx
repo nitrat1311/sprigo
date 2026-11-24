@@ -9,7 +9,13 @@ import { Scene } from "./scenes";
 export type FaceState = "idle" | "thinking" | "talking";
 const reduced = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-export function Face({ spec, color, size, label, state = "idle", scene }: { spec: FaceSpec; color: string; size?: number; label: string; state?: FaceState; scene?: CharacterId }) {
+export function Face({ spec, color, size, label, state = "idle", scene, image, sceneImage }: {
+  spec: FaceSpec; color: string; size?: number; label: string; state?: FaceState; scene?: CharacterId;
+  /** A custom tutor's PNG/WebP avatar, drawn instead of the bust (#167). */
+  image?: string;
+  /** A custom tutor's own backdrop; without one, `scene` falls back to the neutral room. */
+  sceneImage?: string;
+}) {
   const ref = useRef<HTMLSpanElement>(null);
   const set = (k: string, v: string) => ref.current?.style.setProperty(k, v);
 
@@ -55,8 +61,10 @@ export function Face({ spec, color, size, label, state = "idle", scene }: { spec
 
   return (
     <span ref={ref} className={`face ${state}`} role="img" aria-label={label} style={{ width: size, height: size, "--c": color } as React.CSSProperties}>
-      {scene && <Scene who={scene} />}
-      <svg viewBox="0 0 200 200" preserveAspectRatio="xMidYMax meet" aria-hidden="true"><FaceArt spec={spec} /></svg>
+      {sceneImage ? <img className="scene scene-img" src={sceneImage} alt="" /> : scene && <Scene who={scene} />}
+      {image
+        ? <img className="face-img" src={image} alt={label} />
+        : <svg viewBox="0 0 200 200" preserveAspectRatio="xMidYMax meet" aria-hidden="true"><FaceArt spec={spec} /></svg>}
     </span>
   );
 }
