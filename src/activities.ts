@@ -308,24 +308,23 @@ export function shuffleAnswer(opts: string[], answer: number) {
   return { options, answer: options.indexOf(opts[answer]) };
 }
 
-/** A translation is usable only when it is non-empty and not just the reply in the target language. */
-export function validTranslation(reply: string, translation: string) {
+/** A translation is usable when it is non-empty and, unless both languages are the same, not just the reply repeated. */
+export function validTranslation(reply: string, translation: string, sameLang = false) {
   const a = reply.trim().toLocaleLowerCase(), b = translation.trim().toLocaleLowerCase();
-  return b !== "" && a !== b;
+  return b !== "" && (sameLang || a !== b);
 }
 
+/** The corrected sentence alone; the model may add a short explanation after it. */
+const correctedSentence = (x: string) => x.split(/[.!?]\s+|\s+[—–-]\s+|\s+\(/)[0];
 
-/** A correction that is just the learner's original utterance echoed back is not a real correction. */
+/** A correction that only repeats the learner's sentence, even with an explanation after it, is not a correction. */
 export function isEchoCorrection(original: string, correction: string, lang?: string) {
-  const a = normalize(original, lang), b = normalize(correction, lang);
-  return a !== "" && a === b;
+  const a = normalize(original, lang);
+  return a !== "" && normalize(correctedSentence(correction), lang) === a;
 }
 
-/** Keep the original reply if a translation retry fails or is still an obvious echo. */
-export async function translationOrEmpty(reply: string, translation: string, retry: () => Promise<string>): Promise<string> {
-  if (validTranslation(reply, translation)) return translation;
-  try {
-    const next = await retry();
-    return validTranslation(reply, next) ? next : "";
-  } catch { return ""; }
+/** A reply's translation: its own when usable, else a second pass's — kept even when it repeats the reply, as "Taxi" or "No" do. "" when the retry fails. */
+export async function translationFor(reply: string, translation: string, retry: () => Promise<string>, sameLang = false) {
+  if (validTranslation(reply, translation, sameLang)) return translation.trim();
+  try { return (await retry()).trim(); } catch { return ""; }
 }

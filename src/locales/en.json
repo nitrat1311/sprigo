@@ -421,6 +421,7 @@
     "placeholder": "Write in the language you're learning",
     "send": "Send",
     "tapHint": "Tap a message for its translation",
+    "noTranslation": "No translation",
     "goalReached": "Goal reached! Finish to collect your XP.",
     "limit": "That's enough for one chat — finish to collect your XP.",
     "goalDone": "Goal reached!",

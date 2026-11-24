@@ -443,6 +443,7 @@
     "placeholder": "Écris dans la langue que tu apprends",
     "send": "Envoyer",
     "tapHint": "Touche un message pour voir sa traduction",
+    "noTranslation": "Pas de traduction",
     "goalReached": "Objectif atteint ! Termine pour récupérer ton XP.",
     "limit": "C'est assez pour une discussion — termine pour récupérer ton XP.",
     "goalDone": "Objectif atteint !",

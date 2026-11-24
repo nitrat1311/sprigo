@@ -3,7 +3,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Icon } from "./icons";
 import { useApp } from "./store";
-import { mark } from "./latency";
 import { sfx, useStartLesson } from "./Lesson";
 import { onTtsFallback, prewarm, resetTtsNotice, speak, speakingWith, stopSpeaking } from "./tts";
 import { MicButton } from "./Mic";
@@ -11,7 +10,8 @@ import { sttReady } from "./stt";
 import { Face, type FaceState } from "./face/Face";
 import { CHAT_MAX_TURNS as CHAT_TURNS, CHAT_MIN_TURNS, FREE_GOAL, type Character, type Talk } from "./characters";
 import { inlineName, isTutorId, remembersLearner } from "./tutors";
-import { avoidancePass, chatTurn, debrief, learnerFacts, loadStory, rehearseTurn, rememberSession, type ChatMsg, type Story as StoryData } from "./lessons";
+import { avoidancePass, chatTurn, debrief, learnerFacts, loadStory, rehearseTurn, rememberSession, translateReply, type ChatMsg, type Story as StoryData } from "./lessons";
+import { translationFor } from "./activities";
 import { REHEARSE_LONG, type Debrief } from "./rehearsal";
 import * as db from "./db";
 import { recordSession, today, xpMult } from "./progress";
@@ -321,7 +321,7 @@ export function Chat({ talk, ch }: { talk: Talk; ch: Character }) {
   const [engine, setEngine] = useState<string | null>(null); // which voice engine is speaking it, once audio starts
   const say = (text: string, i: number) => {
     setVoicing(i); setEngine(null);
-    speak(text, lang, { gender: ch.gender, kokoro: ch.kokoroVoice }, () => { mark("audio"); setEngine(speakingWith()); }).finally(() => setVoicing((v) => v === i ? null : v));
+    speak(text, lang, { gender: ch.gender, kokoro: ch.kokoroVoice }, () => setEngine(speakingWith())).finally(() => setVoicing((v) => v === i ? null : v));
   };
   usePrewarm(lang, ch.gender);
   const [msgs, setMsgs] = useState<ChatMsg[]>([]);
@@ -336,7 +336,6 @@ export function Chat({ talk, ch }: { talk: Talk; ch: Character }) {
   const [deb, setDeb] = useState<Debrief | null>(null);
   const [stepping, setStepping] = useState(false); // a failed debrief retries the debrief, not a turn
   const ending = useRef(false); // finish once: double click, Enter
-  const req = useRef(0); // stale-response guard for async turns
   const total = drill ? drill.minutes * 60 : 0;
   const [left, setLeft] = useState(total); // drill: seconds of talk left
   const [plan, setPlan] = useState(drill?.planningSec ?? 0); // drill: planning seconds left; talk starts at 0
@@ -363,15 +362,11 @@ export function Chat({ talk, ch }: { talk: Talk; ch: Character }) {
 
   const turn = async (history: ChatMsg[]) => {
     if (!course || !enrollment || !profile) return;
-    const myReq = ++req.current;
     setBusy(true); setErr(""); setStepping(false);
     try {
-      mark("req");
       if (rehearse) {
         const r = await rehearseTurn({ course, level: enrollment.level, native: profile.native_lang }, rehearse, history);
         if (ending.current) return; // the session ended while the reply was on its way (a drill's time ran out)
-        if (req.current !== myReq) return; // a newer turn superseded this one
-        mark("llm");
         setMsgs([...history, { from: "ai", text: r.reply, translation: r.translation }]);
         say(r.reply, history.length);
         return;
@@ -379,15 +374,16 @@ export function Chat({ talk, ch }: { talk: Talk; ch: Character }) {
       const r = await chatTurn({ course, level: enrollment.level, native: profile.native_lang, about: await about }, ch, topic, history,
         drill ? { rules: drillRules(drill), keep: DRILL_KEEP } : {});
       if (ending.current) return;
-      if (req.current !== myReq) return;
-      mark("llm");
       const fixed = history.map((m, i) => i === history.length - 1 && m.from === "me" ? { ...m, correction: r.correction.trim() || undefined } : m);
       setMsgs([...fixed, { from: "ai", text: r.reply, translation: r.translation }]);
       say(r.reply, fixed.length);
+      // The reply shows at once; a missing or echoed translation is patched in when the extra pass lands.
+      void translationFor(r.reply, r.translation, () => translateReply({ course, level: enrollment.level, native: profile.native_lang }, r.reply), course.iso === profile.native_lang)
+        .then((translation) => { if (translation !== r.translation) setMsgs((ms) => ms.map((m, i) => i === fixed.length && m.from === "ai" ? { ...m, translation } : m)); });
       // The prompt holds the goal back too; this guards models that wrap up early anyway.
       if (r.goal_reached && history.filter((m) => m.from === "me").length >= CHAT_MIN_TURNS) setGoal(true);
-    } catch (e) { if (!ending.current && req.current === myReq) { setErr((e as Error).message); setMsgs(history); } }
-    finally { if (req.current === myReq) setBusy(false); }
+    } catch (e) { setErr((e as Error).message); setMsgs(history); }
+    finally { setBusy(false); }
   };
   const opened = useRef(false); // StrictMode runs effects twice; open the scene once
   useEffect(() => { if (talking && !opened.current) { opened.current = true; turn([]); } }, [talking]);
@@ -491,7 +487,7 @@ export function Chat({ talk, ch }: { talk: Talk; ch: Character }) {
       <div className="chat">
         {msgs.map((m, i) => m.from === "ai" ? (
           <button key={i} className="bubble" lang={lang} aria-busy={voicing === i} onClick={() => { say(m.text, i); setOpen((s) => new Set(s).add(i)); }}>
-            <span>{m.text}</span>{open.has(i) && <small>{m.translation || t("practice.wordsError_translation")}</small>}
+            <span>{m.text}</span>{open.has(i) && <small>{m.translation || t("roleplay.noTranslation")}</small>}
             {voicing === i && <small className="voicing gen-pulse" role="status"><Icon name="headphones" /> {engine ? t("ai.speakingWith", { engine: t(`voice.engine.${engine}`) }) : t("ai.speaking")}</small>}
           </button>
         ) : (

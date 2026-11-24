@@ -228,6 +228,8 @@ test("a custom tutor is created through the UI, listed and can hold a chat", asy
   const chat = page.getByRole("dialog", { name: "Ada" });
   await expect(chat.getByText("introduce yourself")).toBeVisible();
   await expect(chat.locator(".bubble", { hasText: "ok" })).toBeVisible(); // the mock's structured turn
+  await chat.locator(".bubble", { hasText: "ok" }).click();
+  await expect(chat.locator(".bubble small", { hasText: "hello" })).toBeVisible(); // translated after the reply, not before it
 });
 
 test("a tutor package is imported, edited and deleted from the tutor list", async ({ page }) => {
