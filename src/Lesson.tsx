@@ -348,7 +348,7 @@ export function Lesson({ id }: { id: string }) {
   );
   else if (result) body = (
     <div className="result-wrap">
-      <div className="result-badge" style={{ color: "var(--on-accent)", ...(result.passed === false && { background: "var(--red)", boxShadow: "0 6px 0 var(--red-dark)" }) }}>
+      <div className="result-badge" style={{ color: result.passed === false ? "var(--on-accent)" : "var(--on-gold)", ...(result.passed === false && { background: "var(--red)", boxShadow: "0 6px 0 var(--red-dark)" }) }}>
         <Icon name={result.passed === false ? "refresh" : "trophy"} />
       </div>
       <h2 style={{ fontSize: 26, fontWeight: 900 }}>
