@@ -52,6 +52,19 @@
     "guide": "Útmutató",
     "story": "Történet"
   },
+  "search": {
+    "label": "Keresés a leckékben és útmutatókban",
+    "placeholder": "Egységek, szavak, nyelvtan keresése…",
+    "none": "Nincs találat erre: „{{query}}”.",
+    "more": "Csak az első {{count}} találat látható. Folytasd a gépelést a szűkítéshez.",
+    "count_one": "{{count}} találat",
+    "count_other": "{{count}} találat",
+    "unit": "Egység",
+    "step": "Lecke",
+    "vocabulary": "Szókincs",
+    "grammar": "Nyelvtan",
+    "guide": "Útmutató"
+  },
   "learn": {
     "kicker": "{{level}} · {{unit}}. egység",
     "start": "Kezdés",
