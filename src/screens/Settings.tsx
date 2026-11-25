@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useApp } from "../store";
 import { languages } from "../i18n";
@@ -26,18 +26,27 @@ function Group({ children }: { children: React.ReactNode }) {
   return <div className="card set-group">{children}</div>;
 }
 
+/** A boolean row's state at a glance: the track colour and the thumb's side carry it, so there is no text to translate. */
+export function Switch({ checked, onChange, labelledBy, disabled }: {
+  checked: boolean; onChange: (on: boolean) => void; labelledBy: string; disabled?: boolean;
+}) {
+  return (
+    <button type="button" role="switch" aria-checked={checked} aria-labelledby={labelledBy} disabled={disabled}
+      className="switch" onClick={() => onChange(!checked)} />
+  );
+}
+
 export function ToggleRow({ k, initial, onChange }: { k: string; initial: boolean; onChange?: (on: boolean) => void }) {
   const { t } = useTranslation();
+  const id = useId();
   // ponytail: rows without onChange are visual only, as in the design; wired when each feature lands.
   const [on, setOnState] = useState(initial);
   const setOn = (v: boolean) => { setOnState(v); onChange?.(v); };
   return (
     <div className="od-row" style={gap("var(--s-4)")}>
-      <b className="od-fill">{t(`settings.${k}`)}</b>
+      <b className="od-fill" id={id}>{t(`settings.${k}`)}</b>
       <InfoTip label={t("voice.about", { name: t(`settings.${k}`) })}>{t(`settings.${k}Desc`)}</InfoTip>
-      <button className={`btn ${on ? "btn-primary" : "btn-ghost"}`} style={{ minWidth: 84 }} aria-pressed={on} onClick={() => setOn(!on)}>
-        {t(on ? "settings.on" : "settings.off")}
-      </button>
+      <Switch checked={on} onChange={setOn} labelledBy={id} />
     </div>
   );
 }
@@ -47,6 +56,7 @@ const TAILSCALE_DOWNLOAD = "https://tailscale.com/download";
 function PhoneRow() {
   const { t } = useTranslation();
   const { toast, openSheet } = useApp();
+  const id = useId();
   const [ts, setTs] = useState<TailscaleStatus | null>(null);
   const [on, setOn] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -76,13 +86,11 @@ function PhoneRow() {
   const note = !ts.installed ? "settings.phoneMissing" : "settings.phoneSignIn"; // ready: the ⓘ sheet explains it
   return (
     <div className="od-row" style={gap("var(--s-4)")}>
-      <span className="od-field od-fill"><b>{t("settings.phone")}</b>{!ready && <span className="muted small">{t(note)}</span>}</span>
+      <span className="od-field od-fill"><b id={id}>{t("settings.phone")}</b>{!ready && <span className="muted small">{t(note)}</span>}</span>
       <button className="icon-btn" aria-label={t("settings.phoneAbout")} onClick={() => openSheet(<PhoneInfoSheet />)}><Icon name="info" /></button>
       {on && ready && <button className="icon-btn" aria-label={t("settings.phoneShowQr")} disabled={busy} onClick={() => turn(true)}><Icon name="qr" /></button>}
       {/* An unready Tailscale still lets the learner switch an old "on" off. */}
-      <button className={`btn ${on ? "btn-primary" : "btn-ghost"}`} style={{ minWidth: 84 }} aria-pressed={on} disabled={busy || (!ready && !on)} onClick={() => turn(!on)}>
-        {t(on ? "settings.on" : "settings.off")}
-      </button>
+      <Switch checked={on} onChange={turn} labelledBy={id} disabled={busy || (!ready && !on)} />
     </div>
   );
 }
@@ -527,10 +535,6 @@ export function Settings() {
               </select>
             </div>
           </Group>
-          <Group>
-            <ToggleRow k="memory" initial={s.memoryOn} onChange={(memoryOn) => setS((s) => ({ ...s, memoryOn }))} />
-            <ToggleRow k="speech" initial={s.speechOn} onChange={(speechOn) => setS((s) => ({ ...s, speechOn }))} />
-          </Group>
         </>}
 
         {tab === "ai" && <>
@@ -548,6 +552,11 @@ export function Settings() {
         </>}
 
         {tab === "privacy" && <>
+          <h2 className="section-title">{t("settings.privacy")}</h2>
+          <Group>
+            <ToggleRow k="memory" initial={s.memoryOn} onChange={(memoryOn) => setS((s) => ({ ...s, memoryOn }))} />
+            <ToggleRow k="speech" initial={s.speechOn} onChange={(speechOn) => setS((s) => ({ ...s, speechOn }))} />
+          </Group>
           <h2 className="section-title">{t("data.section")}</h2>
           <Group>
             <DataRow />

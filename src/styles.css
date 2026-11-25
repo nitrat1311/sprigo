@@ -692,6 +692,18 @@ html[data-theme="dark"]:not([data-contrast="high"]) .call-fix{color:var(--gold)}
 .set-group > *{padding:var(--s-5)}
 .set-group > * + *{border-top:1px solid var(--border)}
 
+/* Settings switches: a boolean row's state at a glance, no text to translate. The track outline and the thumb carry
+   the state (WCAG 1.4.11 needs 3:1 for both): off is --text-muted on --card (5.6:1 light, 6.6:1 dark); on is the
+   --green track on --card (4.8:1 light, 5.0:1 dark) with an --on-green thumb (4.9:1 light, 5.2:1 dark). High contrast
+   only widens these (8:1+). Both transition rules (prefers-reduced-motion and [data-motion="reduce"]) already cover it. */
+.switch{position:relative;flex:none;width:52px;height:30px;padding:0;border:2px solid var(--text-muted);border-radius:var(--r-pill);background:var(--card);transition:background-color .18s ease,border-color .18s ease}
+.switch::after{content:"";position:absolute;top:50%;left:3px;width:20px;height:20px;margin-top:-10px;border-radius:50%;background:var(--text-muted);transition:transform .18s ease,background-color .18s ease}
+.switch:hover{filter:brightness(1.06)}
+.switch[aria-checked="true"]{background:var(--green);border-color:var(--green-dark)}
+.switch[aria-checked="true"]::after{background:var(--on-green);transform:translateX(22px)}
+.switch:focus-visible{border-radius:var(--r-pill)} /* the shared focus rule squares buttons off; a pill keeps its shape */
+.switch[disabled]{opacity:.5;cursor:not-allowed;filter:none}
+
 /* Settings > speech voice and recognition options: full-width rows, an icon on the left, notes behind an info icon */
 .voice-option{position:relative;display:flex;align-items:center;border:2px solid var(--border);border-radius:var(--r-card);background:var(--card)}
 .voice-option.on{border-color:var(--blue);background:var(--sky)}

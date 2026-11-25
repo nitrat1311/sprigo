@@ -89,7 +89,9 @@ for (const theme of ["light", "dark"]) test(`high contrast passes axe colour con
   await page.addInitScript((t) => localStorage.setItem("sprigo.theme", t), theme);
   await onboard(page);
   await page.getByRole("tab", { name: "Preferences" }).click();
-  await page.locator("#set-panel .od-row").filter({ has: page.getByText("High contrast", { exact: true }) }).getByRole("button", { name: "Off" }).click();
+  const highContrast = page.getByRole("switch", { name: "High contrast" });
+  await highContrast.click();
+  await expect(highContrast).toHaveAttribute("aria-checked", "true");
   expect(await axe(page, true)).toEqual([]);
   await page.getByRole("button", { name: "Practice" }).click();
   await expect(page.getByRole("button", { name: /^Verb forms/ })).toBeVisible();

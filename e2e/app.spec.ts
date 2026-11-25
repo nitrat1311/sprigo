@@ -497,7 +497,10 @@ test("a tutor exports as a package the import flow takes again", async ({ page }
 test("readable font and text size apply at once and stay after a reload", async ({ page }) => {
   await onboard(page);
   await page.getByRole("tab", { name: "Preferences" }).click();
-  await page.locator("#set-panel .od-row").filter({ has: page.getByText("Readable font", { exact: true }) }).getByRole("button", { name: "Off" }).click();
+  const readable = page.getByRole("switch", { name: "Readable font" });
+  await expect(readable).toHaveAttribute("aria-checked", "false");
+  await readable.click();
+  await expect(readable).toHaveAttribute("aria-checked", "true");
   await page.getByRole("radiogroup", { name: "Text size" }).getByRole("radio", { name: "130%" }).click();
   const look = () => page.evaluate(() => ({ font: getComputedStyle(document.body).fontFamily, zoom: document.documentElement.style.zoom }));
   expect(await look()).toEqual({ font: expect.stringContaining("Atkinson Hyperlegible Next"), zoom: "1.3" });
