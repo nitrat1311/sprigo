@@ -720,8 +720,8 @@ html[data-theme="dark"]:not([data-contrast="high"]) .call-fix{color:var(--gold)}
 .tts-signal{width:22px;height:22px;flex:none}
 .voice-info{position:relative;margin-right:var(--s-3);flex:none}
 /* The InfoTip icon is a quiet note, not a call to action: softer at rest but still 3:1+; hover/focus restores --text-muted. */
-.voice-info .icon-btn{color:var(--icon-quiet)}
-.voice-info .icon-btn:hover,.voice-info .icon-btn:focus-visible{color:var(--text-muted)}
+.voice-info .icon-btn,.set-group .od-row > .icon-btn{color:var(--icon-quiet)}
+.voice-info .icon-btn:hover,.voice-info .icon-btn:focus-visible,.set-group .od-row > .icon-btn:hover,.set-group .od-row > .icon-btn:focus-visible{color:var(--text-muted)}
 .voice-tip{display:none;position:absolute;right:0;bottom:calc(100% + 6px);width:260px;max-width:70vw;padding:var(--s-3) var(--s-4);border-radius:var(--r);background:var(--text);color:var(--bg);font-size:var(--fs-13);line-height:1.4;z-index:2;box-shadow:var(--elev)}
 .voice-info:hover .voice-tip,.voice-info:focus-within .voice-tip,.voice-tip.open{display:block}
 .sheet .sheet-actions .btn{margin:0}
