@@ -24,6 +24,7 @@ import { Writing } from "./Write";
 import { Learn } from "./screens/Learn";
 import { Garden } from "./screens/Garden";
 import { Grammar } from "./screens/Grammar";
+import { Notes } from "./screens/Notes";
 import { Settings } from "./screens/Settings";
 import { Avatar, ProfileGate, useLangName } from "./screens/Profiles";
 import { Practice, League, Shop, Profile, Stories, Roleplay, Friends, Notifications, LiveButton } from "./screens/Screens";
@@ -33,8 +34,8 @@ const NAV: { id: Route; icon: IconName }[] = [
   { id: "profile", icon: "user" },
 ];
 const MORE: { id: Route; icon: IconName }[] = [
-  { id: "shop", icon: "shop" }, { id: "grammar", icon: "book" }, { id: "stories", icon: "story" },
-  { id: "roleplay", icon: "masks" }, { id: "friends", icon: "users" },
+  { id: "shop", icon: "shop" }, { id: "grammar", icon: "book" }, { id: "notes", icon: "pen" },
+  { id: "stories", icon: "story" }, { id: "roleplay", icon: "masks" }, { id: "friends", icon: "users" },
 ];
 /** Not navigation targets of their own: the desktop profile menu and the mobile "More" sheet. */
 const AUX: { id: Route; icon: IconName }[] = [
@@ -43,7 +44,7 @@ const AUX: { id: Route; icon: IconName }[] = [
 const SCREENS: Record<Route, () => React.ReactNode> = {
   learn: Learn, practice: Practice, league: League, shop: Shop, profile: Profile,
   stories: Stories, roleplay: Roleplay, friends: Friends, notifications: Notifications, settings: Settings,
-  garden: Garden, grammar: Grammar,
+  garden: Garden, grammar: Grammar, notes: Notes,
 };
 
 /** Text size (#34): the webview's own zoom in the app, so vh and px scale together. Zoom hotkeys stay off (tauri.conf default), so nothing fights it.

@@ -36,6 +36,7 @@
     "notifications": "Notifications",
     "settings": "Réglages",
     "grammar": "Grammaire",
+    "notes": "Notes",
     "account": "Menu du compte"
   },
   "common": {
@@ -1252,5 +1253,35 @@
     "notInGuide": "Le guide de l’IA a omis cette structure. Réessaie.",
     "alsoIn": "Aussi dans : {{units}}",
     "practise": "S’entraîner"
+  },
+  "notes": {
+    "title": "Notes et journal",
+    "subtitle": "Tes propres mots : une courte entrée dans la langue que tu apprends et une note sur chaque unité. Gardé sur cet appareil et inclus dans l'export de tes données.",
+    "tabs": {
+      "journal": "Journal",
+      "units": "Notes d'unité"
+    },
+    "today": "Aujourd'hui",
+    "writeIn": "Quelques phrases en {{lang}}.",
+    "entryLabel": "Entrée du journal d'aujourd'hui",
+    "pastEntryLabel": "Entrée du journal du {{date}}",
+    "past": "Entrées précédentes",
+    "empty": "Rien d'écrit pour l'instant. Commence par aujourd'hui.",
+    "noCourse": "Choisis un cours pour prendre des notes sur ses unités.",
+    "unitsHint": "Tes propres notes sur les unités de {{lang}}.",
+    "unitLabel": "{{level}} · ta note",
+    "noteLabel": "Note sur {{unit}}",
+    "notePlaceholder": "Mots, règles, exemples…",
+    "noNote": "Pas encore de note",
+    "save": "Enregistrer",
+    "saved": "Enregistré",
+    "saveFailed": "La note n'a pas pu être enregistrée.",
+    "delete": "Supprimer",
+    "deleted": "Supprimé",
+    "check": "Vérifier mon entrée",
+    "checking": "Vérification…",
+    "checkTitle": "Ton entrée, vérifiée",
+    "checkNoAi": "Configure l'IA pour faire vérifier ton entrée.",
+    "checkFailed": "L'entrée n'a pas pu être vérifiée."
   }
 }

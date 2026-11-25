@@ -45,6 +45,9 @@ test("main screens, a sheet and a lesson have no serious axe findings", async ({
   await page.getByRole("button", { name: "Grammar" }).click();
   await expect(page.getByRole("heading", { name: /^A1 · / })).toBeVisible();
   expect(await axe(page)).toEqual([]);
+  await page.getByRole("button", { name: "Notes", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "Notes & journal" })).toBeVisible();
+  expect(await axe(page)).toEqual([]);
   await page.getByRole("button", { name: "Learn" }).click();
   await expect(page.getByText("Greetings & Introductions")).toBeVisible();
   expect(await axe(page)).toEqual([]);

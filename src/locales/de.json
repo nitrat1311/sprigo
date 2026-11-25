@@ -36,6 +36,7 @@
     "notifications": "Mitteilungen",
     "settings": "Einstellungen",
     "grammar": "Grammatik",
+    "notes": "Notizen",
     "account": "Kontomenü"
   },
   "common": {
@@ -1216,5 +1217,35 @@
     "notInGuide": "Der KI-Leitfaden hat dieses Muster ausgelassen. Versuch es noch einmal.",
     "alsoIn": "Auch in: {{units}}",
     "practise": "Üben"
+  },
+  "notes": {
+    "title": "Notizen & Tagebuch",
+    "subtitle": "Deine eigenen Worte: ein kurzer Eintrag in deiner Lernsprache und eine Notiz zu jeder Einheit. Bleibt auf diesem Gerät und ist im Datenexport enthalten.",
+    "tabs": {
+      "journal": "Tagebuch",
+      "units": "Notizen zu Einheiten"
+    },
+    "today": "Heute",
+    "writeIn": "Ein paar Sätze auf {{lang}}.",
+    "entryLabel": "Heutiger Tagebucheintrag",
+    "pastEntryLabel": "Tagebucheintrag vom {{date}}",
+    "past": "Frühere Einträge",
+    "empty": "Noch nichts geschrieben. Fang mit heute an.",
+    "noCourse": "Wähle einen Kurs, um Notizen zu seinen Einheiten zu machen.",
+    "unitsHint": "Deine eigenen Notizen zu den Einheiten von {{lang}}.",
+    "unitLabel": "{{level}} · deine Notiz",
+    "noteLabel": "Notiz zu {{unit}}",
+    "notePlaceholder": "Wörter, Regeln, Beispiele…",
+    "noNote": "Noch keine Notiz",
+    "save": "Speichern",
+    "saved": "Gespeichert",
+    "saveFailed": "Die Notiz konnte nicht gespeichert werden.",
+    "delete": "Löschen",
+    "deleted": "Gelöscht",
+    "check": "Eintrag prüfen",
+    "checking": "Wird geprüft…",
+    "checkTitle": "Dein Eintrag, geprüft",
+    "checkNoAi": "Richte die KI ein, um deinen Eintrag prüfen zu lassen.",
+    "checkFailed": "Der Eintrag konnte nicht geprüft werden."
   }
 }
