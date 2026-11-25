@@ -7,7 +7,8 @@ import { useApp } from "./store";
 import { cleanNotes } from "./releaseNotes";
 
 const REPO = "ozerozdas/sprigo";
-export const betaOn = async () => (await getSetting("update.beta")) === "1";
+// The boot screen for data from a newer version can't read settings, so it checks the stable channel.
+export const betaOn = async () => (await getSetting("update.beta").catch(() => null)) === "1";
 
 /** The newer release, or null (also offline, in the browser preview, or before the first release exists).
  *  Beta testers (#41) check the `updater-beta` channel in Rust (check_beta), which also carries stable releases. */
