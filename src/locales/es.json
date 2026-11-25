@@ -2,6 +2,15 @@
   "_meta": {
     "name": "Español"
   },
+  "error": {
+    "title": "Algo ha salido mal",
+    "desc": "Sprigo ha encontrado un error inesperado al dibujar esta pantalla. Tus datos están a salvo. Recarga para continuar; si vuelve a pasar, copia los detalles de abajo y envíalos al desarrollador.",
+    "reload": "Recargar",
+    "details": "Detalles técnicos",
+    "copy": "Copiar detalles",
+    "copied": "Copiado",
+    "version": "Versión"
+  },
   "boot": {
     "newerTitle": "Estos datos son de una versión más nueva",
     "newerDesc": "Tus datos los guardó una versión más nueva de Sprigo. Actualiza la app para abrirlos. Esta versión no los modificará.",

@@ -16,7 +16,7 @@ import { type Character, type CharacterId } from "./characters";
 import { judge, learnerFacts, loadPractice, rememberSession, tutorTurn } from "./lessons";
 import { inlineName, remembersLearner } from "./tutors";
 import { warmUp } from "./ai";
-import { FILLER_MS, NOTES_MAX, currentUnit, filler, isNoise, mergeInput, partialSay, sentences, silenceDelay, type TutorEvent, type TutorMsg, type TutorReply } from "./tutor";
+import { FILLER_MS, NOTES_MAX, currentUnit, filler, isNoise, mergeInput, partialSay, sentences, silenceDelay, spokenText, type TutorEvent, type TutorMsg, type TutorReply } from "./tutor";
 import { recordSession, today, xpMult } from "./progress";
 import * as db from "./db";
 import { PracticePanel } from "./PracticePanel";
@@ -344,7 +344,7 @@ export function TutorCall({ who, ch }: { who: CharacterId; ch: Character }) {
 
   const faceState: FaceState = thinking ? "thinking" : talking ? "talking" : "idle";
   const micLabel = t(micOn ? "tutor.micOff" : "tutor.micOn"), camLabel = t(camOn ? "tutor.camOff" : "tutor.camOn");
-  const spoken = msgs.filter((m) => m.via === "voice"), typed = msgs.filter((m) => m.via === "text"); // ponytail: the tutor only speaks for now; a "message" action would add tutor lines to `typed`
+  const spoken = msgs.filter((m) => m.via === "voice" && spokenText(m)), typed = msgs.filter((m) => m.via === "text"); // ponytail: the tutor only speaks for now; a "message" action would add tutor lines to `typed`
   // Captions show only each side's latest line, on its own card: the face stays visible, and a learner who missed it has to ask.
   const lastTutor = spoken.filter((m) => m.from === "tutor").pop(), lastMine = spoken.filter((m) => m.from === "me").pop();
   const send = () => { if (text.trim()) { input("user_typed", text); setText(""); } };
@@ -372,7 +372,7 @@ export function TutorCall({ who, ch }: { who: CharacterId; ch: Character }) {
           {talking && engine && <small className="muted small" role="status">{t("ai.speakingWith", { engine: t(`voice.engine.${engine}`) })}</small>}
           {last?.correction.trim() && <p className="call-fix small"><Icon name="spark" /> {last.correction}</p>}
           {captions && lastTutor && <div className="call-transcript" lang={lang} aria-live="polite">
-            <button className="call-line" onClick={() => setShowTr((v) => !v)}><Words text={lastTutor.text} lang={lang} />{showTr && last?.translation && <small>{last.translation}</small>}</button>
+            <button className="call-line" onClick={() => setShowTr((v) => !v)}><Words text={spokenText(lastTutor)} lang={lang} />{showTr && last?.translation && <small>{last.translation}</small>}</button>
           </div>}
         </section>
         <section className="call-pane me" ref={ring} aria-label={profile?.name}>
@@ -380,7 +380,7 @@ export function TutorCall({ who, ch }: { who: CharacterId; ch: Character }) {
             ? <video className="call-video" autoPlay muted playsInline ref={(el) => { if (el && el.srcObject !== cam.current) el.srcObject = cam.current; }} />
             : profile && <Avatar p={profile} size={96} />}
           {profile && <b className="call-name">{profile.name}</b>}
-          {captions && lastMine && <div className="call-transcript" lang={lang}><p className="call-line">{lastMine.text}</p></div>}
+          {captions && lastMine && <div className="call-transcript" lang={lang}><p className="call-line">{spokenText(lastMine)}</p></div>}
         </section>
         {drawer && <section className="call-drawer" aria-label={t("tutor.message")}>
           <div className="od-row call-drawer-head">

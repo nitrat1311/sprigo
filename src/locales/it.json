@@ -2,6 +2,15 @@
   "_meta": {
     "name": "Italiano"
   },
+  "error": {
+    "title": "Qualcosa è andato storto",
+    "desc": "Sprigo ha incontrato un errore imprevisto mentre disegnava questa schermata. I tuoi dati sono al sicuro. Ricarica per continuare; se succede di nuovo, copia i dettagli qui sotto e inviali allo sviluppatore.",
+    "reload": "Ricarica",
+    "details": "Dettagli tecnici",
+    "copy": "Copia dettagli",
+    "copied": "Copiato",
+    "version": "Versione"
+  },
   "boot": {
     "newerTitle": "Questi dati provengono da una versione più recente",
     "newerDesc": "I tuoi dati sono stati salvati da una versione più recente di Sprigo. Aggiorna l'app per aprirli. Questa versione non li modificherà.",

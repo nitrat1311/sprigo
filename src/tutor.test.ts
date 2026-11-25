@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import type { CourseLevel } from "./course.ts";
-import { currentUnit, describeEvent, filler, HISTORY_IN_PROMPT, isNoise, looseTutor, mergeInput, partialSay, sentences, silenceDelay, tutorPrompt, tutorSystem, type TutorMsg, type TutorReply } from "./tutor.ts";
+import { currentUnit, describeEvent, filler, HISTORY_IN_PROMPT, isNoise, looseTutor, mergeInput, partialSay, sentences, silenceDelay, spokenText, tutorPrompt, tutorSystem, type TutorMsg, type TutorReply } from "./tutor.ts";
 
 const ctx = { name: "Mia", persona: "Cheerful barista.", target: "English", native: "Turkish", level: "A2", unit: "Food", words: ["apple", "bread"], grammar: ["I like + noun"], about: [] as string[] };
 
@@ -161,4 +161,12 @@ test("a coach note goes in before the event, only when there is one", () => {
   assert.ok(!tutorPrompt("Mia", [], "", e).includes("Coach note"));
   const p = tutorPrompt("Mia", [], "", e, "", "Learner seems hesitant.");
   assert.ok(p.indexOf("Coach note") < p.indexOf("Event:") && p.includes("never mention it): Learner seems hesitant."));
+});
+
+test("spokenText only lets real text into the transcript", () => {
+  assert.equal(spokenText({ from: "tutor", text: "  Hola  ", via: "voice" }), "Hola");
+  assert.equal(spokenText({ from: "tutor", text: "   ", via: "voice" }), ""); // an empty turn shows nothing
+  // Data from the model and the microphone is not type-checked at runtime.
+  assert.equal(spokenText({ from: "tutor", text: undefined as unknown as string, via: "voice" }), "");
+  assert.equal(spokenText({ from: "me", text: 42 as unknown as string, via: "voice" }), "");
 });
