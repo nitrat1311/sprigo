@@ -110,7 +110,7 @@ for (const theme of ["light", "dark"]) test(`high contrast passes axe colour con
 test("the tutor list and form are labelled and have no serious axe findings", async ({ page }) => {
   await onboard(page);
   await page.getByRole("button", { name: "Roleplay", exact: true }).click();
-  await page.getByRole("button", { name: /My tutors/ }).click();
+  await page.getByRole("button", { name: /Add a tutor/ }).click();
   const list = page.getByRole("dialog", { name: "My tutors" });
   await expect(list).toBeVisible();
   expect(await axe(page)).toEqual([]);

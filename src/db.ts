@@ -268,8 +268,20 @@ export async function putCached(enrollmentId: number, stepId: string, content: u
 
 /** Every cached unit guidebook (`guide:<unit>`), for word lookups (#28). */
 export async function cachedGuides<T>(enrollmentId: number) {
-  const r = await (await db()).select<{ content: string }>("SELECT content FROM content_cache WHERE enrollment_id = $1 AND step_id LIKE 'guide:%'", [enrollmentId]);
-  return r.map((x) => JSON.parse(x.content) as T);
+  return (await cachedGuidebooks<T>(enrollmentId)).map((x) => x.guide);
+}
+
+/** Cached guidebooks with their unit (#44 search), which the plain list doesn't keep. */
+export async function cachedGuidebooks<T>(enrollmentId: number) {
+  const r = await (await db()).select<{ step_id: string; content: string }>("SELECT step_id, content FROM content_cache WHERE enrollment_id = $1 AND step_id LIKE 'guide:%'", [enrollmentId]);
+  return r.flatMap((x) => {
+    try {
+      return [{ unit: x.step_id.slice("guide:".length), guide: JSON.parse(x.content) as T }];
+    } catch (e) {
+      console.warn("guidebook parse", x.step_id, e); // one corrupt cache row must not hide the rest
+      return [];
+    }
+  });
 }
 
 /** Levels passed via checkpoint or level test: marks every node of the level done and moves the enrollment on. */
@@ -338,6 +350,13 @@ export async function importWords(enrollmentId: number, words: { word: string; t
 export async function wordDays(enrollmentId: number) {
   const r = await (await db()).select<{ d: string; n: number }>(
     "SELECT date(created_at, 'localtime') AS d, COUNT(*) AS n FROM words WHERE enrollment_id = $1 GROUP BY d", [enrollmentId]);
+  return Object.fromEntries(r.map((x) => [x.d, x.n]));
+}
+/** New words per local day across all the profile's courses, for the goals report (#43). */
+export async function profileWordDays(profileId: number) {
+  const r = await (await db()).select<{ d: string; n: number }>(
+    `SELECT date(w.created_at, 'localtime') AS d, COUNT(*) AS n FROM words w
+     JOIN enrollments e ON e.id = w.enrollment_id WHERE e.profile_id = $1 AND w.created_at IS NOT NULL GROUP BY d`, [profileId]);
   return Object.fromEntries(r.map((x) => [x.d, x.n]));
 }
 // The list's words, for highlighting them in text (#27). Kept until the list changes.
@@ -451,6 +470,12 @@ export async function speechWeeks(profileId: number) {
     `SELECT date(created_at, 'localtime', '-6 days', 'weekday 1') AS w, ROUND(AVG(wpm)) AS wpm FROM speech_sessions
      WHERE profile_id = $1 AND words > 0 GROUP BY w`, [profileId]);
   return Object.fromEntries(r.map((x) => [x.w, x.wpm]));
+}
+/** Speaking milliseconds per local day, for the goals report (#43); minutes are rounded only when shown. */
+export async function speechMsDays(profileId: number) {
+  const r = await (await db()).select<{ d: string; ms: number }>(
+    "SELECT date(created_at, 'localtime') AS d, SUM(speech_ms) AS ms FROM speech_sessions WHERE profile_id = $1 GROUP BY d", [profileId]);
+  return Object.fromEntries(r.map((x) => [x.d, x.ms]));
 }
 /** The learner's usual per answer over their last 10 tutor calls (SPR-26); chats and drills are a different kind of talk. Null before they have said a few things. */
 export async function speechBaseline(profileId: number): Promise<Baseline | null> {

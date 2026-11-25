@@ -23,8 +23,8 @@ export function Notes() {
   const [tab, setTab] = useState<Tab>("journal");
   return (
     <>
-      <h1 className="section-title" style={{ marginTop: 24 }}>{t("notes.title")}</h1>
-      <p className="muted" style={{ marginBottom: 14 }}>{t("notes.subtitle")}</p>
+      <h1 className="section-title">{t("notes.title")}</h1>
+      <p className="muted" style={{ marginBottom: "var(--s-5)" }}>{t("notes.subtitle")}</p>
       <div className="tabs" role="tablist" aria-label={t("notes.title")}>
         {(["journal", "units"] as Tab[]).map((k) => (
           <button key={k} role="tab" id={`notes-tab-${k}`} aria-selected={tab === k} aria-controls={`notes-panel-${k}`} onClick={() => setTab(k)}>
@@ -33,10 +33,10 @@ export function Notes() {
         ))}
       </div>
       {/* Both panels stay mounted, only one is shown: a journal draft must survive a look at the unit notes. */}
-      <div id="notes-panel-journal" role="tabpanel" aria-labelledby="notes-tab-journal" hidden={tab !== "journal"} className="od-stack" style={gap("14px")}>
+      <div id="notes-panel-journal" role="tabpanel" aria-labelledby="notes-tab-journal" hidden={tab !== "journal"} className="od-stack" style={gap("var(--s-5)")}>
         <Journal />
       </div>
-      <div id="notes-panel-units" role="tabpanel" aria-labelledby="notes-tab-units" hidden={tab !== "units"} className="od-stack" style={gap("14px")}>
+      <div id="notes-panel-units" role="tabpanel" aria-labelledby="notes-tab-units" hidden={tab !== "units"} className="od-stack" style={gap("var(--s-5)")}>
         <UnitNotes />
       </div>
     </>
@@ -84,7 +84,7 @@ function Journal() {
   const past = entries.filter((e) => e.day !== day);
   return (
     <>
-      <div className="card od-stack" style={gap("10px")}>
+      <div className="card od-stack" style={gap("var(--s-4)")}>
         <div>
           <h2 style={{ margin: 0 }}>{t("notes.today")}</h2>
           <span className="muted small">{fullDate(day, i18n.language)} · {t("notes.writeIn", { lang: course ? langName(course.iso) : "—" })}</span>
@@ -93,7 +93,7 @@ function Journal() {
           aria-label={t("notes.entryLabel")} placeholder={t("write.placeholder")}
           onChange={(e) => { setText(e.target.value); setErr(""); }} />
         {err && <p className="small" role="alert" style={{ color: "var(--red)", margin: 0 }}>{err}</p>}
-        <div className="od-row" style={{ ...gap("8px"), flexWrap: "wrap" }}>
+        <div className="od-row" style={{ ...gap("var(--s-3)"), flexWrap: "wrap" }}>
           <button className="btn btn-primary" disabled={busy || clean === saved} onClick={save}>{t("notes.save")}</button>
           <button className="btn btn-ghost" disabled={busy || !clean || !ai || !enrollment || !course} onClick={check}>
             <Icon name="spark" /> {t(busy ? "notes.checking" : "notes.check")}
@@ -104,7 +104,7 @@ function Journal() {
 
       {past.length > 0 && <>
         <h2 className="section-title" style={{ margin: 0 }}>{t("notes.past")}</h2>
-        <div className="od-stack" style={gap("8px")}>
+        <div className="od-stack" style={gap("var(--s-3)")}>
           {past.map((e) => (
             <button key={e.day} className="card row-item" onClick={() => openSheet(<EntrySheet entry={e} />)}>
               <Icon name="pen" />
@@ -125,11 +125,11 @@ function EntrySheet({ entry }: { entry: db.JournalEntry }) {
   const save = async () => { await db.saveJournalEntry(profile!.id, entry.day, text); toast(t("notes.saved")); closeSheet(); };
   const remove = async () => { await db.deleteJournalEntry(profile!.id, entry.day); toast(t("notes.deleted")); closeSheet(); };
   return (
-    <form className="od-stack sheet-wide" style={gap("12px")} onSubmit={(e) => { e.preventDefault(); save(); }}>
+    <form className="od-stack sheet-wide" style={gap("var(--s-4)")} onSubmit={(e) => { e.preventDefault(); save(); }}>
       <h3>{fullDate(entry.day, i18n.language)}</h3>
       <textarea className="input" rows={8} maxLength={JOURNAL_MAX} value={text} autoFocus
         aria-label={t("notes.pastEntryLabel", { date: fullDate(entry.day, i18n.language) })} onChange={(e) => setText(e.target.value)} />
-      <div className="od-row" style={gap("8px")}>
+      <div className="od-row" style={gap("var(--s-3)")}>
         <button className="btn btn-primary od-fill" type="submit" disabled={!text.trim()}>{t("notes.save")}</button>
         <button className="btn btn-danger" type="button" onClick={remove}>{t("notes.delete")}</button>
       </div>
@@ -153,7 +153,7 @@ function UnitNotes() {
   return (
     <>
       <span className="muted small">{t("notes.unitsHint", { lang: langName(course.iso) })}</span>
-      <div className="od-stack" style={gap("8px")}>
+      <div className="od-stack" style={gap("var(--s-3)")}>
         {rows.map(({ level, unit }) => {
           const ref = unitRef(level, unit.id), note = notes[ref];
           return (
@@ -182,13 +182,13 @@ function UnitNoteSheet({ level, unitId, title }: { level: Cefr; unitId: string; 
   const save = async () => { await db.saveUnitNote(enrollment!.id, ref, text); toast(t("notes.saved")); closeSheet(); };
   const remove = async () => { await db.saveUnitNote(enrollment!.id, ref, ""); toast(t("notes.deleted")); closeSheet(); };
   return (
-    <form className="od-stack sheet-wide" style={gap("12px")} onSubmit={(e) => { e.preventDefault(); save(); }}>
+    <form className="od-stack sheet-wide" style={gap("var(--s-4)")} onSubmit={(e) => { e.preventDefault(); save(); }}>
       <h3>{title}</h3>
       <span className="muted small">{t("notes.unitLabel", { level })}</span>
       <textarea className="input" rows={6} maxLength={NOTE_MAX} value={text} autoFocus lang={course?.iso}
         aria-label={t("notes.noteLabel", { unit: title })} placeholder={t("notes.notePlaceholder")}
         onChange={(e) => setText(e.target.value)} />
-      <div className="od-row" style={gap("8px")}>
+      <div className="od-row" style={gap("var(--s-3)")}>
         <button className="btn btn-primary od-fill" type="submit" disabled={!text.trim()}>{t("notes.save")}</button>
         {had && <button className="btn btn-danger" type="button" onClick={remove}>{t("notes.delete")}</button>}
       </div>
@@ -202,7 +202,7 @@ function CheckSheet({ fb, lang }: { fb: Feedback; lang: string }) {
   const { t } = useTranslation();
   const { closeSheet } = useApp();
   return (
-    <div className="od-stack sheet-wide" style={gap("12px")}>
+    <div className="od-stack sheet-wide" style={gap("var(--s-4)")}>
       <h3>{t("notes.checkTitle")}</h3>
       {fb.comment && <p className="small" style={{ margin: 0 }}>{fb.comment}</p>}
       {fb.corrections.length
@@ -212,7 +212,7 @@ function CheckSheet({ fb, lang }: { fb: Feedback; lang: string }) {
           ))}</ul>
         : <p className="small" style={{ margin: 0 }}>{t("write.noCorrections")}</p>}
       <div><b className="small">{t("write.rewritten")}</b>
-        <p lang={lang} style={{ margin: "4px 0 0", whiteSpace: "pre-wrap" }}>{fb.rewritten}</p></div>
+        <p lang={lang} style={{ margin: "var(--s-2) 0 0", whiteSpace: "pre-wrap" }}>{fb.rewritten}</p></div>
       <button className="btn btn-ghost" onClick={closeSheet}>{t("sheet.close")}</button>
     </div>
   );

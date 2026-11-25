@@ -36,12 +36,27 @@
     "notifications": "Notifiche",
     "settings": "Impostazioni",
     "grammar": "Grammatica",
-    "notes": "Note"
+    "notes": "Note",
+    "account": "Menu account"
   },
   "common": {
     "soon": "Prossimamente",
     "soonScreen": "Questa schermata è un’anteprima. I dati mostrati sono di esempio.",
     "soonToast": "Prossimamente"
+  },
+  "search": {
+    "label": "Cerca lezioni e guide",
+    "placeholder": "Cerca unità, parole, grammatica…",
+    "none": "Nessun risultato per «{{query}}».",
+    "more": "Sono mostrate solo le prime {{count}} corrispondenze. Continua a scrivere per restringere.",
+    "count_one": "{{count}} risultato",
+    "count_many": "{{count}} risultati",
+    "count_other": "{{count}} risultati",
+    "unit": "Unità",
+    "step": "Lezione",
+    "vocabulary": "Vocabolario",
+    "grammar": "Grammatica",
+    "guide": "Guida"
   },
   "learn": {
     "kicker": "{{level}} · Unità {{unit}}",
@@ -78,8 +93,18 @@
     "legendTicket_many": "{{count}} biglietti",
     "legendTicket_other": "{{count}} biglietti",
     "skipUnit": "Superare questa unità con un test (%{{score}})",
-    "toTop": "All'alto",
+    "summit": "Vetta: {{level}}",
+    "summitEnd": "Vetta",
+    "lockedDesc": "Completa le lezioni precedenti per sbloccare questa.",
     "toHere": "Torna alla mia lezione"
+  },
+  "levels": {
+    "A1": "Principiante",
+    "A2": "Elementare",
+    "B1": "Intermedio",
+    "B2": "Intermedio superiore",
+    "C1": "Avanzato",
+    "C2": "Padronanza"
   },
   "practice": {
     "planning": "Tempo di pianificazione",
@@ -165,7 +190,25 @@
     "wordsError_translation": "nessuna traduzione",
     "wordsError_schedule": "i dati di ripasso non sono validi",
     "saved": "Salvati",
-    "savedEmpty": "Tocca il segnalibro su un’unità, una guida o una storia per ritrovarla qui."
+    "savedEmpty": "Tocca il segnalibro su un’unità, una guida o una storia per ritrovarla qui.",
+    "tabs": {
+      "activities": "Attività"
+    },
+    "groups": {
+      "speak": "Parlato",
+      "review": "Ripasso",
+      "skills": "Abilità",
+      "challenge": "Sfide"
+    },
+    "wordsHint": "Salva la tua lista in CSV o importane una.",
+    "wordsExportShort": "Esporta",
+    "wordsImportShort": "Importa",
+    "wordExample": "Esempio",
+    "wordStrength": "Forza: {{n}}/5",
+    "wordStrengthHint": "La forza cresce esercitando la parola (Ripasso del giorno, Carte, Ascolto).",
+    "dueAbout": "Ripassa le parole che stai per dimenticare",
+    "cardsAbout": "Studia le tue parole con le flashcard",
+    "listenAbout": "Scegli ciò che senti"
   },
   "league": {
     "title": "Lega {{name}}",
@@ -233,6 +276,40 @@
       "speak": "Parlato"
     },
     "table": "Mostra come tabella"
+  },
+  "goals": {
+    "title": "Obiettivi",
+    "week": "Obiettivo settimanale",
+    "month": "Obiettivo mensile",
+    "weekShort": "settimana",
+    "monthShort": "mese",
+    "measure": "Misura",
+    "target": "Traguardo",
+    "targetAria": "Traguardo per {{period}}",
+    "progress": "{{n}} su {{goal}} {{unit}}",
+    "lastWeek": "La settimana scorsa: {{n}} {{unit}}",
+    "lastMonth": "Il mese scorso: {{n}} {{unit}}",
+    "report": "Resoconto",
+    "weekReport": "Resoconto settimanale",
+    "monthReport": "Resoconto mensile",
+    "range": "{{from}} – {{to}}",
+    "metrics": {
+      "xp": "XP",
+      "words": "Parole nuove",
+      "speak": "Minuti di parlato"
+    },
+    "units": {
+      "xp": "XP",
+      "words_one": "parola",
+      "words_many": "parole",
+      "words_other": "parole",
+      "speak": "min"
+    },
+    "goalDone": "Obiettivo raggiunto",
+    "goalLeft": "Mancano {{n}} {{unit}}",
+    "goalShort": "{{n}} {{unit}} in meno",
+    "notifyTitle": "La tua settimana in Sprigo",
+    "notifyBody": "La settimana scorsa hai guadagnato {{n}} XP. Il resoconto completo è nel profilo."
   },
   "profile": {
     "since": "Apprendimento da {{date}}",
@@ -581,7 +658,8 @@
         "practice": "Esercizi",
         "story": "Storie",
         "tutor": "Tutor e giochi di ruolo",
-        "writing": "Scrittura"
+        "writing": "Scrittura",
+        "title": "Titoli"
       },
       "month": "Mese",
       "noPrice": "Prezzo non disponibile",
@@ -600,6 +678,12 @@
     "qLessons_other": "Completa {{count}} lezioni",
     "chestTitle": "Hai un cesto del raccolto non aperto",
     "chestTap": "Tocca per aprire",
+    "gems_one": "{{count}} moneta",
+    "gems_many": "{{count}} monete",
+    "gems_other": "{{count}} monete",
+    "hearts_one": "{{count}} goccia",
+    "hearts_many": "{{count}} gocce",
+    "hearts_other": "{{count}} gocce",
     "qPractice_one": "Completa {{count}} sessione di pratica",
     "qPractice_many": "Completa {{count}} sessioni di pratica",
     "qPractice_other": "Completa {{count}} sessioni di pratica"
@@ -711,6 +795,13 @@
     "model": "Modello",
     "modelDesc": "Testa la connessione per elencare i modelli disponibili",
     "smallModel": "I modelli sotto {{min}} possono scrivere lezioni con risposte errate. Si raccomanda un modello di {{min}} o superiore.",
+    "guide": {
+      "good": "Misurato: buono per le lezioni dal vivo.",
+      "weak": "Misurato: veloce, ma solo il {{pct}}% degli esercizi è stato superato.",
+      "slow": "Misurato: troppo lento per le lezioni dal vivo.",
+      "weakSlow": "Misurato: troppo lento e solo il {{pct}}% degli esercizi è stato superato.",
+      "details": "Prima frase {{secs}} s · {{pct}}% di esercizi superati · {{hardware}}, {{date}}"
+    },
     "test": "Testa la connessione",
     "save": "Salva",
     "connected": "Connesso — {{count}} modelli trovati",
@@ -1028,7 +1119,8 @@
     "invalidJson": "Questo file non è JSON valido.",
     "fileTooLarge": "Questo file supera {{size}}.",
     "imageFailed": "Impossibile leggere l’immagine.",
-    "errors": "Correggi prima questo:"
+    "errors": "Correggi prima questo:",
+    "add": "Aggiungi tutor"
   },
   "biome": {
     "meadow": "Prato",
@@ -1107,15 +1199,15 @@
     "topics": {
       "ai": {
         "q": "Come configuro l'AI?",
-        "a": "Sprigo ha bisogno di un modello linguistico per scrivere le lezioni. Il più semplice è Ollama: installalo e apri Sprigo; troverà Ollama e offrirà di scaricare qwen3:8b (circa 5,2 GB). Funziona anche LM Studio: avvia il suo server locale e carica un modello.\nNessun modello locale? Usa un fornitore cloud (OpenAI, Anthropic, Gemini, OpenRouter) con la tua chiave API. Le chiavi rimangono nel portachiavi del sistema.\nCambialo in Impostazioni → AI e voce → Fornitore AI."
+        "a": "Sprigo ha bisogno di un modello linguistico per scrivere le lezioni. Il più semplice è Ollama: installalo e apri Sprigo; troverà Ollama e offrirà di scaricare qwen3.5:4b (circa 3,3 GB). Funziona anche LM Studio: avvia il suo server locale e carica un modello.\nNessun modello locale? Usa un fornitore cloud (OpenAI, Anthropic, Gemini, OpenRouter) con la tua chiave API. Le chiavi rimangono nel portachiavi del sistema.\nCambialo in Impostazioni → AI e voce → Fornitore AI."
       },
       "aiConnect": {
         "q": "\"Nessun modello locale trovato\" o \"Impossibile connettersi\"",
-        "a": "Ollama: avvia l'app Ollama. Sprigo lo cerca all'indirizzo http://localhost:11434. Se non ha modelli, lascia che Sprigo scarichi quello suggerito, oppure esegui: ollama pull qwen3:8b\nLM Studio: avvia il suo server locale e carica un modello.\nCloud: controlla la chiave API e i crediti del tuo account.\nUn VPN o un firewall possono anche bloccare localhost."
+        "a": "Ollama: avvia l'app Ollama. Sprigo lo cerca all'indirizzo http://localhost:11434. Se non ha modelli, lascia che Sprigo scarichi quello suggerito, oppure esegui: ollama pull qwen3.5:4b\nLM Studio: avvia il suo server locale e carica un modello.\nCloud: controlla la chiave API e i crediti del tuo account.\nUn VPN o un firewall possono anche bloccare localhost."
       },
       "weak": {
         "q": "Perché le lezioni sono a volte deboli o sbagliate?",
-        "a": "Di solito il modello è troppo piccolo. Usa uno con 8 miliardi di parametri o più (16 GB di memoria sono un buon inizio). Se un esercizio è sbagliato, fai ricorso nella lezione.\nLe lezioni vengono generate una volta sola e memorizzate in cache, quindi un modello lento influisce principalmente sulla prima visita a un passaggio."
+        "a": "Di solito il modello è troppo piccolo o semplicemente debole. Nelle impostazioni vedi il punteggio di ogni modello provato; scegline uno segnato come misurato buono. Se un esercizio è sbagliato, fai ricorso nella lezione.\nLe lezioni vengono generate una volta sola e memorizzate in cache, quindi un modello lento influisce principalmente sulla prima visita a un passaggio."
       },
       "mic": {
         "q": "Sprigo non mi sente",

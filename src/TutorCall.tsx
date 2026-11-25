@@ -391,7 +391,7 @@ export function TutorCall({ who, ch }: { who: CharacterId; ch: Character }) {
             {typed.length ? typed.map((m, i) => <div key={i} className="bubble me" lang={lang}><span>{m.text}</span></div>)
               : <p className="small muted">{t("tutor.noMessages")}</p>}
           </div>
-          <form className="od-row" style={{ "--od-gap": "8px" } as React.CSSProperties} onSubmit={(e) => { e.preventDefault(); send(); }}>
+          <form className="od-row" style={{ "--od-gap": "var(--s-3)" } as React.CSSProperties} onSubmit={(e) => { e.preventDefault(); send(); }}>
             <input className="input od-fill" lang={lang} value={text} autoFocus aria-label={t("roleplay.message")} placeholder={t("tutor.placeholder")}
               onChange={(e) => setText(e.target.value)} />
             <button className="btn btn-primary" type="submit" disabled={!text.trim()} aria-label={t("tutor.send")} data-tip={t("tutor.send")}><Icon name="send" /></button>
@@ -405,7 +405,7 @@ export function TutorCall({ who, ch }: { who: CharacterId; ch: Character }) {
         <button className={`call-btn${captions ? " on" : ""}`} onClick={() => setCaptions((v) => !v)} aria-pressed={captions} aria-label={capLabel} data-tip={capLabel}><Icon name="captions" /></button>
         <button className={`call-btn${pr ? " on" : ""}`} onClick={() => (pr ? practiceClose() : practiceOpen(true))} aria-pressed={!!pr} aria-label={prLabel} data-tip={prLabel}><Icon name="book" /></button>
         <button className={`call-btn${micOn ? " on" : " off"}`} disabled={!!micBlock} onClick={toggleMic} aria-pressed={micOn} aria-label={micLabel} data-tip={micBlock ? t(micBlock) : micLabel}><Icon name="mic" /></button>
-        <button className={`call-btn${camOn ? " on" : " off"}`} disabled={!camOk} onClick={toggleCam} aria-pressed={camOn} aria-label={camLabel} data-tip={camOk ? camLabel : t("tutor.camDenied")}><Icon name="video" /></button>
+        <button className={`call-btn${camOn ? " on" : " off"}`} disabled={!camOk} onClick={toggleCam} aria-pressed={camOn} aria-label={camLabel} data-tip={camOk ? camLabel : t("tutor.camDenied")}><Icon name={camOn ? "video" : "camera-off"} /></button>
         <button className="call-btn end" onClick={end} aria-label={t("tutor.end")} data-tip={t("tutor.end")}><Icon name="phone" /></button>
       </div>
     );

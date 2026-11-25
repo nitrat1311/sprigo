@@ -8,6 +8,7 @@ import { REGISTRY, langEn, lessonPrompt, lessonSchema, plannedActivities, system
 import { retry } from "../src/retry.ts";
 import { levelsOf, parseCourse } from "../src/course.ts";
 import { checkItem, lessonMetrics, RULES, summarize, type ItemResult, type Judged, type Lang, type TypeRow } from "../src/evalRules.ts";
+import { hardwareName } from "./hardware.ts";
 
 const BASE = process.env.OLLAMA ?? "http://localhost:11434", JUDGE = process.env.JUDGE;
 
@@ -122,7 +123,7 @@ type Case = (typeof CASES)[number] & { level: string } & (
   | { fallback: boolean; ms: number; count_ok: boolean; vocab_coverage: number; repeats: number; items: (ItemResult & { key: string })[] });
 
 const git = (args: string) => { try { return execSync(`git ${args}`, { encoding: "utf8" }).trim(); } catch { return ""; } };
-const meta = { judge: JUDGE ?? null, date: new Date().toISOString(), commit: git("rev-parse --short HEAD"), dirty: git("status --porcelain") !== "", cases: CASES };
+const meta = { judge: JUDGE ?? null, date: new Date().toISOString(), hardware: hardwareName(), commit: git("rev-parse --short HEAD"), dirty: git("status --porcelain") !== "", cases: CASES };
 
 const expected = contexts.reduce((sum, c) => sum + plannedActivities(c.step.activities).reduce((m, a) => m + a.count, 0), 0);
 /** What the table is built from; errored cases are in the denominators so a model cannot look better by failing. */
@@ -139,7 +140,7 @@ function markdown(model: string, rows: TypeRow[], cases: Case[], summary: Return
   const caseHead = ["case", "level", "ms", "fallback", "count ok", "vocab %", "repeats"];
   return [
     `# Lesson eval: ${model}`, "",
-    `${meta.date} · commit ${meta.commit}${meta.dirty ? " (dirty)" : ""} · judge ${JUDGE ? `${JUDGE}${judgeFails ? ` (failed ${judgeFails}/${judgeCalls})` : ""}` : "none"}`, summary.text, "",
+    `${meta.date} · ${meta.hardware} · commit ${meta.commit}${meta.dirty ? " (dirty)" : ""} · judge ${JUDGE ? `${JUDGE}${judgeFails ? ` (failed ${judgeFails}/${judgeCalls})` : ""}` : "none"}`, summary.text, "",
     line(head), line(head.map(() => "---")),
     ...rows.map((r) => line([r.type, r.items, r.pass, ...RULES.map((k) => r.fails[k]), ...(JUDGE ? [r.natural, r.level_fit, r.clear, r.one_correct] : [])])),
     "", "## Cases", "", line(caseHead), line(caseHead.map(() => "---")),

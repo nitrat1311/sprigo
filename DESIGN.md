@@ -9,21 +9,23 @@ colors:
     border: "#e5ddcc"
     text: "#2e2a24"
     text-muted: "#6b6357"
-    text-faint: "#a59d8f"
-    green: "#4f8a3c"        # primary: progress, correct, main CTA
+    text-faint: "#776e5f"
+    green: "#467e39"        # primary: progress, correct, main CTA (white label ≥ 4.5:1)
     green-dark: "#3a6a2b"
     green-bright: "#b5dc8a"
     blue: "#3d7a99"         # navigation, focus, secondary CTA
     blue-dark: "#2d627d"
+    blue-ink: "#2d627d"     # text-safe blue (nav active, .soon-tag) on --sky
     sky: "#e3eef0"
     gold: "#e0a526"         # rewards: coins, chests, legendary
-    gold-dark: "#b98318"
-    red: "#c4553f"          # wrong answer, destructive
+    gold-dark: "#8a6110"
+    red: "#bd4a33"          # wrong answer, destructive
     red-dark: "#9f402d"
     purple: "#8a5a8c"       # live / AI tutor
     purple-dark: "#6c4270"
     bark: "#8a6242"         # checkpoints
     bark-dark: "#6b4a30"
+    live: "#ff4d4f"         # the only "live session" dot
   dark:
     bg: "#161a13"
     surface: "#21271d"
@@ -31,23 +33,28 @@ colors:
     border: "#2f3629"
     text: "#ece7da"
     text-muted: "#a7a18f"
-    text-faint: "#6c6858"
+    text-faint: "#938e7c"
     green: "#5e9a48"
     green-dark: "#406f31"
     green-bright: "#a9d27c"
+    blue-ink: "#8cc4e0"
+    gold-dark: "#b98318"    # also the gold 3D edge; must stay darker than gold
+    on-gold: "#241b09"      # bright accents take dark ink in dark mode
+    on-green: "#141a10"
 typography:
   family: "Nunito (bundled, offline), Segoe UI, system-ui, sans-serif"
   base: 16px / 1.5
   weights: [800, 900]       # labels and headings are heavy; body stays regular
-  scale: [10, 11, 12, 13, 14, 15, 16, 17, 18, 20, 22, 24, 26]
-  caps: "Buttons, nav and kickers: UPPERCASE, letter-spacing .8–1px"
+  scale: [11, 12, 13, 15, 17, 20, 24, 34]   # --fs-* ; display (56/72) only for in-lesson emoji/timer
+  tracking: "-0.5px logo · 0.8px CAPS labels · 1px kickers"
 radius:
-  sm: 8px
+  sm: 8px                  # --r-sm: icon tiles
   base: 12px                # --r
   card: 16px
   sheet: 20px
-  pill: 99px
-elevation: "Solid offset shadows, no blur: 0 2px 0 (chips, ghost), 0 4px 0 (buttons, unit heads), 0 5–6px 0 (path nodes). Shadow colour = the -dark shade of the fill."
+  pill: 999px
+spacing: "4px scale: --s-1..--s-8 = 2 / 4 / 8 / 12 / 16 / 24 / 32 / 48px"
+elevation: "Solid offset shadows, no blur: --edge-1/2/3 = 2/4/6px offsets for the per-component 0 Npx 0 edge (shadow colour = the -dark shade of the fill). One ambient --elev: 0 8px 30px rgb(0 0 0 / .22) for menus and drawers."
 layout:
   sidebar: 240px
   center: 640px
@@ -68,8 +75,9 @@ Friendly, tactile, a little toy-like. Earthy cream backgrounds instead of white,
 
 - Use the CSS variables, never raw hex in components. New colours go into both `:root` and the dark block.
 - One meaning per hue: **green** = progress, correct, primary action; **blue** = navigation, focus, secondary action; **gold** = rewards; **red** = wrong, destructive; **purple** = live/AI tutor; **bark** = checkpoints.
-- Every accent has a `-dark` partner used only for its 3D edge, and some have a `-tint` / `-tint-border` pair for feedback panels.
-- Text on accents uses `--on-accent` (white). Gold surfaces with dark content use `--text`.
+- Every accent has a `-dark` partner used mostly for its 3D edge, and some have a `-tint` / `-tint-border` pair for feedback panels.
+- Text on accents uses `--on-accent` (white); gold takes `--on-gold`, and the green button takes `--on-green` (both flip to dark ink in dark mode). Gold surfaces with dark content use `--text` in the light theme.
+- Light-theme text tokens hold ≥ 4.5:1 on `--bg`, `--card` and the biome tints; `--blue-ink` exists because plain `--blue` is too light on `--sky`. Every token change is checked with WCAG relative luminance in both themes and both contrast modes.
 - Biomes ([`src/biomes.ts`](src/biomes.ts)) recolour the Learn path per unit via `--bt`, `--btd`, `--bh`, `--bhd`; components fall back to green.
 
 ## Dark mode

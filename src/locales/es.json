@@ -36,7 +36,8 @@
     "notifications": "Avisos",
     "settings": "Ajustes",
     "grammar": "Gramática",
-    "notes": "Notas"
+    "notes": "Notas",
+    "account": "Menú de cuenta"
   },
   "common": {
     "soon": "Próximamente",
@@ -51,6 +52,20 @@
     "unit": "Unidad",
     "guide": "Guía",
     "story": "Historia"
+  },
+  "search": {
+    "label": "Buscar lecciones y guías",
+    "placeholder": "Buscar unidades, palabras, gramática…",
+    "none": "No hay resultados para «{{query}}».",
+    "more": "Solo se muestran las primeras {{count}} coincidencias. Sigue escribiendo para acotar la búsqueda.",
+    "count_one": "{{count}} resultado",
+    "count_many": "{{count}} resultados",
+    "count_other": "{{count}} resultados",
+    "unit": "Unidad",
+    "step": "Lección",
+    "vocabulary": "Vocabulario",
+    "grammar": "Gramática",
+    "guide": "Guía"
   },
   "learn": {
     "kicker": "{{level}} · Unidad {{unit}}",
@@ -87,8 +102,18 @@
     "legendTicket_many": "{{count}} entradas",
     "legendTicket_other": "{{count}} entradas",
     "skipUnit": "Supera la unidad con un test ({{score}} %)",
-    "toTop": "Arriba del todo",
+    "summit": "Cumbre: {{level}}",
+    "summitEnd": "Cumbre",
+    "lockedDesc": "Completa las lecciones anteriores para desbloquear esta.",
     "toHere": "Volver a mi lección"
+  },
+  "levels": {
+    "A1": "Principiante",
+    "A2": "Elemental",
+    "B1": "Intermedio",
+    "B2": "Intermedio alto",
+    "C1": "Avanzado",
+    "C2": "Dominio"
   },
   "practice": {
     "planning": "Tiempo para planear",
@@ -174,7 +199,25 @@
     "wordsExported_many": "{{count}} palabras exportadas",
     "wordsSkipped_many": "Se omitieron {{count}} filas:",
     "saved": "Guardados",
-    "savedEmpty": "Toca el marcador de una unidad, una guía o una historia para guardarla aquí."
+    "savedEmpty": "Toca el marcador de una unidad, una guía o una historia para guardarla aquí.",
+    "tabs": {
+      "activities": "Actividades"
+    },
+    "groups": {
+      "speak": "Hablar",
+      "review": "Repaso",
+      "skills": "Habilidades",
+      "challenge": "Desafíos"
+    },
+    "wordsHint": "Guarda tu lista en CSV o importa una.",
+    "wordsExportShort": "Exportar",
+    "wordsImportShort": "Importar",
+    "wordExample": "Ejemplo",
+    "wordStrength": "Fuerza: {{n}}/5",
+    "wordStrengthHint": "La fuerza sube al practicar la palabra (Repaso del día, Tarjetas, Escucha).",
+    "dueAbout": "Repasa las palabras que estás por olvidar",
+    "cardsAbout": "Estudia tus palabras con tarjetas",
+    "listenAbout": "Elige lo que oyes"
   },
   "league": {
     "title": "Liga {{name}}",
@@ -242,6 +285,40 @@
       "speak": "Hablar"
     },
     "table": "Ver como tabla"
+  },
+  "goals": {
+    "title": "Objetivos",
+    "week": "Objetivo semanal",
+    "month": "Objetivo mensual",
+    "weekShort": "semana",
+    "monthShort": "mes",
+    "measure": "Medida",
+    "target": "Meta",
+    "targetAria": "Meta de cada {{period}}",
+    "progress": "{{n}} de {{goal}} {{unit}}",
+    "lastWeek": "La semana pasada: {{n}} {{unit}}",
+    "lastMonth": "El mes pasado: {{n}} {{unit}}",
+    "report": "Informe",
+    "weekReport": "Informe semanal",
+    "monthReport": "Informe mensual",
+    "range": "{{from}} – {{to}}",
+    "metrics": {
+      "xp": "XP",
+      "words": "Palabras nuevas",
+      "speak": "Minutos hablando"
+    },
+    "units": {
+      "xp": "XP",
+      "words_one": "palabra",
+      "words_many": "palabras",
+      "words_other": "palabras",
+      "speak": "min"
+    },
+    "goalDone": "Objetivo cumplido",
+    "goalLeft": "Faltan {{n}} {{unit}}",
+    "goalShort": "{{n}} {{unit}} menos",
+    "notifyTitle": "Tu semana en Sprigo",
+    "notifyBody": "La semana pasada ganaste {{n}} XP. Mira el informe completo en tu perfil."
   },
   "profile": {
     "since": "Aprendiendo desde {{date}}",
@@ -596,7 +673,8 @@
         "tutor": "Tutor y rol",
         "lookup": "Búsquedas de palabras",
         "memory": "Memoria",
-        "garden": "Notas del jardín"
+        "garden": "Notas del jardín",
+        "title": "Títulos"
       }
     }
   },
@@ -609,6 +687,12 @@
     "qLessons_other": "Completa {{count}} lecciones",
     "chestTitle": "Tienes una cesta de cosecha sin abrir",
     "chestTap": "Toca para abrir",
+    "gems_one": "{{count}} moneda",
+    "gems_many": "{{count}} monedas",
+    "gems_other": "{{count}} monedas",
+    "hearts_one": "{{count}} gota",
+    "hearts_many": "{{count}} gotas",
+    "hearts_other": "{{count}} gotas",
     "qPractice_one": "Termina {{count}} sesión de práctica",
     "qPractice_many": "Termina {{count}} sesiones de práctica",
     "qPractice_other": "Termina {{count}} sesiones de práctica"
@@ -720,6 +804,13 @@
     "model": "Modelo",
     "modelDesc": "Prueba la conexión para ver los modelos disponibles",
     "smallModel": "Los modelos de menos de {{min}} pueden crear lecciones con respuestas incorrectas. Se recomienda un modelo de {{min}} o más.",
+    "guide": {
+      "good": "Medido: bueno para lecciones en vivo.",
+      "weak": "Medido: rápido, pero solo el {{pct}} % de los ejercicios se superó.",
+      "slow": "Medido: demasiado lento para lecciones en vivo.",
+      "weakSlow": "Medido: demasiado lento y solo el {{pct}} % de los ejercicios se superó.",
+      "details": "Primera frase {{secs}} s · {{pct}} % de ejercicios superados · {{hardware}}, {{date}}"
+    },
     "test": "Probar conexión",
     "save": "Guardar",
     "connected": "Conectado: {{count}} modelos encontrados",
@@ -1037,7 +1128,8 @@
     "invalidJson": "Este archivo no es JSON válido.",
     "fileTooLarge": "Este archivo supera los {{size}}.",
     "imageFailed": "No se pudo leer la imagen.",
-    "errors": "Corrige esto primero:"
+    "errors": "Corrige esto primero:",
+    "add": "Añadir tutor"
   },
   "biome": {
     "meadow": "Pradera",
@@ -1116,15 +1208,15 @@
     "topics": {
       "ai": {
         "q": "¿Cómo configuro la IA?",
-        "a": "Sprigo necesita un modelo de lenguaje para escribir las lecciones. Lo más fácil es Ollama: instálalo y abre Sprigo; lo encuentra y te ofrece descargar qwen3:8b (unos 5,2 GB). LM Studio también sirve: inicia su servidor local y carga un modelo.\n¿Sin modelo local? Usa un proveedor en la nube (OpenAI, Anthropic, Gemini, OpenRouter) con tu propia clave de API. Las claves se guardan en el llavero del sistema.\nCámbialo en Ajustes → IA y voz → Proveedor de IA."
+        "a": "Sprigo necesita un modelo de lenguaje para escribir las lecciones. Lo más fácil es Ollama: instálalo y abre Sprigo; lo encuentra y te ofrece descargar qwen3.5:4b (unos 3,3 GB). LM Studio también sirve: inicia su servidor local y carga un modelo.\n¿Sin modelo local? Usa un proveedor en la nube (OpenAI, Anthropic, Gemini, OpenRouter) con tu propia clave de API. Las claves se guardan en el llavero del sistema.\nCámbialo en Ajustes → IA y voz → Proveedor de IA."
       },
       "aiConnect": {
         "q": "«No se encontró un modelo local» o «No se pudo conectar»",
-        "a": "Ollama: abre la app de Ollama. Sprigo la busca en http://localhost:11434. Si no tiene modelos, deja que Sprigo descargue el sugerido o ejecuta: ollama pull qwen3:8b\nLM Studio: inicia su servidor local y carga un modelo.\nNube: revisa la clave de API y el saldo de tu cuenta.\nUna VPN o un cortafuegos también pueden bloquear localhost."
+        "a": "Ollama: abre la app de Ollama. Sprigo la busca en http://localhost:11434. Si no tiene modelos, deja que Sprigo descargue el sugerido o ejecuta: ollama pull qwen3.5:4b\nLM Studio: inicia su servidor local y carga un modelo.\nNube: revisa la clave de API y el saldo de tu cuenta.\nUna VPN o un cortafuegos también pueden bloquear localhost."
       },
       "weak": {
         "q": "¿Por qué las lecciones a veces son flojas o tienen errores?",
-        "a": "Normalmente el modelo es demasiado pequeño. Usa uno de 8B parámetros o más (16 GB de memoria es un buen punto de partida). Si un ejercicio está mal, puedes reclamarlo en la lección.\nLas lecciones se generan una vez y se guardan, así que un modelo lento se nota sobre todo la primera vez que abres un paso."
+        "a": "Normalmente el modelo es demasiado pequeño o simplemente débil. En Ajustes ves qué puntuación obtuvo cada modelo probado; usa uno marcado como medido bueno. Si un ejercicio está mal, puedes reclamarlo en la lección.\nLas lecciones se generan una vez y se guardan, así que un modelo lento se nota sobre todo la primera vez que abres un paso."
       },
       "mic": {
         "q": "Sprigo no me oye",
