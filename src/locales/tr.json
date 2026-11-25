@@ -730,6 +730,13 @@
     "model": "Model",
     "modelDesc": "Mevcut modelleri listelemek için bağlantıyı test et",
     "smallModel": "{{min}} altındaki modeller derslerde yanlış cevaplar üretebilir. En az {{min}} bir model önerilir.",
+    "guide": {
+      "good": "Ölçüldü: canlı dersler için iyi.",
+      "weak": "Ölçüldü: hızlı, ama alıştırmaların yalnızca %{{pct}} kadarı geçti.",
+      "slow": "Ölçüldü: canlı dersler için çok yavaş.",
+      "weakSlow": "Ölçüldü: çok yavaş ve alıştırmaların yalnızca %{{pct}} kadarı geçti.",
+      "details": "İlk cümle {{secs}} sn · alıştırmaların %{{pct}} kadarı geçti · {{hardware}}, {{date}}"
+    },
     "test": "Bağlantıyı test et",
     "save": "Kaydet",
     "connected": "Bağlandı — {{count}} model bulundu",
@@ -1123,15 +1130,15 @@
     "topics": {
       "ai": {
         "q": "Yapay zekâyı nasıl kurarım?",
-        "a": "Sprigo dersleri yazmak için bir dil modeline ihtiyaç duyar. En kolayı Ollama: kur ve Sprigo'yu aç; Sprigo Ollama'yı bulur ve qwen3:8b modelini (yaklaşık 5,2 GB) indirmeyi önerir. LM Studio da olur: yerel sunucusunu başlatıp bir model yükle.\nYerel model çalıştıramıyor musun? Kendi API anahtarınla bir bulut sağlayıcı kullan (OpenAI, Anthropic, Gemini, OpenRouter). Anahtarlar sistemin anahtar zincirinde kalır.\nAyarlar → Yapay zekâ ve ses → Yapay zekâ sağlayıcısı'ndan değiştirebilirsin."
+        "a": "Sprigo dersleri yazmak için bir dil modeline ihtiyaç duyar. En kolayı Ollama: kur ve Sprigo'yu aç; Sprigo Ollama'yı bulur ve qwen3.5:4b modelini (yaklaşık 3,3 GB) indirmeyi önerir. LM Studio da olur: yerel sunucusunu başlatıp bir model yükle.\nYerel model çalıştıramıyor musun? Kendi API anahtarınla bir bulut sağlayıcı kullan (OpenAI, Anthropic, Gemini, OpenRouter). Anahtarlar sistemin anahtar zincirinde kalır.\nAyarlar → Yapay zekâ ve ses → Yapay zekâ sağlayıcısı'ndan değiştirebilirsin."
       },
       "aiConnect": {
         "q": "“Yerel model bulunamadı” ya da “Bağlanılamadı”",
-        "a": "Ollama: Ollama uygulamasını başlat. Sprigo onu http://localhost:11434 adresinde arar. Hiç modeli yoksa Sprigo'nun önerdiği modeli indirmesine izin ver ya da şunu çalıştır: ollama pull qwen3:8b\nLM Studio: yerel sunucuyu başlatıp bir model yükle.\nBulut: API anahtarını ve hesabındaki krediyi kontrol et.\nVPN ya da güvenlik duvarı da localhost'u engelleyebilir."
+        "a": "Ollama: Ollama uygulamasını başlat. Sprigo onu http://localhost:11434 adresinde arar. Hiç modeli yoksa Sprigo'nun önerdiği modeli indirmesine izin ver ya da şunu çalıştır: ollama pull qwen3.5:4b\nLM Studio: yerel sunucuyu başlatıp bir model yükle.\nBulut: API anahtarını ve hesabındaki krediyi kontrol et.\nVPN ya da güvenlik duvarı da localhost'u engelleyebilir."
       },
       "weak": {
         "q": "Dersler neden bazen zayıf ya da hatalı?",
-        "a": "Genelde model çok küçüktür. 8B ya da daha büyük bir model kullan (16 GB bellek iyi bir başlangıç). Bir alıştırma yanlışsa derste itiraz edebilirsin.\nDersler bir kez üretilip saklanır; yavaş bir model çoğunlukla bir adımı ilk açışında hissedilir."
+        "a": "Genelde model çok küçüktür ya da yalnızca zayıftır. Ayarlar'da her test edilen modelin ne aldığını görürsün; ölçülen iyi olarak işaretlenmiş birini kullan. Bir alıştırma yanlışsa derste itiraz edebilirsin.\nDersler bir kez üretilip saklanır; yavaş bir model çoğunlukla bir adımı ilk açışında hissedilir."
       },
       "mic": {
         "q": "Sprigo beni duymuyor",

@@ -23,6 +23,8 @@ The repo is public, so GitHub Actions' macOS and Windows minutes are free and ev
    The release notes are what the app shows once, in "What's new", on the first launch after the update. The draft has GitHub's generated PR list: trim it to what learners care about before publishing.
 7. **Beta (optional):** to let beta testers (Settings → Beta updates) try a version first, tag it with a numeric pre-release part, e.g. `v1.8.0-1` (Windows installers only accept numbers there), with the same version in the three files. The draft is a pre-release; publishing it runs `channel`, which copies its `latest.json` to the `updater-beta` release that beta apps check. Stable releases are copied there too, so beta testers also get them. Pre-releases skip `tap` and never become `releases/latest`.
 
+**Model guidance:** when the recommended local model or the measurements in Settings change, run `pnpm bench` → `pnpm eval` → `pnpm guide` on the release machine and commit `src/modelGuideData.ts` (provenance rules in [CONTRIBUTING.md](CONTRIBUTING.md)).
+
 ## Why no local or Docker builds
 
 - **macOS:** Docker cannot build for macOS (there are no macOS containers). A local Mac could, but CI is free and takes 6–8 min.

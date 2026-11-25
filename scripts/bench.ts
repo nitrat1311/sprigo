@@ -1,8 +1,11 @@
 // Live-lesson LLM latency against Ollama: the tutor's real prompt, schema and sentence split (src/tutor.ts), sent the way
 // src/ai.ts sends it (OpenAI-compatible /v1, streamed). Measures only the model; speech end → first sound is in src/latency.ts.
 // pnpm bench [model…]   (default: every model Ollama lists; EFFORT=low|none|… overrides the app's reasoning choice, TURNS=5)
+import { mkdirSync, writeFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import { z } from "zod";
 import { tutorSystem, tutorPrompt, tutorSchema, partialSay, sentences, type TutorMsg } from "../src/tutor.ts";
+import { hardwareName } from "./hardware.ts";
 
 const BASE = process.env.OLLAMA ?? "http://localhost:11434", TURNS = +(process.env.TURNS ?? 5);
 const ctx = { name: "Lily", persona: "Dry, sarcastic teen who secretly cares.", target: "English", native: "Turkish", level: "A2",
@@ -67,3 +70,13 @@ for (const model of models) {
 }
 console.log(`\nMedian of ${TURNS} turns:`);
 console.table(rows);
+
+// Keep the report: `pnpm guide` joins it with the eval reports into the table Settings shows (#37).
+// The name goes to the second so two runs in one minute do not overwrite each other.
+const date = new Date().toISOString(), hardware = hardwareName();
+const stamp = date.slice(0, 19).replace("T", "-").replace(/:/g, "");
+const dir = fileURLToPath(new URL("../eval/", import.meta.url));
+const file = `${dir}${stamp}-bench.json`;
+mkdirSync(dir, { recursive: true });
+writeFileSync(file, JSON.stringify({ meta: { date, hardware, turns: TURNS, base: BASE }, rows }, null, 2));
+console.error(`→ ${file}`);

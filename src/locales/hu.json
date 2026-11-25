@@ -738,6 +738,13 @@
     "model": "Modell",
     "modelDesc": "Teszteld a kapcsolatot az elérhető modellek listázásához",
     "smallModel": "{{min}} alatt a modellek hibás válaszokat írhatnak a leckékbe. Legalább {{min}} méretű modell ajánlott.",
+    "guide": {
+      "good": "Mérve: jó az élő leckékhez.",
+      "weak": "Mérve: gyors, de a feladatoknak csak {{pct}}%-a sikerült.",
+      "slow": "Mérve: túl lassú az élő leckékhez.",
+      "weakSlow": "Mérve: túl lassú, és a feladatoknak csak {{pct}}%-a sikerült.",
+      "details": "Első mondat {{secs}} mp · a feladatok {{pct}}%-a sikeres · {{hardware}}, {{date}}"
+    },
     "test": "Kapcsolat tesztelése",
     "save": "Mentés",
     "connected": "Kapcsolódva – {{count}} modell található",
@@ -1131,15 +1138,15 @@
     "topics": {
       "ai": {
         "q": "Hogyan állítsam be az MI-t?",
-        "a": "A Sprigónak nyelvi modell kell a leckék megírásához. A legegyszerűbb az Ollama: telepítsd, és nyisd meg a Sprigót; megtalálja az Ollamát, és felajánlja a qwen3:8b letöltését (kb. 5,2 GB). Az LM Studio is működik: indítsd el a helyi szerverét, és tölts be egy modellt.\nNincs helyi modelled? Használj felhőszolgáltatót (OpenAI, Anthropic, Gemini, OpenRouter) a saját API-kulcsoddal. A kulcsok a rendszer kulcstartójában maradnak.\nMódosítás: Beállítások → MI és hang → MI-szolgáltató."
+        "a": "A Sprigónak nyelvi modell kell a leckék megírásához. A legegyszerűbb az Ollama: telepítsd, és nyisd meg a Sprigót; megtalálja az Ollamát, és felajánlja a qwen3.5:4b letöltését (kb. 3,3 GB). Az LM Studio is működik: indítsd el a helyi szerverét, és tölts be egy modellt.\nNincs helyi modelled? Használj felhőszolgáltatót (OpenAI, Anthropic, Gemini, OpenRouter) a saját API-kulcsoddal. A kulcsok a rendszer kulcstartójában maradnak.\nMódosítás: Beállítások → MI és hang → MI-szolgáltató."
       },
       "aiConnect": {
         "q": "„Nem található helyi modell” vagy „Nem sikerült kapcsolódni”",
-        "a": "Ollama: indítsd el az Ollama alkalmazást. A Sprigo itt keresi: http://localhost:11434. Ha nincs modellje, hagyd, hogy a Sprigo letöltse a javasoltat, vagy futtasd: ollama pull qwen3:8b\nLM Studio: indítsd el a helyi szerverét, és tölts be egy modellt.\nFelhő: ellenőrizd az API-kulcsot és a fiókod egyenlegét.\nVPN vagy tűzfal is blokkolhatja a localhostot."
+        "a": "Ollama: indítsd el az Ollama alkalmazást. A Sprigo itt keresi: http://localhost:11434. Ha nincs modellje, hagyd, hogy a Sprigo letöltse a javasoltat, vagy futtasd: ollama pull qwen3.5:4b\nLM Studio: indítsd el a helyi szerverét, és tölts be egy modellt.\nFelhő: ellenőrizd az API-kulcsot és a fiókod egyenlegét.\nVPN vagy tűzfal is blokkolhatja a localhostot."
       },
       "weak": {
         "q": "Miért gyengék vagy hibásak néha a leckék?",
-        "a": "Általában túl kicsi a modell. Használj legalább 8B paraméteres modellt (16 GB memória jó kiindulás). Ha egy feladat hibás, fellebbezd meg a leckében.\nA leckék egyszer készülnek el, és elmentődnek, így egy lassú modell főleg egy lépés első megnyitását lassítja."
+        "a": "Általában túl kicsi a modell, vagy egyszerűen gyenge. A beállításokban látod, hogyan teljesített minden tesztelt modell; válassz egy mérten jónak jelöltet. Ha egy feladat hibás, fellebbezd meg a leckében.\nA leckék egyszer készülnek el, és elmentődnek, így egy lassú modell főleg egy lépés első megnyitását lassítja."
       },
       "mic": {
         "q": "A Sprigo nem hall engem",
