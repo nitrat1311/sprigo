@@ -15,8 +15,8 @@ const gap = (g: string) => ({ "--od-gap": g }) as React.CSSProperties;
 export function SummaryCard({ icon, color, title, line, onOpen }: { icon: IconName; color: string; title: string; line: string; onOpen: () => void }) {
   const { t } = useTranslation();
   return (
-    <button className="card od-stack summary-card" style={gap("10px")} onClick={onOpen}>
-      <span className="od-row" style={gap("10px")}><span style={{ color, display: "flex" }}><Icon name={icon} /></span><b>{title}</b></span>
+    <button className="card od-stack summary-card" style={gap("var(--s-4)")} onClick={onOpen}>
+      <span className="od-row" style={gap("var(--s-4)")}><span style={{ color, display: "flex" }}><Icon name={icon} /></span><b>{title}</b></span>
       <span className="muted small od-fill">{line}</span>
       <span className="small" style={{ color: "var(--blue)", fontWeight: 800 }}>{t("profile.details")} ›</span>
     </button>
@@ -43,7 +43,7 @@ function CoachSheet({ c }: { c: Coaching }) {
   const { s, openSheet, closeSheet } = useApp();
   const num = (x: number, d: number) => x.toLocaleString(i18n.language, { maximumFractionDigits: d });
   return (
-    <div className="od-stack sheet-wide" style={gap("12px")}>
+    <div className="od-stack sheet-wide" style={gap("var(--s-4)")}>
       <h3>{t("coach.title")}</h3>
       {!s.speechOn ? <p className="muted small">{t("coach.off")}</p>
         : !c ? <p className="muted small">{t("coach.empty")}</p>

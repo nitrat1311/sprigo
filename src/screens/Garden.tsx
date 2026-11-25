@@ -79,7 +79,7 @@ export function Garden() {
           </div>
           <p className="muted small">{t("garden.fruitDesc")}</p>
         </div>
-        <div className="card od-row" style={{ "--od-gap": "12px" } as React.CSSProperties}>
+        <div className="card od-row" style={{ "--od-gap": "var(--s-4)" } as React.CSSProperties}>
           <Icon name="greenhouse" />
           <span className="od-field od-fill">
             <b>{t("shop.freeze")} · {s.streakFreeze}</b>

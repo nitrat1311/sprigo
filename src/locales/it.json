@@ -35,12 +35,27 @@
     "friends": "Amici",
     "notifications": "Notifiche",
     "settings": "Impostazioni",
-    "grammar": "Grammatica"
+    "grammar": "Grammatica",
+    "account": "Menu account"
   },
   "common": {
     "soon": "Prossimamente",
     "soonScreen": "Questa schermata è un’anteprima. I dati mostrati sono di esempio.",
     "soonToast": "Prossimamente"
+  },
+  "search": {
+    "label": "Cerca lezioni e guide",
+    "placeholder": "Cerca unità, parole, grammatica…",
+    "none": "Nessun risultato per «{{query}}».",
+    "more": "Sono mostrate solo le prime {{count}} corrispondenze. Continua a scrivere per restringere.",
+    "count_one": "{{count}} risultato",
+    "count_many": "{{count}} risultati",
+    "count_other": "{{count}} risultati",
+    "unit": "Unità",
+    "step": "Lezione",
+    "vocabulary": "Vocabolario",
+    "grammar": "Grammatica",
+    "guide": "Guida"
   },
   "learn": {
     "kicker": "{{level}} · Unità {{unit}}",
@@ -77,8 +92,18 @@
     "legendTicket_many": "{{count}} biglietti",
     "legendTicket_other": "{{count}} biglietti",
     "skipUnit": "Superare questa unità con un test (%{{score}})",
-    "toTop": "All'alto",
+    "summit": "Vetta: {{level}}",
+    "summitEnd": "Vetta",
+    "lockedDesc": "Completa le lezioni precedenti per sbloccare questa.",
     "toHere": "Torna alla mia lezione"
+  },
+  "levels": {
+    "A1": "Principiante",
+    "A2": "Elementare",
+    "B1": "Intermedio",
+    "B2": "Intermedio superiore",
+    "C1": "Avanzato",
+    "C2": "Padronanza"
   },
   "practice": {
     "planning": "Tempo di pianificazione",
@@ -164,7 +189,25 @@
     "wordsError_translation": "nessuna traduzione",
     "wordsError_schedule": "i dati di ripasso non sono validi",
     "saved": "Salvati",
-    "savedEmpty": "Tocca il segnalibro su un’unità, una guida o una storia per ritrovarla qui."
+    "savedEmpty": "Tocca il segnalibro su un’unità, una guida o una storia per ritrovarla qui.",
+    "tabs": {
+      "activities": "Attività"
+    },
+    "groups": {
+      "speak": "Parlato",
+      "review": "Ripasso",
+      "skills": "Abilità",
+      "challenge": "Sfide"
+    },
+    "wordsHint": "Salva la tua lista in CSV o importane una.",
+    "wordsExportShort": "Esporta",
+    "wordsImportShort": "Importa",
+    "wordExample": "Esempio",
+    "wordStrength": "Forza: {{n}}/5",
+    "wordStrengthHint": "La forza cresce esercitando la parola (Ripasso del giorno, Carte, Ascolto).",
+    "dueAbout": "Ripassa le parole che stai per dimenticare",
+    "cardsAbout": "Studia le tue parole con le flashcard",
+    "listenAbout": "Scegli ciò che senti"
   },
   "league": {
     "title": "Lega {{name}}",
@@ -580,7 +623,8 @@
         "practice": "Esercizi",
         "story": "Storie",
         "tutor": "Tutor e giochi di ruolo",
-        "writing": "Scrittura"
+        "writing": "Scrittura",
+        "title": "Titoli"
       },
       "month": "Mese",
       "noPrice": "Prezzo non disponibile",
@@ -599,6 +643,12 @@
     "qLessons_other": "Completa {{count}} lezioni",
     "chestTitle": "Hai un cesto del raccolto non aperto",
     "chestTap": "Tocca per aprire",
+    "gems_one": "{{count}} moneta",
+    "gems_many": "{{count}} monete",
+    "gems_other": "{{count}} monete",
+    "hearts_one": "{{count}} goccia",
+    "hearts_many": "{{count}} gocce",
+    "hearts_other": "{{count}} gocce",
     "qPractice_one": "Completa {{count}} sessione di pratica",
     "qPractice_many": "Completa {{count}} sessioni di pratica",
     "qPractice_other": "Completa {{count}} sessioni di pratica"
@@ -1034,7 +1084,8 @@
     "invalidJson": "Questo file non è JSON valido.",
     "fileTooLarge": "Questo file supera {{size}}.",
     "imageFailed": "Impossibile leggere l’immagine.",
-    "errors": "Correggi prima questo:"
+    "errors": "Correggi prima questo:",
+    "add": "Aggiungi tutor"
   },
   "biome": {
     "meadow": "Prato",
