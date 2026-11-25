@@ -65,7 +65,9 @@ function db() {
     const d = await (isTauri ? openTauriDb() : (import.meta.env.DEV || isWeb) ? browserDb() : Promise.reject(new Error("Sprigo needs the Tauri shell")));
     await runMigrations(d, MIGRATIONS, isTauri ? (v) => snapshot(d, `pre-v${v}-${Date.now()}.db`).then(() => {}) : undefined);
     if (isWeb) {
-      let model = "qwen3:8b";
+      // Keep in sync with RECOMMENDED_OLLAMA in src/ai.ts and the deploy/web default (SPRIGO_MODEL, server.py). ai.ts
+      // imports this module, so importing the constant back from it would be a cycle.
+      let model = "qwen3.5:4b";
       try {
         const response = await fetch("/web-config", { cache: "no-store" });
         if (!response.ok) throw new Error(`HTTP ${response.status}`);

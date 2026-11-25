@@ -21,7 +21,7 @@ OLLAMA = os.environ.get('OLLAMA_URL', 'http://host.docker.internal:11434').rstri
 WHISPER_DIR = '/app/models'
 _WHISPER = None
 _WHISPER_LOCK = threading.Lock()
-MODEL = os.environ.get('MODEL_NAME', 'qwen3:8b')
+MODEL = os.environ.get('MODEL_NAME', 'qwen3.5:4b')
 MAX_BODY = 2 * 1024 * 1024
 ALLOWED = {'/api/generate', '/api/chat', '/v1/chat/completions'}
 
