@@ -214,6 +214,7 @@ html[data-theme="dark"] .biome-scene .sky{fill:transparent}
 .summit .ic svg{opacity:.8}
 .unit-head .uh-kicker{font-size:var(--fs-12);font-weight:800;letter-spacing:var(--tr-wide);text-transform:uppercase}
 .unit-head h2{font-size:var(--fs-24);font-weight:900}
+.unit-head .unit-sub{font-size:var(--fs-13);font-weight:700;line-height:1.3;margin-top:var(--s-1)}
 /* Units not reached yet: faded, so the way ahead reads as "later". */
 .unit.later .path{opacity:.5;filter:saturate(.35)}
 /* Head stays opaque: it pins over the path, a see-through head lets node labels bleed through. */
@@ -273,6 +274,7 @@ html[data-theme="dark"] .biome-scene .sky{fill:transparent}
   background:var(--bt,var(--bg));padding:var(--s-1) var(--s-3);border-radius:var(--r-pill);position:relative;z-index:1;
 }
 html[data-theme="dark"] .node-label{background:var(--btd,var(--bg))}
+.node-label .node-sub{display:block;font-size:var(--fs-11);font-weight:700;line-height:1.3;margin-top:1px}
 .node.locked .node-label{color:var(--text-muted)} /* the grey pebble marks the lock; the label still has to pass 4.5:1 on every biome tint */
 @keyframes pulse{0%,100%{outline-width:4px}50%{outline-width:8px}}
 @keyframes ring{0%,100%{transform:scale(1.04)}50%{transform:scale(1.12)}}

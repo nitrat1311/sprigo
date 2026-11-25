@@ -458,7 +458,7 @@ export function Stories() {
       {levels.length > 1 && (
         <label className="od-field" style={{ marginBottom: "var(--s-4)", maxWidth: 200 }}><b>{t("learn.levels")}</b>
           <select className="select" value={lv} onChange={(e) => setLevel(e.target.value as Cefr)}>
-            {levels.map((l) => <option key={l} value={l}>{l} · {course!.levels[l]!.title}</option>)}
+            {levels.map((l) => <option key={l} value={l}>{l} · {t(`levels.${l}`, { defaultValue: course!.levels[l]!.title })}</option>)}
           </select>
         </label>
       )}

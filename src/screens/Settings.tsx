@@ -396,7 +396,10 @@ export function Settings() {
           <div className="card od-row">
             <span style={{ fontSize: "var(--fs-24)" }}>{course && <CourseFlag c={course} />}</span>
             <span className="od-field od-fill"><b>{course ? langName(course.iso) : "—"}</b>
-              <span className="muted small">{t("settings.courseDesc", { level: enrollment?.level, native: langName(profile!.native_lang) })}</span></span>
+              <span className="muted small">{t("settings.courseDesc", {
+                level: enrollment && t(`levels.${enrollment.level}`, { defaultValue: course?.levels[enrollment.level]?.title ?? enrollment.level }),
+                native: langName(profile!.native_lang),
+              })}</span></span>
             <button className="btn btn-ghost" onClick={() => openSheet(<CourseSheet />)}>{t("settings.change")}</button>
           </div>
           <div className="card od-row" style={gap("var(--s-4)")}>

@@ -11,6 +11,7 @@ import { AiSheet } from "./Settings";
 import { LiveButton } from "./Screens";
 import { BIOMES, biomeScene, biomeVars } from "../biomes";
 import { buildPath, checkpointId, levelsOf, unitRef, type Cefr, type PathNode, type PathUnit } from "../course";
+import { cachedTitleTranslations, missingTitles, translateTitles } from "../titleTranslations";
 
 const CHEST_GEMS = 20;
 
@@ -61,7 +62,7 @@ const ICON: Record<PathNode["kind"], Record<PathNode["state"], IconName>> = {
   checkpoint: { done: "trophy", current: "trophy", locked: "trophy" },
 };
 
-function UnitSection({ u, level }: { u: PathUnit; level: Cefr }) {
+function UnitSection({ u, level, subs, native }: { u: PathUnit; level: Cefr; subs: Record<string, string>; native?: string }) {
   const { t } = useTranslation();
   const { s, setS, completeStep, openSheet, closeSheet, legendary, ai, toast } = useApp();
   const start = useStartLesson();
@@ -95,7 +96,8 @@ function UnitSection({ u, level }: { u: PathUnit; level: Cefr }) {
     <section className={`unit${later ? " later" : ""}`} aria-label={u.title} data-unit={u.id}>
       <div className="unit-head">
         <div className="uh-row">
-          <div><span className="uh-kicker">{t("learn.kicker", { level, unit: u.index })}</span><h2>{u.title}</h2></div>
+          <div><span className="uh-kicker">{t("learn.kicker", { level, unit: u.index })}</span><h2>{u.title}</h2>
+            {subs[u.title] && <p className="unit-sub" lang={native}>{subs[u.title]}</p>}</div>
           <div className="od-row" style={{ "--od-gap": "var(--s-3)" } as React.CSSProperties}>
             <BookmarkButton kind="unit" target={unitRef(level, u.id)} title={u.title} />
             <button className="guidebook" onClick={() => openSheet(<GuideSheet unitId={u.id} level={level} />)}><Icon name="book" /><span>{t("learn.guidebook")}</span></button>
@@ -125,7 +127,7 @@ function UnitSection({ u, level }: { u: PathUnit; level: Cefr }) {
                 <Icon name={gold ? "star" : ICON[n.kind][n.state]} />
               </button>
               {n.state === "current" && n.kind === "step" && <span className="start-tag">{t("learn.start")}</span>}
-              <span className="node-label">{name}</span>
+              <span className="node-label">{name}{subs[n.title] && <span className="node-sub" lang={native}>{subs[n.title]}</span>}</span>
             </div>
           );
         })}
@@ -188,16 +190,17 @@ function LevelSheet() {
   const { course, enrollment, setViewLevel, closeSheet, toast } = useApp();
   const levels = levelsOf(course!);
   const cur = levels.indexOf(enrollment!.level);
+  const name = (l: Cefr) => t(`levels.${l}`, { defaultValue: course!.levels[l]!.title });
   return <>
     <h3>{t("learn.levels")}</h3>
     <div className="od-stack" style={{ "--od-gap": "var(--s-4)", marginTop: "var(--s-4)" } as React.CSSProperties}>
       {levels.map((l, i) => (
         <button key={l} className="card row-item" onClick={() => {
-          if (i > cur) return toast(t("learn.finishFirst", { level: enrollment!.level }));
+          if (i > cur) return toast(t("learn.finishFirst", { level: name(enrollment!.level) }));
           setViewLevel(l); closeSheet();
         }}>
           <span className="biome-thumb" aria-hidden="true" dangerouslySetInnerHTML={{ __html: biomeScene(l, 80) }} />
-          <span className="od-field od-fill"><b>{l} · {course!.levels[l]!.title}</b>
+          <span className="od-field od-fill"><b>{l} · {name(l)}</b>
             <span className="muted small">{t(`biome.${BIOMES[l].id}`)} · {t(i < cur ? "learn.levelDone" : i === cur ? "learn.levelCurrent" : "learn.levelLocked")}</span></span>
           <Icon name={i < cur ? "check" : i === cur ? "star" : "lock"} />
         </button>
@@ -212,15 +215,16 @@ function LevelCard({ level, remaining, total }: { level: Cefr; remaining: number
   const start = useStartLesson();
   const levels = levelsOf(course!);
   const next = levels[levels.indexOf(level) + 1];
+  const name = (l: Cefr) => t(`levels.${l}`, { defaultValue: course!.levels[l]?.title ?? l });
   const hasExam = !!course!.levels[level]!.checkpoint;
   if (!next && (done.has(checkpointId(level)) || (!hasExam && remaining === 0))) return (
     <div className="card" style={{ margin: "var(--s-3) 0 var(--s-6)", textAlign: "center" }}>
-      <h3 style={{ fontWeight: 900, fontSize: "var(--fs-20)" }}>{t("learn.courseDone", { level })}</h3>
+      <h3 style={{ fontWeight: 900, fontSize: "var(--fs-20)" }}>{t("learn.courseDone", { level: name(level) })}</h3>
       <p className="muted small">{t("learn.courseDoneDesc")}</p>
     </div>
   );
-  const title = remaining === 0 ? t("learn.checkpointNext", { level: next ?? level })
-    : next ? t("learn.lessonsLeft", { count: remaining, level: next }) : t("learn.lessonsLeftFinish", { count: remaining, level });
+  const title = remaining === 0 ? t("learn.checkpointNext", { level: name(next ?? level) })
+    : next ? t("learn.lessonsLeft", { count: remaining, level: name(next) }) : t("learn.lessonsLeftFinish", { count: remaining, level: name(level) });
   return (
     <div className="card level-card">
       <div className="biome-band" aria-hidden="true" dangerouslySetInnerHTML={{ __html: biomeScene(level, 70) }} />
@@ -280,7 +284,7 @@ export const jumpTo = { unit: "", until: 0 };
 
 export function Learn() {
   const { t } = useTranslation();
-  const { course, enrollment, done, viewLevel, openSheet, courseErrors, ai } = useApp();
+  const { course, enrollment, done, viewLevel, openSheet, courseErrors, ai, profile } = useApp();
   const shownLevel = viewLevel ?? enrollment?.level;
   usePinnedHeads();
   // The path grows upward, so open on the lesson to do next instead of the page top.
@@ -291,6 +295,26 @@ export function Learn() {
   }, [enrollment?.id, shownLevel, course, done]); // also after a profile switch, the async course load and a finished lesson
   // First run (DECISIONS C6): offer setup once per launch; the banner stays until a provider is saved.
   useEffect(() => { if (!ai && !setupOffered) { setupOffered = true; openSheet(<AiSheet />); } }, [ai]);
+  // B: unit and step titles keep their English text; the native translation is fetched lazily, one batch per level,
+  // and cached per (course, native language). Without AI, or while it is on its way, the path renders as before.
+  const native = profile?.native_lang;
+  const [subs, setSubs] = useState<Record<string, string>>({});
+  // A translation identical to the title (names, "A1 Checkpoint") adds nothing: show it once.
+  const shown = Object.fromEntries(Object.entries(subs).filter(([k, v]) => v.trim().toLowerCase() !== k.trim().toLowerCase()));
+  useEffect(() => {
+    if (!course || !native || native === "en" || native === course.iso) { setSubs({}); return; }
+    let live = true;
+    cachedTitleTranslations(course.iso, native).then((cached) => {
+      if (!live) return;
+      setSubs(cached);
+      if (!ai) return;
+      const def = shownLevel ? course.levels[shownLevel] : undefined;
+      const titles = def ? [...def.units.flatMap((u) => [u.title, ...u.steps.map((s) => s.title)]), ...(def.checkpoint ? [def.checkpoint.title] : [])] : [];
+      const missing = missingTitles(titles, cached);
+      if (missing.length) translateTitles(course, native, missing).then((more) => { if (live) setSubs((s) => ({ ...s, ...more })); });
+    });
+    return () => { live = false; };
+  }, [course, shownLevel, native, ai]);
   const setup = !ai && (
     <div className="soon-banner" role="status" style={{ borderColor: "var(--blue)" }}>
       <span className="od-field od-fill"><b>{t("ai.needed")}</b><span className="small">{t("ai.neededDesc")}</span></span>
@@ -309,21 +333,22 @@ export function Learn() {
   const total = course.levels[level]!.units.reduce((a, u) => a + u.steps.length, 0);
   const levels = levelsOf(course);
   const nextLevel = levels[levels.indexOf(level) + 1]; // the goal at the top of this path
+  const levelName = (l: Cefr) => t(`levels.${l}`, { defaultValue: course.levels[l]?.title ?? l });
   return (
     <>
       <LiveButton className="mobile-only" />
       {setup}{errors}
       <button className="btn btn-ghost" style={{ marginTop: "var(--s-6)" }} onClick={() => openSheet(<LevelSheet />)} aria-haspopup="dialog">
-        {level} · {course.levels[level]!.title} <Icon name="down" />
+        {level} · {levelName(level)} <Icon name="down" />
       </button>
       {level === enrollment.level && <LevelCard level={level} remaining={remaining} total={total} />}
       <div className="path-stack" style={biomeVars(level)}>
         <div className="biome-ground" aria-hidden="true" dangerouslySetInnerHTML={{ __html: biomeScene(level, 72) }} />
-        {units.map((u) => <UnitSection u={u} level={level} key={u.id} />)}
+        {units.map((u) => <UnitSection u={u} level={level} subs={shown} native={native} key={u.id} />)}
         {/* The stack is column-reverse: last in DOM is the top of the path, past the highest unit. */}
         <p className="summit">
           <Icon name="summit" />
-          <span>{nextLevel ? t("learn.summit", { level: nextLevel }) : t("learn.summitEnd")}</span>
+          <span>{nextLevel ? t("learn.summit", { level: levelName(nextLevel) }) : t("learn.summitEnd")}</span>
         </p>
       </div>
       <ScrollButtons />
