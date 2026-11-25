@@ -654,6 +654,7 @@
     "betaUpdates": "Aggiornamenti beta",
     "betaUpdatesDesc": "Ricevi le versioni di test prima di tutti gli altri. Possono avere bug; continui comunque a ricevere ogni rilascio regolare.",
     "usage": {
+      "details": "Dettagli",
       "desc": "Le risposte del tuo fornitore AI, stimate in base ai prezzi di listino.",
       "empty": "Nessun utilizzo dell’AI questo mese.",
       "estimate": "Costo stimato",

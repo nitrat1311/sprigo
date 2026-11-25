@@ -59,7 +59,7 @@ test("main screens, a sheet and a lesson have no serious axe findings", async ({
 test("a sheet takes focus, keeps Tab inside and gives focus back on Escape", async ({ page }) => {
   await onboard(page);
   await page.getByRole("tab", { name: "AI & voice" }).click();
-  const opener = page.locator(".card", { hasText: "AI provider" }).getByRole("button", { name: "Change" });
+  const opener = page.locator("#set-panel .od-row").filter({ has: page.getByText("AI provider", { exact: true }) }).getByRole("button", { name: "Change" });
   await opener.focus();
   await page.keyboard.press("Enter");
   const sheet = page.getByRole("dialog", { name: "AI provider" });
@@ -89,7 +89,7 @@ for (const theme of ["light", "dark"]) test(`high contrast passes axe colour con
   await page.addInitScript((t) => localStorage.setItem("sprigo.theme", t), theme);
   await onboard(page);
   await page.getByRole("tab", { name: "Preferences" }).click();
-  await page.locator(".card", { hasText: "High contrast" }).getByRole("button", { name: "Off" }).click();
+  await page.locator("#set-panel .od-row").filter({ has: page.getByText("High contrast", { exact: true }) }).getByRole("button", { name: "Off" }).click();
   expect(await axe(page, true)).toEqual([]);
   await page.getByRole("button", { name: "Practice" }).click();
   await expect(page.getByRole("button", { name: /^Verb forms/ })).toBeVisible();

@@ -636,6 +636,7 @@
     "betaUpdatesDesc": "Mindenki más előtt megkapod a tesztverziókat. Lehetnek bennük hibák; a rendes kiadásokat továbbra is megkapod.",
     "usage": {
       "title": "Tokenhasználat",
+      "details": "Részletek",
       "desc": "Amit az AI-szolgáltatód válaszolt, listaárakból becsülve.",
       "month": "Hónap",
       "empty": "Ebben a hónapban még nincs AI-használat.",

@@ -664,6 +664,7 @@
     "betaUpdatesDesc": "Recevez les versions de test avant tout le monde. Elles peuvent contenir des bugs ; vous recevez aussi toutes les versions normales.",
     "usage": {
       "title": "Utilisation des tokens",
+      "details": "Détails",
       "desc": "Ce que ton fournisseur d'IA a répondu, estimé d'après les prix publics.",
       "month": "Mois",
       "empty": "Pas encore d'utilisation de l'IA ce mois-ci.",

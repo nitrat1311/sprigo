@@ -36,7 +36,7 @@ test.beforeEach(async ({ page }) => {
   await sheet.getByRole("button", { name: "Save", exact: true }).click();
   await sheet.getByRole("button", { name: "Cancel" }).click();
   await page.getByRole("tab", { name: "AI & voice" }).click();
-  await page.locator(".card", { hasText: "Speech recognition" }).getByRole("button", { name: "Change" }).click();
+  await page.locator("#set-panel .od-row").filter({ has: page.getByText("Speech recognition", { exact: true }) }).getByRole("button", { name: "Change" }).click();
   await page.getByRole("dialog").getByRole("radio", { name: /Deepgram/ }).click();
   await expect(page.getByText("Voice settings saved")).toBeVisible();
   await page.keyboard.press("Escape");

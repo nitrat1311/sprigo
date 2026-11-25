@@ -8,12 +8,12 @@ import { guideFor, verdictOf, type Measurement } from "../modelGuide";
 import { MEASURED } from "../modelGuideData";
 import { PROVIDERS, RECOMMENDED_OLLAMA, detectLocal, getKey, listModels, pullOllama, setKey, type AiConfig, type ProviderId } from "../ai";
 import { aiUsage, aiUsageMonths, getSetting, isCompanion, isTauri, isWeb, setSetting } from "../db";
-import { monthOf, summarize, type UsageRow } from "../usage";
+import { monthOf, summarize, type UsageMonth, type UsageRow } from "../usage";
 import { setCompanion, tailscaleStatus, type TailscaleStatus } from "../companion";
 import { CourseFlag, CourseSheet, NATIVE, ProfileForm, useLangName } from "./Profiles";
 import { notifyAllowed } from "../notify";
 import { betaOn, findUpdate, UpdateSheet } from "../Update";
-import { DataSection } from "./DataSettings";
+import { DataRow } from "./DataSettings";
 import { InfoTip, SttRow, TtsRow } from "./VoiceSettings";
 import { Icon, type IconName } from "../icons";
 import { HelpButton, HelpSheet, openLink } from "../Help";
@@ -21,13 +21,18 @@ import { HelpButton, HelpSheet, openLink } from "../Help";
 const TEXT_SIZES = [1, 1.15, 1.3];
 const gap = (g: string) => ({ "--od-gap": g }) as React.CSSProperties;
 
+/** Related settings share one card; CSS draws a thin divider between the rows. */
+function Group({ children }: { children: React.ReactNode }) {
+  return <div className="card set-group">{children}</div>;
+}
+
 export function ToggleRow({ k, initial, onChange }: { k: string; initial: boolean; onChange?: (on: boolean) => void }) {
   const { t } = useTranslation();
   // ponytail: rows without onChange are visual only, as in the design; wired when each feature lands.
   const [on, setOnState] = useState(initial);
   const setOn = (v: boolean) => { setOnState(v); onChange?.(v); };
   return (
-    <div className="card od-row" style={gap("var(--s-4)")}>
+    <div className="od-row" style={gap("var(--s-4)")}>
       <b className="od-fill">{t(`settings.${k}`)}</b>
       <InfoTip label={t("voice.about", { name: t(`settings.${k}`) })}>{t(`settings.${k}Desc`)}</InfoTip>
       <button className={`btn ${on ? "btn-primary" : "btn-ghost"}`} style={{ minWidth: 84 }} aria-pressed={on} onClick={() => setOn(!on)}>
@@ -70,7 +75,7 @@ function PhoneRow() {
   };
   const note = !ts.installed ? "settings.phoneMissing" : "settings.phoneSignIn"; // ready: the ⓘ sheet explains it
   return (
-    <div className="card od-row" style={gap("var(--s-4)")}>
+    <div className="od-row" style={gap("var(--s-4)")}>
       <span className="od-field od-fill"><b>{t("settings.phone")}</b>{!ready && <span className="muted small">{t(note)}</span>}</span>
       <button className="icon-btn" aria-label={t("settings.phoneAbout")} onClick={() => openSheet(<PhoneInfoSheet />)}><Icon name="info" /></button>
       {on && ready && <button className="icon-btn" aria-label={t("settings.phoneShowQr")} disabled={busy} onClick={() => turn(true)}><Icon name="qr" /></button>}
@@ -196,8 +201,9 @@ const AI_ROWS: { p: ProviderId; icon: IconName; color: string }[] = [
 ];
 
 /** #48: what the learner's own key has cost, this month and earlier ones with usage, split by feature and model. */
-function UsageCard() {
+function UsageSummary() {
   const { t, i18n } = useTranslation();
+  const { openSheet } = useApp();
   const [rows, setRows] = useState<UsageRow[]>([]);
   const [month, setMonth] = useState<string>(() => monthOf());
   const [months, setMonths] = useState<string[]>(() => [monthOf()]);
@@ -214,14 +220,38 @@ function UsageCard() {
   const monthName = (m: string) => new Intl.DateTimeFormat(lang, { month: "long", year: "numeric" }).format(new Date(+m.slice(0, 4), +m.slice(5, 7) - 1, 1));
   const data = summarize(rows, month);
   const cost = (priced: boolean, unpriced: boolean, v: number) => priced ? `${usd(v)}${unpriced ? "*" : ""}` : t("settings.usage.noPrice");
+  return (<>
+    <div className="od-row" style={{ ...gap("var(--s-3)"), flexWrap: "wrap" }}>
+      <span className="od-field od-fill"><b>{t("settings.usage.title")}</b><span className="muted small">{t("settings.usage.desc")}</span></span>
+      <select className="select" aria-label={t("settings.usage.month")} value={month} onChange={(e) => setMonth(e.target.value)}>
+        {months.map((m) => <option key={m} value={m}>{monthName(m)}</option>)}
+      </select>
+      <button className="btn btn-ghost" onClick={() => openSheet(<UsageSheet data={data} month={monthName(month)} lang={lang} />)}>
+        {t("settings.usage.details")}
+      </button>
+    </div>
+    {!data.features.length
+      ? <p className="muted small">{t("settings.usage.empty")}</p>
+      : <div className="od-row" style={gap("var(--s-4)")}>
+          <span className="od-field od-fill"><b>{t("settings.usage.total")}</b>
+            <span className="muted small">{t("settings.usage.tokens", { input: num(data.input), output: num(data.output) })}</span></span>
+          <span className="od-field" style={{ textAlign: "end" }}><b>{cost(data.priced, data.unpriced, data.usd)}</b>
+            <span className="muted small">{t("settings.usage.estimate")}</span></span>
+        </div>}
+  </>);
+}
+
+/** The per-feature breakdown, behind Token usage's Details button: the row above stays one line. */
+function UsageSheet({ data, month, lang }: { data: UsageMonth; month: string; lang: string }) {
+  const { t } = useTranslation();
+  const { closeSheet } = useApp();
+  const num = (v: number) => new Intl.NumberFormat(lang).format(v);
+  const usd = (v: number) => new Intl.NumberFormat(lang, { style: "currency", currency: "USD", minimumFractionDigits: 2, maximumFractionDigits: v > 0 && v < 1 ? 4 : 2 }).format(v);
+  const cost = (priced: boolean, unpriced: boolean, v: number) => priced ? `${usd(v)}${unpriced ? "*" : ""}` : t("settings.usage.noPrice");
   return (
-    <div className="card od-stack" style={gap("var(--s-4)")}>
-      <div className="od-row" style={gap("var(--s-3)")}>
-        <span className="od-field od-fill"><b>{t("settings.usage.title")}</b><span className="muted small">{t("settings.usage.desc")}</span></span>
-        <select className="select" aria-label={t("settings.usage.month")} value={month} onChange={(e) => setMonth(e.target.value)}>
-          {months.map((m) => <option key={m} value={m}>{monthName(m)}</option>)}
-        </select>
-      </div>
+    <div className="od-stack" style={{ ...gap("var(--s-4)"), textAlign: "left" }}>
+      <h3>{t("settings.usage.title")}</h3>
+      <p className="muted small" style={{ marginBottom: 0 }}>{month}</p>
       {!data.features.length
         ? <p className="muted small">{t("settings.usage.empty")}</p>
         : <>
@@ -241,8 +271,9 @@ function UsageCard() {
                 <b className="small">{cost(f.priced, f.unpriced, f.usd)}</b>
               </div>
             ))}
-            <p className="muted small">{t("settings.usage.note")}</p>
+            <p className="muted small" style={{ marginBottom: 0 }}>{t("settings.usage.note")}</p>
           </>}
+      <button className="btn btn-ghost btn-block" onClick={closeSheet}>{t("sheet.close")}</button>
     </div>
   );
 }
@@ -387,7 +418,7 @@ function VersionRow() {
     u ? openSheet(<UpdateSheet update={u} />) : toast(t("update.none"));
   };
   return (<>
-    <div className="card od-row" style={gap("var(--s-4)")}>
+    <div className="od-row" style={gap("var(--s-4)")}>
       <b className="od-fill">{t("update.version", { version })}</b>
       <InfoTip label={t("voice.about", { name: t("update.section") })}>{t("update.desc")}</InfoTip>
       <button className="btn btn-ghost" disabled={busy} onClick={check}>{t("update.check")}</button>
@@ -421,97 +452,110 @@ export function Settings() {
 
       <div id="set-panel" role="tabpanel" aria-labelledby={`set-tab-${tab}`} className="od-stack" style={gap("var(--s-4)")}>
         {tab === "profile" && <>
-          <div className="card od-row">
-            <span style={{ fontSize: "var(--fs-24)" }}>{course && <CourseFlag c={course} />}</span>
-            <span className="od-field od-fill"><b>{course ? langName(course.iso) : "—"}</b>
-              <span className="muted small">{t("settings.courseDesc", {
-                level: enrollment && t(`levels.${enrollment.level}`, { defaultValue: course?.levels[enrollment.level]?.title ?? enrollment.level }),
-                native: langName(profile!.native_lang),
-              })}</span></span>
-            <button className="btn btn-ghost" onClick={() => openSheet(<CourseSheet />)}>{t("settings.change")}</button>
-          </div>
-          <div className="card od-row" style={gap("var(--s-4)")}>
-            <label className="od-field od-fill" htmlFor="native-lang"><b>{t("profiles.native")}</b><span className="muted small">{t("profiles.nativeDesc")}</span></label>
-            <select id="native-lang" className="select" value={profile!.native_lang} onChange={(e) => updateProfile({ native_lang: e.target.value })}>
-              {NATIVE.map((l) => <option key={l} value={l}>{langName(l)}</option>)}
-            </select>
-          </div>
-          <div className="card od-row" style={gap("var(--s-4)")}>
-            <span className="od-field od-fill"><b>{profile!.name}</b><span className="muted small">{t("settings.profileDesc")}</span></span>
-            <button className="btn btn-ghost" onClick={() => openSheet(<><h3 style={{ marginBottom: "var(--s-5)" }}>{t("settings.editProfile")}</h3><ProfileForm initial={profile!} onDone={closeSheet} /></>)}>{t("settings.edit")}</button>
-          </div>
+          <Group>
+            <div className="od-row">
+              <span style={{ fontSize: "var(--fs-24)" }}>{course && <CourseFlag c={course} />}</span>
+              <span className="od-field od-fill"><b>{course ? langName(course.iso) : "—"}</b>
+                <span className="muted small">{t("settings.courseDesc", {
+                  level: enrollment && t(`levels.${enrollment.level}`, { defaultValue: course?.levels[enrollment.level]?.title ?? enrollment.level }),
+                  native: langName(profile!.native_lang),
+                })}</span></span>
+              <button className="btn btn-ghost" onClick={() => openSheet(<CourseSheet />)}>{t("settings.change")}</button>
+            </div>
+            <div className="od-row" style={gap("var(--s-4)")}>
+              <label className="od-field od-fill" htmlFor="native-lang"><b>{t("profiles.native")}</b><span className="muted small">{t("profiles.nativeDesc")}</span></label>
+              <select id="native-lang" className="select" value={profile!.native_lang} onChange={(e) => updateProfile({ native_lang: e.target.value })}>
+                {NATIVE.map((l) => <option key={l} value={l}>{langName(l)}</option>)}
+              </select>
+            </div>
+            <div className="od-row" style={gap("var(--s-4)")}>
+              <span className="od-field od-fill"><b>{profile!.name}</b><span className="muted small">{t("settings.profileDesc")}</span></span>
+              <button className="btn btn-ghost" onClick={() => openSheet(<><h3 style={{ marginBottom: "var(--s-5)" }}>{t("settings.editProfile")}</h3><ProfileForm initial={profile!} onDone={closeSheet} /></>)}>{t("settings.edit")}</button>
+            </div>
+          </Group>
           <button className="btn btn-ghost btn-block mobile-only" onClick={logout}>{t("settings.logout")}</button>
+          <Group>
+            <div className="od-row" style={gap("var(--s-4)")}>
+              <span className="od-field od-fill"><b>{t("help.title")}</b><span className="muted small">{t("help.tagline")}</span></span>
+              <button className="btn btn-ghost" onClick={() => openSheet(<HelpSheet />)}>{t("help.view")}</button>
+            </div>
+            {!isCompanion && <VersionRow />}
+          </Group>
         </>}
 
         {tab === "prefs" && <>
-          <ToggleRow k="hearts" initial={s.heartsOn} onChange={(heartsOn) => setS((s) => ({ ...s, heartsOn }))} />
-          <ToggleRow k="sound" initial={s.soundOn} onChange={(soundOn) => setS((s) => ({ ...s, soundOn }))} />
-          <ToggleRow k="speaking" initial={s.speakOn} onChange={(speakOn) => setS((s) => ({ ...s, speakOn }))} />
-          <ToggleRow k="bargeIn" initial={s.bargeIn} onChange={(bargeIn) => setS((s) => ({ ...s, bargeIn }))} />
-          {!isCompanion && <ToggleRow k="reminder" initial={s.reminderOn} onChange={async (reminderOn) => {
-            setS((s) => ({ ...s, reminderOn }));
-            if (reminderOn && !(await notifyAllowed())) toast(t("settings.reminderBlocked"));
-          }} />}
-          <ToggleRow k="reduceMotion" initial={s.reduceMotion} onChange={(reduceMotion) => setS((s) => ({ ...s, reduceMotion }))} />
-          {isCompanion && <TtsRow />}
+          <Group>
+            <ToggleRow k="hearts" initial={s.heartsOn} onChange={(heartsOn) => setS((s) => ({ ...s, heartsOn }))} />
+            <ToggleRow k="sound" initial={s.soundOn} onChange={(soundOn) => setS((s) => ({ ...s, soundOn }))} />
+            <ToggleRow k="speaking" initial={s.speakOn} onChange={(speakOn) => setS((s) => ({ ...s, speakOn }))} />
+            <ToggleRow k="bargeIn" initial={s.bargeIn} onChange={(bargeIn) => setS((s) => ({ ...s, bargeIn }))} />
+            {!isCompanion && <ToggleRow k="reminder" initial={s.reminderOn} onChange={async (reminderOn) => {
+              setS((s) => ({ ...s, reminderOn }));
+              if (reminderOn && !(await notifyAllowed())) toast(t("settings.reminderBlocked"));
+            }} />}
+            <ToggleRow k="reduceMotion" initial={s.reduceMotion} onChange={(reduceMotion) => setS((s) => ({ ...s, reduceMotion }))} />
+            {isCompanion && <TtsRow />}
+          </Group>
           <h2 className="section-title">{t("settings.appearance")}</h2>
-          <div className="card od-row" style={{ ...gap("var(--s-4)"), flexWrap: "wrap" }}>
-            <b className="od-fill">{t("settings.theme")}</b>
-            <div className="seg" role="radiogroup" aria-label={t("settings.theme")}>
-              {themes.map((th) => (
-                <button key={th} role="radio" aria-checked={theme === th} className={`btn ${theme === th ? "btn-blue" : "btn-ghost"}`} onClick={() => setTheme(th)}>
-                  {t(`settings.theme${cap(th)}`)}
-                </button>
-              ))}
+          <Group>
+            <div className="od-row" style={{ ...gap("var(--s-4)"), flexWrap: "wrap" }}>
+              <b className="od-fill">{t("settings.theme")}</b>
+              <div className="seg" role="radiogroup" aria-label={t("settings.theme")}>
+                {themes.map((th) => (
+                  <button key={th} role="radio" aria-checked={theme === th} className={`btn ${theme === th ? "btn-blue" : "btn-ghost"}`} onClick={() => setTheme(th)}>
+                    {t(`settings.theme${cap(th)}`)}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
-          <div className="card od-row" style={{ ...gap("var(--s-4)"), flexWrap: "wrap" }}>
-            <b className="od-fill">{t("settings.textSize")}</b>
-            <div className="seg" role="radiogroup" aria-label={t("settings.textSize")}>
-              {TEXT_SIZES.map((f) => (
-                <button key={f} role="radio" aria-checked={s.textSize === f} className={`btn ${s.textSize === f ? "btn-blue" : "btn-ghost"}`} onClick={() => setS((s) => ({ ...s, textSize: f }))}>
-                  {Math.round(f * 100)}%
-                </button>
-              ))}
+            <div className="od-row" style={{ ...gap("var(--s-4)"), flexWrap: "wrap" }}>
+              <b className="od-fill">{t("settings.textSize")}</b>
+              <div className="seg" role="radiogroup" aria-label={t("settings.textSize")}>
+                {TEXT_SIZES.map((f) => (
+                  <button key={f} role="radio" aria-checked={s.textSize === f} className={`btn ${s.textSize === f ? "btn-blue" : "btn-ghost"}`} onClick={() => setS((s) => ({ ...s, textSize: f }))}>
+                    {Math.round(f * 100)}%
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
-          <ToggleRow k="readableFont" initial={s.readableFont} onChange={(readableFont) => setS((s) => ({ ...s, readableFont }))} />
-          <ToggleRow k="highContrast" initial={s.highContrast} onChange={(highContrast) => setS((s) => ({ ...s, highContrast }))} />
-          <div className="card od-row" style={gap("var(--s-4)")}>
-            <label className="od-fill" htmlFor="ui-lang"><b>{t("settings.language")}</b></label>
-            <select id="ui-lang" className="select" value={i18n.resolvedLanguage} onChange={(e) => { i18n.changeLanguage(e.target.value); updateProfile({ ui_lang: e.target.value }); }}>
-              {languages.map((l) => <option key={l.code} value={l.code}>{l.name}</option>)}
-            </select>
-          </div>
+            <ToggleRow k="readableFont" initial={s.readableFont} onChange={(readableFont) => setS((s) => ({ ...s, readableFont }))} />
+            <ToggleRow k="highContrast" initial={s.highContrast} onChange={(highContrast) => setS((s) => ({ ...s, highContrast }))} />
+            <div className="od-row" style={gap("var(--s-4)")}>
+              <label className="od-fill" htmlFor="ui-lang"><b>{t("settings.language")}</b></label>
+              <select id="ui-lang" className="select" value={i18n.resolvedLanguage} onChange={(e) => { i18n.changeLanguage(e.target.value); updateProfile({ ui_lang: e.target.value }); }}>
+                {languages.map((l) => <option key={l.code} value={l.code}>{l.name}</option>)}
+              </select>
+            </div>
+          </Group>
+          <Group>
+            <ToggleRow k="memory" initial={s.memoryOn} onChange={(memoryOn) => setS((s) => ({ ...s, memoryOn }))} />
+            <ToggleRow k="speech" initial={s.speechOn} onChange={(speechOn) => setS((s) => ({ ...s, speechOn }))} />
+          </Group>
         </>}
 
         {tab === "ai" && <>
-          <div className="card od-row" style={gap("var(--s-4)")}>
-            <span className="od-field od-fill"><b>{t("ai.title")}</b>
-              {ai ? <span className="muted small od-anywhere">{PROVIDERS[ai.provider].label} · {ai.model}</span>
-                : <span className="small" style={{ color: "var(--orange)", fontWeight: 800 }}>{t("ai.notSet")}</span>}</span>
-            <button className={`btn ${ai ? "btn-ghost" : "btn-primary"}`} onClick={() => openSheet(<AiSheet />)}>{t(ai ? "settings.change" : "ai.setUp")}</button>
-          </div>
-          <UsageCard />
-          <TtsRow />
-          <SttRow />
+          <Group>
+            <div className="od-row" style={gap("var(--s-4)")}>
+              <span className="od-field od-fill"><b>{t("ai.title")}</b>
+                {ai ? <span className="muted small od-anywhere">{PROVIDERS[ai.provider].label} · {ai.model}</span>
+                  : <span className="small" style={{ color: "var(--orange)", fontWeight: 800 }}>{t("ai.notSet")}</span>}</span>
+              <button className={`btn ${ai ? "btn-ghost" : "btn-primary"}`} onClick={() => openSheet(<AiSheet />)}>{t(ai ? "settings.change" : "ai.setUp")}</button>
+            </div>
+            <UsageSummary />
+            <TtsRow />
+            <SttRow />
+          </Group>
         </>}
 
         {tab === "privacy" && <>
-          <ToggleRow k="memory" initial={s.memoryOn} onChange={(memoryOn) => setS((s) => ({ ...s, memoryOn }))} />
-          <ToggleRow k="speech" initial={s.speechOn} onChange={(speechOn) => setS((s) => ({ ...s, speechOn }))} />
-          <DataSection />
-          {isTauri && <PhoneRow />}
+          <h2 className="section-title">{t("data.section")}</h2>
+          <Group>
+            <DataRow />
+            {isTauri && <PhoneRow />}
+          </Group>
         </>}
       </div>
 
-      <div className="od-stack" style={{ marginTop: "var(--s-7)", ...gap("var(--s-4)") }}>
-        <div className="card od-row" style={gap("var(--s-4)")}>
-          <span className="od-field od-fill"><b>{t("help.title")}</b><span className="muted small">{t("help.tagline")}</span></span>
-          <button className="btn btn-ghost" onClick={() => openSheet(<HelpSheet />)}>{t("help.view")}</button>
-        </div>
-        {!isCompanion && <VersionRow />}
-      </div>
       <p className="muted small" style={{ textAlign: "center", marginTop: "var(--s-3)" }}>
         {t("update.madeBy")} <a href={AUTHOR_URL} onClick={(e) => { e.preventDefault(); void openLink(AUTHOR_URL); }}>mehmetozer.dev</a>
       </p>

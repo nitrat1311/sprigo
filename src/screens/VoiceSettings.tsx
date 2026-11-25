@@ -58,7 +58,7 @@ export function TtsRow() {
   useEffect(() => { ttsProvider().then(setV); }, []);
   const now = speakingWith(); // the last line spoke with another engine than the saved one (it fell back)
   return (
-    <div className="card od-row" style={gap("var(--s-4)")}>
+    <div className="od-row" style={gap("var(--s-4)")}>
       <span className="od-field od-fill"><b>{t("settings.tts")}</b><span className="muted small">{t(ttsName(v))}</span>
         {now && now !== v && <span className="small" style={{ color: "var(--orange)" }}>{t("voice.using", { name: t(`voice.engine.${now}`) })}</span>}
         {!ttsSpeaks(v, lang) && <span className="small" style={{ color: "var(--orange)" }}>{t("voice.notForLang", { lang: langName(lang) })}</span>}</span>
@@ -286,7 +286,7 @@ export function SttRow() {
   useEffect(() => { sttProvider().then(setV); if (isTauri) whisperModels().then(([c]) => setModel(c)).catch(() => {}); }, []);
   const better = course && WHISPER_FOR[course.iso];
   return (
-    <div className="card od-row" style={gap("var(--s-4)")}>
+    <div className="od-row" style={gap("var(--s-4)")}>
       <span className="od-field od-fill"><b>{t("settings.stt")}</b><span className="muted small">{t(v === "deepgram" ? "settings.sttDeepgram" : "settings.sttWhisper")}</span>
         {v === "whisper" && better && model && model !== better &&
           <span className="small" style={{ color: "var(--orange)" }}>{t("voice.whisperFor", { lang: langName(course.iso), name: t(`voice.whisper${cap(better)}`) })}</span>}</span>

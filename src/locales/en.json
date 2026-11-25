@@ -636,6 +636,7 @@
     "betaUpdatesDesc": "Get test versions before everyone else. They can have bugs; you also keep getting every regular release.",
     "usage": {
       "title": "Token usage",
+      "details": "Details",
       "desc": "What your AI provider has answered, estimated from list prices.",
       "month": "Month",
       "empty": "No AI usage this month yet.",

@@ -632,6 +632,7 @@
     "betaUpdatesDesc": "Test sürümlerini herkesten önce al. Hata içerebilirler; normal sürümleri de almaya devam edersin.",
     "usage": {
       "title": "Token kullanımı",
+      "details": "Ayrıntılar",
       "desc": "AI sağlayıcının yanıtladıkları, liste fiyatlarından tahmini.",
       "month": "Ay",
       "empty": "Bu ay henüz AI kullanımı yok.",

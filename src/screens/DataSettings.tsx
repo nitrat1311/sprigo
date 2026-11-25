@@ -11,20 +11,18 @@ import { HelpButton } from "../Help";
 const gap = (g: string) => ({ "--od-gap": g }) as React.CSSProperties;
 const dialog = () => import("@tauri-apps/plugin-dialog");
 
-export function DataSection() {
+/** Settings > Data: where the database lives. One row; the section heading sits above its group. */
+export function DataRow() {
   const { t } = useTranslation();
   const { openSheet } = useApp();
   const [loc, setLoc] = useState<Location | null>(null);
   useEffect(() => { if (isTauri) dataLocation().then(setLoc); }, []);
   return (
-    <>
-      <h2 className="section-title">{t("data.section")}</h2>
-      <div className="card od-row" style={gap("var(--s-4)")}>
-        <span className="od-field od-fill"><b>{t("data.folder")}</b>
-          <span className="muted small od-anywhere">{!isTauri ? t("data.desktopOnly") : loc?.dataDir ?? "…"}</span></span>
-        <button className="btn btn-ghost" disabled={!loc} onClick={() => loc && openSheet(<DataSheet loc={loc} />)}>{t("settings.change")}</button>
-      </div>
-    </>
+    <div className="od-row" style={gap("var(--s-4)")}>
+      <span className="od-field od-fill"><b>{t("data.folder")}</b>
+        <span className="muted small od-anywhere">{!isTauri ? t("data.desktopOnly") : loc?.dataDir ?? "…"}</span></span>
+      <button className="btn btn-ghost" disabled={!loc} onClick={() => loc && openSheet(<DataSheet loc={loc} />)}>{t("settings.change")}</button>
+    </div>
   );
 }
 

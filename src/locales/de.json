@@ -636,6 +636,7 @@
     "betaUpdatesDesc": "Testversionen vor allen anderen erhalten. Sie können Fehler haben; reguläre Versionen bekommst du weiterhin.",
     "usage": {
       "title": "Token-Nutzung",
+      "details": "Details",
       "desc": "Was dein KI-Anbieter geantwortet hat, geschätzt aus Listenpreisen.",
       "month": "Monat",
       "empty": "Diesen Monat noch keine KI-Nutzung.",

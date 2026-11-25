@@ -686,6 +686,12 @@ html[data-theme="dark"]:not([data-contrast="high"]) .call-fix{color:var(--gold)}
   .call-grid.practice-open .call-practice{grid-row:auto;grid-column:1 / 3}
 }
 
+/* Settings: related settings share one card, and a thin divider separates the rows (all four themes take --border).
+   Padding moves from the card to each row, so the group's own edge keeps the card's shape. */
+.card.set-group{display:flex;flex-direction:column;gap:0;padding:0}
+.set-group > *{padding:var(--s-5)}
+.set-group > * + *{border-top:1px solid var(--border)}
+
 /* Settings > speech voice and recognition options: full-width rows, an icon on the left, notes behind an info icon */
 .voice-option{position:relative;display:flex;align-items:center;border:2px solid var(--border);border-radius:var(--r-card);background:var(--card)}
 .voice-option.on{border-color:var(--blue);background:var(--sky)}

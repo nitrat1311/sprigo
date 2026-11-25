@@ -33,7 +33,7 @@ test("onboarding creates a profile and sets up local AI", async ({ page }) => {
 test("the model picker shows measured guidance", async ({ page }) => {
   await onboard(page);
   await page.getByRole("tab", { name: "AI & voice" }).click();
-  await page.locator(".card", { hasText: "AI provider" }).getByRole("button", { name: "Change" }).click();
+  await page.locator("#set-panel .od-row").filter({ has: page.getByText("AI provider", { exact: true }) }).getByRole("button", { name: "Change" }).click();
   await page.getByRole("dialog").getByRole("button", { name: "Ollama settings" }).click(); // the model field lives here
   const sheet = page.getByRole("dialog");
   const model = sheet.getByLabel(/Model/);
@@ -54,7 +54,8 @@ test("the model picker shows measured guidance", async ({ page }) => {
 
 test("help answers setup questions in the app, also from a setting's ?", async ({ page }) => {
   await onboard(page);
-  await page.locator(".card", { hasText: "Help & FAQ" }).getByRole("button", { name: "Open" }).click();
+  await page.getByRole("tab", { name: "Profile" }).click(); // Help & FAQ lives in the profile tab's settings group
+  await page.locator(".od-row").filter({ has: page.getByText("Help & FAQ", { exact: true }) }).getByRole("button", { name: "Open" }).click();
   const help = page.getByRole("dialog");
   await help.getByText("Where is my data?").click();
   await expect(help.getByText(/Application Support\/com\.ozerozdas\.sprigo/)).toBeVisible();
@@ -62,7 +63,7 @@ test("help answers setup questions in the app, also from a setting's ?", async (
   await help.getByRole("button", { name: "Close" }).click();
 
   await page.getByRole("tab", { name: "AI & voice" }).click();
-  await page.locator(".card", { hasText: "AI provider" }).getByRole("button", { name: "Change" }).click();
+  await page.locator("#set-panel .od-row").filter({ has: page.getByText("AI provider", { exact: true }) }).getByRole("button", { name: "Change" }).click();
   await page.getByRole("dialog").getByRole("button", { name: "Help: How do I set up the AI?" }).click();
   await expect(page.locator("details[open] summary")).toHaveText("How do I set up the AI?");
 });
@@ -496,7 +497,7 @@ test("a tutor exports as a package the import flow takes again", async ({ page }
 test("readable font and text size apply at once and stay after a reload", async ({ page }) => {
   await onboard(page);
   await page.getByRole("tab", { name: "Preferences" }).click();
-  await page.locator(".card", { hasText: "Readable font" }).getByRole("button", { name: "Off" }).click();
+  await page.locator("#set-panel .od-row").filter({ has: page.getByText("Readable font", { exact: true }) }).getByRole("button", { name: "Off" }).click();
   await page.getByRole("radiogroup", { name: "Text size" }).getByRole("radio", { name: "130%" }).click();
   const look = () => page.evaluate(() => ({ font: getComputedStyle(document.body).fontFamily, zoom: document.documentElement.style.zoom }));
   expect(await look()).toEqual({ font: expect.stringContaining("Atkinson Hyperlegible Next"), zoom: "1.3" });
