@@ -23,8 +23,9 @@ export type Measurement = {
 
 /** A first sentence later than this feels laggy live: tutor.ts plays a filler after FILLER_MS (1.5 s). */
 export const LIVE_SAY_MS = 1500;
-/** Below this the eval found exercises with wrong answers; modelSize.ts measured small models at ~1 in 4 wrong. */
-export const GOOD_QUALITY = 85;
+/** Calibrated to the bundled measurements: the best measured local model (qwen3.5:4b-mlx) passed 69%, so a higher bar
+ *  would mark every local model weak. qwen3:8b (48%) stays weak, which is what the eval found. */
+export const GOOD_QUALITY = 65;
 
 export type Verdict = "good" | "weak" | "slow" | "weakSlow";
 

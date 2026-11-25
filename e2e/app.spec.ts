@@ -41,12 +41,15 @@ test("the model picker shows measured guidance", async ({ page }) => {
   await expect(sheet.getByText(/^Measured:/)).toBeVisible();
   await expect(sheet.getByText(/\d+% of exercises pass/)).toBeVisible(); // the share, which does not depend on the machine
   await expect(model).toHaveAttribute("aria-describedby", "ai-model-note"); // the note describes the field, not names it
-  await model.fill("qwen3.5:4b-mlx");
+  await model.fill("gemma4:e2b-mlx");
   await expect(sheet.getByText(/^Measured:/)).toBeVisible();
-  await expect(sheet.getByRole("note")).toContainText("Models under 8B"); // measured and under 8B: both notes stay
+  await expect(sheet.getByRole("note")).toContainText("Models under 4B"); // measured and under 4B: both notes stay
+  await model.fill("qwen3.5:4b"); // the suggested cross-platform tag was not measured
+  await expect(sheet.getByText(/^Measured:/)).toBeHidden();
+  await expect(sheet.getByRole("note")).toBeHidden(); // and at the suggested size it is not "too small"
   await model.fill("tiny:1b");
   await expect(sheet.getByText(/^Measured:/)).toBeHidden();
-  await expect(sheet.getByRole("note")).toContainText("Models under 8B"); // unmeasured: the old size warning
+  await expect(sheet.getByRole("note")).toContainText("Models under 4B"); // unmeasured: the size warning
 });
 
 test("help answers setup questions in the app, also from a setting's ?", async ({ page }) => {

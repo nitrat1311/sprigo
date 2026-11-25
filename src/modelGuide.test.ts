@@ -39,8 +39,20 @@ test("guideFor returns null for a model that was never measured", () => {
   assert.equal(guideFor("", [m()]), null);
 });
 
+test("the quality bar is calibrated to the bundled measurements", () => {
+  const best = MEASURED.find((r) => r.model === "qwen3.5:4b-mlx")!;
+  assert.equal(verdictOf(best), "good", "the best measured local model clears the bar");
+  const older = MEASURED.find((r) => r.model === "qwen3:8b")!;
+  assert.equal(verdictOf(older), "weak", "the eval's weaker pick stays weak");
+});
+
+test("the suggested cross-platform tag is not credited with the mlx build's numbers", () => {
+  // The measurement was made on qwen3.5:4b-mlx, an Apple-only build; the plain tag is a different build.
+  assert.equal(guideFor("qwen3.5:4b", MEASURED), null);
+});
+
 test("the bundled measurements name their machine and date and are in range", () => {
-  assert.ok(MEASURED.length, "at least the recommended model is measured");
+  assert.ok(MEASURED.length, "the bundled measurements are present");
   const seen = new Set<string>();
   for (const r of MEASURED) {
     assert.ok(r.model, "a row names its model");

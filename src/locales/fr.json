@@ -1122,15 +1122,15 @@
     "topics": {
       "ai": {
         "q": "Comment configurer l'IA ?",
-        "a": "Sprigo a besoin d'un modèle de langage pour écrire les leçons. Le plus simple est Ollama : installe-le et ouvre Sprigo ; il trouve Ollama et propose de télécharger qwen3:8b (environ 5,2 Go). LM Studio marche aussi : démarre son serveur local et charge un modèle.\nPas de modèle local ? Utilise un fournisseur cloud (OpenAI, Anthropic, Gemini, OpenRouter) avec ta propre clé d'API. Les clés restent dans le trousseau du système.\nÀ changer dans Réglages → IA et voix → Fournisseur d'IA."
+        "a": "Sprigo a besoin d'un modèle de langage pour écrire les leçons. Le plus simple est Ollama : installe-le et ouvre Sprigo ; il trouve Ollama et propose de télécharger qwen3.5:4b (environ 3,3 Go). LM Studio marche aussi : démarre son serveur local et charge un modèle.\nPas de modèle local ? Utilise un fournisseur cloud (OpenAI, Anthropic, Gemini, OpenRouter) avec ta propre clé d'API. Les clés restent dans le trousseau du système.\nÀ changer dans Réglages → IA et voix → Fournisseur d'IA."
       },
       "aiConnect": {
         "q": "« Aucun modèle local trouvé » ou « Connexion impossible »",
-        "a": "Ollama : lance l'app Ollama. Sprigo la cherche à http://localhost:11434. Si elle n'a aucun modèle, laisse Sprigo télécharger celui proposé, ou lance : ollama pull qwen3:8b\nLM Studio : démarre son serveur local et charge un modèle.\nCloud : vérifie la clé d'API et le crédit de ton compte.\nUn VPN ou un pare-feu peut aussi bloquer localhost."
+        "a": "Ollama : lance l'app Ollama. Sprigo la cherche à http://localhost:11434. Si elle n'a aucun modèle, laisse Sprigo télécharger celui proposé, ou lance : ollama pull qwen3.5:4b\nLM Studio : démarre son serveur local et charge un modèle.\nCloud : vérifie la clé d'API et le crédit de ton compte.\nUn VPN ou un pare-feu peut aussi bloquer localhost."
       },
       "weak": {
         "q": "Pourquoi les leçons sont-elles parfois faibles ou fausses ?",
-        "a": "En général, le modèle est trop petit. Prends-en un de 8B paramètres ou plus (16 Go de mémoire, c'est un bon début). Si un exercice est faux, tu peux le contester dans la leçon.\nLes leçons sont générées une fois puis gardées : un modèle lent se sent surtout à la première ouverture d'une étape."
+        "a": "En général, le modèle est trop petit ou simplement faible. Dans les réglages, tu vois le score de chaque modèle testé ; prends-en un marqué comme mesuré bon. Si un exercice est faux, tu peux le contester dans la leçon.\nLes leçons sont générées une fois puis gardées : un modèle lent se sent surtout à la première ouverture d'une étape."
       },
       "mic": {
         "q": "Sprigo ne m'entend pas",

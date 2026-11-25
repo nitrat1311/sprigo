@@ -1090,15 +1090,15 @@
     "topics": {
       "ai": {
         "q": "Wie richte ich die KI ein?",
-        "a": "Sprigo braucht ein Sprachmodell, das die Lektionen schreibt. Am einfachsten ist Ollama: installieren und Sprigo öffnen; Sprigo findet Ollama und bietet an, qwen3:8b (etwa 5,2 GB) herunterzuladen. LM Studio geht auch: lokalen Server starten und ein Modell laden.\nKein lokales Modell? Nutze einen Cloud-Anbieter (OpenAI, Anthropic, Gemini, OpenRouter) mit deinem eigenen API-Schlüssel. Schlüssel bleiben im Schlüsselbund des Systems.\nÄndern unter Einstellungen → KI & Stimme → KI-Anbieter."
+        "a": "Sprigo braucht ein Sprachmodell, das die Lektionen schreibt. Am einfachsten ist Ollama: installieren und Sprigo öffnen; Sprigo findet Ollama und bietet an, qwen3.5:4b (etwa 3,3 GB) herunterzuladen. LM Studio geht auch: lokalen Server starten und ein Modell laden.\nKein lokales Modell? Nutze einen Cloud-Anbieter (OpenAI, Anthropic, Gemini, OpenRouter) mit deinem eigenen API-Schlüssel. Schlüssel bleiben im Schlüsselbund des Systems.\nÄndern unter Einstellungen → KI & Stimme → KI-Anbieter."
       },
       "aiConnect": {
         "q": "„Kein lokales Modell gefunden“ oder „Keine Verbindung“",
-        "a": "Ollama: Starte die Ollama-App. Sprigo sucht sie unter http://localhost:11434. Hat sie keine Modelle, lass Sprigo das vorgeschlagene herunterladen oder führe aus: ollama pull qwen3:8b\nLM Studio: lokalen Server starten und ein Modell laden.\nCloud: API-Schlüssel und Guthaben prüfen.\nAuch ein VPN oder eine Firewall kann localhost blockieren."
+        "a": "Ollama: Starte die Ollama-App. Sprigo sucht sie unter http://localhost:11434. Hat sie keine Modelle, lass Sprigo das vorgeschlagene herunterladen oder führe aus: ollama pull qwen3.5:4b\nLM Studio: lokalen Server starten und ein Modell laden.\nCloud: API-Schlüssel und Guthaben prüfen.\nAuch ein VPN oder eine Firewall kann localhost blockieren."
       },
       "weak": {
         "q": "Warum sind Lektionen manchmal schwach oder falsch?",
-        "a": "Meist ist das Modell zu klein. Nimm eines mit 8B Parametern oder mehr (16 GB Arbeitsspeicher sind ein guter Anfang). Ist eine Übung falsch, kannst du in der Lektion Einspruch einlegen.\nLektionen werden einmal erzeugt und gespeichert; ein langsames Modell merkst du vor allem beim ersten Öffnen eines Schritts."
+        "a": "Meist ist das Modell zu klein oder einfach schwach. In den Einstellungen siehst du, wie jedes getestete Modell abgeschnitten hat; nimm eines, das als gemessen gut markiert ist. Ist eine Übung falsch, kannst du in der Lektion Einspruch einlegen.\nLektionen werden einmal erzeugt und gespeichert; ein langsames Modell merkst du vor allem beim ersten Öffnen eines Schritts."
       },
       "mic": {
         "q": "Sprigo hört mich nicht",

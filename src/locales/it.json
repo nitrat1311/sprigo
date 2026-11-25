@@ -1113,15 +1113,15 @@
     "topics": {
       "ai": {
         "q": "Come configuro l'AI?",
-        "a": "Sprigo ha bisogno di un modello linguistico per scrivere le lezioni. Il più semplice è Ollama: installalo e apri Sprigo; troverà Ollama e offrirà di scaricare qwen3:8b (circa 5,2 GB). Funziona anche LM Studio: avvia il suo server locale e carica un modello.\nNessun modello locale? Usa un fornitore cloud (OpenAI, Anthropic, Gemini, OpenRouter) con la tua chiave API. Le chiavi rimangono nel portachiavi del sistema.\nCambialo in Impostazioni → AI e voce → Fornitore AI."
+        "a": "Sprigo ha bisogno di un modello linguistico per scrivere le lezioni. Il più semplice è Ollama: installalo e apri Sprigo; troverà Ollama e offrirà di scaricare qwen3.5:4b (circa 3,3 GB). Funziona anche LM Studio: avvia il suo server locale e carica un modello.\nNessun modello locale? Usa un fornitore cloud (OpenAI, Anthropic, Gemini, OpenRouter) con la tua chiave API. Le chiavi rimangono nel portachiavi del sistema.\nCambialo in Impostazioni → AI e voce → Fornitore AI."
       },
       "aiConnect": {
         "q": "\"Nessun modello locale trovato\" o \"Impossibile connettersi\"",
-        "a": "Ollama: avvia l'app Ollama. Sprigo lo cerca all'indirizzo http://localhost:11434. Se non ha modelli, lascia che Sprigo scarichi quello suggerito, oppure esegui: ollama pull qwen3:8b\nLM Studio: avvia il suo server locale e carica un modello.\nCloud: controlla la chiave API e i crediti del tuo account.\nUn VPN o un firewall possono anche bloccare localhost."
+        "a": "Ollama: avvia l'app Ollama. Sprigo lo cerca all'indirizzo http://localhost:11434. Se non ha modelli, lascia che Sprigo scarichi quello suggerito, oppure esegui: ollama pull qwen3.5:4b\nLM Studio: avvia il suo server locale e carica un modello.\nCloud: controlla la chiave API e i crediti del tuo account.\nUn VPN o un firewall possono anche bloccare localhost."
       },
       "weak": {
         "q": "Perché le lezioni sono a volte deboli o sbagliate?",
-        "a": "Di solito il modello è troppo piccolo. Usa uno con 8 miliardi di parametri o più (16 GB di memoria sono un buon inizio). Se un esercizio è sbagliato, fai ricorso nella lezione.\nLe lezioni vengono generate una volta sola e memorizzate in cache, quindi un modello lento influisce principalmente sulla prima visita a un passaggio."
+        "a": "Di solito il modello è troppo piccolo o semplicemente debole. Nelle impostazioni vedi il punteggio di ogni modello provato; scegline uno segnato come misurato buono. Se un esercizio è sbagliato, fai ricorso nella lezione.\nLe lezioni vengono generate una volta sola e memorizzate in cache, quindi un modello lento influisce principalmente sulla prima visita a un passaggio."
       },
       "mic": {
         "q": "Sprigo non mi sente",

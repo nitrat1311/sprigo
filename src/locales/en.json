@@ -1090,15 +1090,15 @@
     "topics": {
       "ai": {
         "q": "How do I set up the AI?",
-        "a": "Sprigo needs a language model to write lessons. The easiest is Ollama: install it and open Sprigo; it finds Ollama and offers to download qwen3:8b (about 5.2 GB). LM Studio works too: start its local server and load a model.\nNo local model? Use a cloud provider (OpenAI, Anthropic, Gemini, OpenRouter) with your own API key. Keys stay in the system keychain.\nChange it in Settings → AI & voice → AI provider."
+        "a": "Sprigo needs a language model to write lessons. The easiest is Ollama: install it and open Sprigo; it finds Ollama and offers to download qwen3.5:4b (about 3.3 GB). LM Studio works too: start its local server and load a model.\nNo local model? Use a cloud provider (OpenAI, Anthropic, Gemini, OpenRouter) with your own API key. Keys stay in the system keychain.\nChange it in Settings → AI & voice → AI provider."
       },
       "aiConnect": {
         "q": "“No local model found” or “Could not connect”",
-        "a": "Ollama: start the Ollama app. Sprigo looks for it at http://localhost:11434. If it has no models, let Sprigo download the suggested one, or run: ollama pull qwen3:8b\nLM Studio: start its local server and load a model.\nCloud: check the API key and your account's credit.\nA VPN or firewall can also block localhost."
+        "a": "Ollama: start the Ollama app. Sprigo looks for it at http://localhost:11434. If it has no models, let Sprigo download the suggested one, or run: ollama pull qwen3.5:4b\nLM Studio: start its local server and load a model.\nCloud: check the API key and your account's credit.\nA VPN or firewall can also block localhost."
       },
       "weak": {
         "q": "Why are lessons weak or wrong sometimes?",
-        "a": "Usually the model is too small. Use one with 8B parameters or more (16 GB of memory is a good start). If one exercise is wrong, appeal it in the lesson.\nLessons are generated once and cached, so a slow model mostly affects the first visit to a step."
+        "a": "Usually the model is too small or simply weak. The settings show what each tested model scored; pick one marked as measured good. If one exercise is wrong, appeal it in the lesson.\nLessons are generated once and cached, so a slow model mostly affects the first visit to a step."
       },
       "mic": {
         "q": "Sprigo doesn't hear me",
