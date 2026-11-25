@@ -289,8 +289,9 @@ const SEARCH_ICON: Record<SearchKind, IconName> = {
 };
 const MAX_HITS = 25;
 
-/** Search over the course's units, lessons, words and grammar, and the guidebooks already written (#44). */
-function SearchBox() {
+/** Search over the course's units, lessons, words and grammar, and the guidebooks already written (#44).
+ *  Titles match in the learner's language too, and show the translation the path shows under them. */
+function SearchBox({ levelName, subs, native }: { levelName: (l: Cefr) => string; subs: Record<string, string>; native?: string }) {
   const { t } = useTranslation();
   const { course, enrollment, openSheet, setViewLevel, toast } = useApp();
   const [q, setQ] = useState("");
@@ -301,7 +302,7 @@ function SearchBox() {
     // Loaded when the search starts, so a guidebook written since the screen opened is searched too.
     db.cachedGuidebooks<Guide>(enrollment.id).then(setGuides).catch((e) => console.warn("guide search", e));
   }, [enrollment?.id, active]);
-  const hits = useMemo(() => course ? searchCourse(course, query, guides) : [], [course, query, guides]);
+  const hits = useMemo(() => course ? searchCourse(course, query, guides, subs) : [], [course, query, guides, subs]);
   if (!course || !enrollment) return null;
   const levels = levelsOf(course);
   const future = (h: SearchHit) => levels.indexOf(h.level) > levels.indexOf(enrollment.level);
@@ -325,8 +326,9 @@ function SearchBox() {
           <button className="card row-item" key={`${h.level}:${h.unitId}:${h.kind}:${h.text}`} onClick={() => open(h)}>
             <span className="od-field od-fill">
               <b>{h.text}</b>
+              {h.translation && <span className="unit-sub" lang={native}>{h.translation}</span>}
               <span className="muted small">
-                {h.unitTitle} · {h.level} · {t(`search.${h.kind}`)}{future(h) ? ` · ${t("grammar.later")}` : ""}
+                {h.unitTitle} · {h.level} · {levelName(h.level)} · {t(`search.${h.kind}`)}{future(h) ? ` · ${t("grammar.later")}` : ""}
               </span>
               {h.note && <span className="small">{h.note}</span>}
             </span>
@@ -395,7 +397,7 @@ export function Learn() {
     <>
       <LiveButton className="mobile-only" />
       {setup}{errors}
-      <SearchBox />
+      <SearchBox levelName={levelName} subs={shown} native={native} />
       <button className="btn btn-ghost" style={{ marginTop: "var(--s-6)" }} onClick={() => openSheet(<LevelSheet />)} aria-haspopup="dialog">
         {level} · {levelName(level)} <Icon name="down" />
       </button>
