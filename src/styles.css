@@ -694,6 +694,11 @@ html[data-theme="dark"]:not([data-contrast="high"]) .call-fix{color:var(--gold)}
 .card.set-group{display:flex;flex-direction:column;gap:0;padding:0}
 .set-group > *{padding:var(--s-5)}
 .set-group > * + *{border-top:1px solid var(--border)}
+/* Trailing control of a settings row: one shared width, so the buttons' and selects' left edges line up across rows.
+   Direct children only (icon buttons, switches, segmented controls and controls inside an od-field keep their sizing);
+   .btn already centres its text and a .select lays its value out from the left. */
+.set-group .od-row > .btn,
+.set-group .od-row > .select{min-width:9.5rem}
 
 /* Settings switches: a boolean row's state at a glance, no text to translate. The track outline and the thumb carry
    the state (WCAG 1.4.11 needs 3:1 for both): off is --text-muted on --card (5.6:1 light, 6.6:1 dark); on is the
