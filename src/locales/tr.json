@@ -2,6 +2,15 @@
   "_meta": {
     "name": "Türkçe"
   },
+  "error": {
+    "title": "Bir şeyler ters gitti",
+    "desc": "Sprigo bu ekranı çizerken beklenmedik bir hata verdi. Verilerin güvende. Devam etmek için yeniden yükle; hata tekrarlarsa aşağıdaki ayrıntıları kopyalayıp geliştiriciye gönder.",
+    "reload": "Yeniden yükle",
+    "details": "Teknik ayrıntılar",
+    "copy": "Ayrıntıları kopyala",
+    "copied": "Kopyalandı",
+    "version": "Sürüm"
+  },
   "boot": {
     "newerTitle": "Bu veri daha yeni bir sürümden",
     "newerDesc": "Verilerin Sprigo'nun daha yeni bir sürümüyle kaydedilmiş. Açmak için uygulamayı güncelle. Bu sürüm verilere dokunmaz.",
@@ -35,7 +44,9 @@
     "friends": "Arkadaşlar",
     "notifications": "Bildirimler",
     "settings": "Ayarlar",
-    "grammar": "Dilbilgisi"
+    "grammar": "Dilbilgisi",
+    "notes": "Notlar",
+    "account": "Hesap menüsü"
   },
   "common": {
     "soon": "Yakında",
@@ -50,6 +61,19 @@
     "unit": "Ünite",
     "guide": "Rehber",
     "story": "Hikâye"
+  },
+  "search": {
+    "label": "Derslerde ve rehberlerde ara",
+    "placeholder": "Ünite, kelime, dilbilgisi ara…",
+    "none": "“{{query}}” için sonuç yok.",
+    "more": "Yalnızca ilk {{count}} sonuç gösteriliyor. Daraltmak için yazmaya devam et.",
+    "count_one": "{{count}} sonuç",
+    "count_other": "{{count}} sonuç",
+    "unit": "Ünite",
+    "step": "Ders",
+    "vocabulary": "Kelimeler",
+    "grammar": "Dilbilgisi",
+    "guide": "Rehber"
   },
   "learn": {
     "kicker": "{{level}} · Ünite {{unit}}",
@@ -83,8 +107,18 @@
     "legendTicket_one": "{{count}} bilet",
     "legendTicket_other": "{{count}} bilet",
     "skipUnit": "Üniteyi testle geç (%{{score}})",
-    "toTop": "En yukarı",
+    "summit": "Zirve: {{level}}",
+    "summitEnd": "Zirve",
+    "lockedDesc": "Bu dersi açmak için önceki dersleri tamamla.",
     "toHere": "Kaldığım yere"
+  },
+  "levels": {
+    "A1": "Başlangıç",
+    "A2": "Temel",
+    "B1": "Orta",
+    "B2": "Orta üstü",
+    "C1": "İleri",
+    "C2": "Ustalık"
   },
   "practice": {
     "planning": "Planlama süresi",
@@ -161,7 +195,25 @@
     "wordsError_translation": "çeviri yok",
     "wordsError_schedule": "tekrar verisi geçersiz",
     "saved": "Kaydedilenler",
-    "savedEmpty": "Burada tutmak için bir ünitedeki, rehberdeki veya hikâyedeki yer imine dokun."
+    "savedEmpty": "Burada tutmak için bir ünitedeki, rehberdeki veya hikâyedeki yer imine dokun.",
+    "tabs": {
+      "activities": "Alıştırmalar"
+    },
+    "groups": {
+      "speak": "Konuşma",
+      "review": "Tekrar",
+      "skills": "Beceriler",
+      "challenge": "Meydan okuma"
+    },
+    "wordsHint": "Listeni CSV olarak yedekle veya içe aktar.",
+    "wordsExportShort": "Dışa aktar",
+    "wordsImportShort": "İçe aktar",
+    "wordExample": "Örnek kullanım",
+    "wordStrength": "Güç: {{n}}/5",
+    "wordStrengthHint": "Kelime pratiği yaptıkça (Günün tekrarı, Kartlar, Dinleme) güç artar.",
+    "dueAbout": "Unutmak üzere olduğun kelimeleri tekrar et",
+    "cardsAbout": "Kelimelerini kartlarla çalış",
+    "listenAbout": "Duyduğunu seç"
   },
   "league": {
     "title": "{{name}} Ligi",
@@ -227,6 +279,39 @@
       "speak": "Konuşma"
     },
     "table": "Tablo olarak göster"
+  },
+  "goals": {
+    "title": "Hedefler",
+    "week": "Haftalık hedef",
+    "month": "Aylık hedef",
+    "weekShort": "hafta",
+    "monthShort": "ay",
+    "measure": "Ölçüt",
+    "target": "Hedef",
+    "targetAria": "Hedef: her {{period}}",
+    "progress": "{{goal}} {{unit}} hedefinden {{n}}",
+    "lastWeek": "Geçen hafta: {{n}} {{unit}}",
+    "lastMonth": "Geçen ay: {{n}} {{unit}}",
+    "report": "Rapor",
+    "weekReport": "Haftalık rapor",
+    "monthReport": "Aylık rapor",
+    "range": "{{from}} – {{to}}",
+    "metrics": {
+      "xp": "XP",
+      "words": "Yeni kelimeler",
+      "speak": "Konuşma dakikaları"
+    },
+    "units": {
+      "xp": "XP",
+      "words_one": "kelime",
+      "words_other": "kelime",
+      "speak": "dk"
+    },
+    "goalDone": "Hedefe ulaşıldı",
+    "goalLeft": "{{n}} {{unit}} kaldı",
+    "goalShort": "{{n}} {{unit}} eksik",
+    "notifyTitle": "Sprigo'da haftan",
+    "notifyBody": "Geçen hafta {{n}} XP. Tam rapor için profiline bak."
   },
   "profile": {
     "since": "{{date}} tarihinden beri öğreniyor",
@@ -547,6 +632,7 @@
     "betaUpdatesDesc": "Test sürümlerini herkesten önce al. Hata içerebilirler; normal sürümleri de almaya devam edersin.",
     "usage": {
       "title": "Token kullanımı",
+      "details": "Ayrıntılar",
       "desc": "AI sağlayıcının yanıtladıkları, liste fiyatlarından tahmini.",
       "month": "Ay",
       "empty": "Bu ay henüz AI kullanımı yok.",
@@ -565,7 +651,8 @@
         "tutor": "Öğretmen ve rol yapma",
         "lookup": "Kelime aramaları",
         "memory": "Hafıza",
-        "garden": "Bahçe notları"
+        "garden": "Bahçe notları",
+        "title": "Başlıklar"
       }
     }
   },
@@ -576,6 +663,8 @@
     "qLessons": "{{count}} ders tamamla",
     "chestTitle": "Açılmamış bir hasat sepetin var",
     "chestTap": "Dokunarak aç",
+    "gems": "{{count}} jeton",
+    "hearts": "{{count}} damla",
     "qPractice": "{{count}} pratik oturumu bitir"
   },
   "sheet": {
@@ -685,6 +774,13 @@
     "model": "Model",
     "modelDesc": "Mevcut modelleri listelemek için bağlantıyı test et",
     "smallModel": "{{min}} altındaki modeller derslerde yanlış cevaplar üretebilir. En az {{min}} bir model önerilir.",
+    "guide": {
+      "good": "Ölçüldü: canlı dersler için iyi.",
+      "weak": "Ölçüldü: hızlı, ama alıştırmaların yalnızca %{{pct}} kadarı geçti.",
+      "slow": "Ölçüldü: canlı dersler için çok yavaş.",
+      "weakSlow": "Ölçüldü: çok yavaş ve alıştırmaların yalnızca %{{pct}} kadarı geçti.",
+      "details": "İlk cümle {{secs}} sn · alıştırmaların %{{pct}} kadarı geçti · {{hardware}}, {{date}}"
+    },
     "test": "Bağlantıyı test et",
     "save": "Kaydet",
     "connected": "Bağlandı — {{count}} model bulundu",
@@ -830,7 +926,6 @@
     "accent_en-GB": "İngiliz"
   },
   "data": {
-    "section": "Veri",
     "folder": "Veri klasörü",
     "default": "Varsayılan klasör",
     "desktopOnly": "Yalnızca masaüstü uygulamasında",
@@ -1002,7 +1097,8 @@
     "invalidJson": "Bu dosya geçerli JSON değil.",
     "fileTooLarge": "Bu dosya {{size}} sınırından büyük.",
     "imageFailed": "Görsel okunamadı.",
-    "errors": "Önce şunları düzeltin:"
+    "errors": "Önce şunları düzeltin:",
+    "add": "Tutor ekle"
   },
   "biome": {
     "meadow": "Çayır",
@@ -1077,15 +1173,15 @@
     "topics": {
       "ai": {
         "q": "Yapay zekâyı nasıl kurarım?",
-        "a": "Sprigo dersleri yazmak için bir dil modeline ihtiyaç duyar. En kolayı Ollama: kur ve Sprigo'yu aç; Sprigo Ollama'yı bulur ve qwen3:8b modelini (yaklaşık 5,2 GB) indirmeyi önerir. LM Studio da olur: yerel sunucusunu başlatıp bir model yükle.\nYerel model çalıştıramıyor musun? Kendi API anahtarınla bir bulut sağlayıcı kullan (OpenAI, Anthropic, Gemini, OpenRouter). Anahtarlar sistemin anahtar zincirinde kalır.\nAyarlar → Yapay zekâ ve ses → Yapay zekâ sağlayıcısı'ndan değiştirebilirsin."
+        "a": "Sprigo dersleri yazmak için bir dil modeline ihtiyaç duyar. En kolayı Ollama: kur ve Sprigo'yu aç; Sprigo Ollama'yı bulur ve qwen3.5:4b modelini (yaklaşık 3,3 GB) indirmeyi önerir. LM Studio da olur: yerel sunucusunu başlatıp bir model yükle.\nYerel model çalıştıramıyor musun? Kendi API anahtarınla bir bulut sağlayıcı kullan (OpenAI, Anthropic, Gemini, OpenRouter). Anahtarlar sistemin anahtar zincirinde kalır.\nAyarlar → Yapay zekâ ve ses → Yapay zekâ sağlayıcısı'ndan değiştirebilirsin."
       },
       "aiConnect": {
         "q": "“Yerel model bulunamadı” ya da “Bağlanılamadı”",
-        "a": "Ollama: Ollama uygulamasını başlat. Sprigo onu http://localhost:11434 adresinde arar. Hiç modeli yoksa Sprigo'nun önerdiği modeli indirmesine izin ver ya da şunu çalıştır: ollama pull qwen3:8b\nLM Studio: yerel sunucuyu başlatıp bir model yükle.\nBulut: API anahtarını ve hesabındaki krediyi kontrol et.\nVPN ya da güvenlik duvarı da localhost'u engelleyebilir."
+        "a": "Ollama: Ollama uygulamasını başlat. Sprigo onu http://localhost:11434 adresinde arar. Hiç modeli yoksa Sprigo'nun önerdiği modeli indirmesine izin ver ya da şunu çalıştır: ollama pull qwen3.5:4b\nLM Studio: yerel sunucuyu başlatıp bir model yükle.\nBulut: API anahtarını ve hesabındaki krediyi kontrol et.\nVPN ya da güvenlik duvarı da localhost'u engelleyebilir."
       },
       "weak": {
         "q": "Dersler neden bazen zayıf ya da hatalı?",
-        "a": "Genelde model çok küçüktür. 8B ya da daha büyük bir model kullan (16 GB bellek iyi bir başlangıç). Bir alıştırma yanlışsa derste itiraz edebilirsin.\nDersler bir kez üretilip saklanır; yavaş bir model çoğunlukla bir adımı ilk açışında hissedilir."
+        "a": "Genelde model çok küçüktür ya da yalnızca zayıftır. Ayarlar'da her test edilen modelin ne aldığını görürsün; ölçülen iyi olarak işaretlenmiş birini kullan. Bir alıştırma yanlışsa derste itiraz edebilirsin.\nDersler bir kez üretilip saklanır; yavaş bir model çoğunlukla bir adımı ilk açışında hissedilir."
       },
       "mic": {
         "q": "Sprigo beni duymuyor",
@@ -1122,5 +1218,35 @@
     "notInGuide": "Yapay zekânın rehberi bu kalıbı atlamış. Tekrar dene.",
     "alsoIn": "Şunlarda da var: {{units}}",
     "practise": "Bunu çalış"
+  },
+  "notes": {
+    "title": "Notlar ve günlük",
+    "subtitle": "Kendi sözlerin: öğrendiğin dilde kısa bir giriş ve istediğin ünite için not. Bu cihazda saklanır ve veri dışa aktarımına dahildir.",
+    "tabs": {
+      "journal": "Günlük",
+      "units": "Ünite notları"
+    },
+    "today": "Bugün",
+    "writeIn": "{{lang}} dilinde birkaç cümle.",
+    "entryLabel": "Bugünün günlük girişi",
+    "pastEntryLabel": "{{date}} tarihli günlük girişi",
+    "past": "Önceki girişler",
+    "empty": "Henüz bir şey yazılmadı. Bugünle başla.",
+    "noCourse": "Ünitelerine not tutmak için bir kurs seç.",
+    "unitsHint": "{{lang}} üniteleri için kendi notların.",
+    "unitLabel": "{{level}} · notun",
+    "noteLabel": "{{unit}} notu",
+    "notePlaceholder": "Kelimeler, kurallar, örnekler…",
+    "noNote": "Henüz not yok",
+    "save": "Kaydet",
+    "saved": "Kaydedildi",
+    "saveFailed": "Not kaydedilemedi.",
+    "delete": "Sil",
+    "deleted": "Silindi",
+    "check": "Girişimi kontrol et",
+    "checking": "Kontrol ediliyor…",
+    "checkTitle": "Girişin, kontrol edildi",
+    "checkNoAi": "Girişinin kontrol edilmesi için yapay zekâyı ayarla.",
+    "checkFailed": "Giriş kontrol edilemedi."
   }
 }

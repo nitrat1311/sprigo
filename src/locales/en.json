@@ -2,6 +2,15 @@
   "_meta": {
     "name": "English"
   },
+  "error": {
+    "title": "Something went wrong",
+    "desc": "Sprigo hit an unexpected error while drawing this screen. Your data is safe. Reload to carry on; if it happens again, copy the details below and send them to the developer.",
+    "reload": "Reload",
+    "details": "Technical details",
+    "copy": "Copy details",
+    "copied": "Copied",
+    "version": "Version"
+  },
   "boot": {
     "newerTitle": "This data is from a newer version",
     "newerDesc": "Your data was saved by a newer version of Sprigo. Update the app to open it. This version won't change it.",
@@ -35,7 +44,9 @@
     "friends": "Friends",
     "notifications": "Notifications",
     "settings": "Settings",
-    "grammar": "Grammar"
+    "grammar": "Grammar",
+    "notes": "Notes",
+    "account": "Account menu"
   },
   "common": {
     "soon": "Coming soon",
@@ -50,6 +61,19 @@
     "unit": "Unit",
     "guide": "Guidebook",
     "story": "Story"
+  },
+  "search": {
+    "label": "Search lessons and guidebooks",
+    "placeholder": "Search units, words, grammar…",
+    "none": "No match for “{{query}}”.",
+    "more": "Showing the first {{count}} matches. Keep typing to narrow it down.",
+    "count_one": "{{count}} result",
+    "count_other": "{{count}} results",
+    "unit": "Unit",
+    "step": "Lesson",
+    "vocabulary": "Vocabulary",
+    "grammar": "Grammar",
+    "guide": "Guidebook"
   },
   "learn": {
     "kicker": "{{level}} · Unit {{unit}}",
@@ -83,8 +107,18 @@
     "legendTicket_one": "{{count}} ticket",
     "legendTicket_other": "{{count}} tickets",
     "skipUnit": "Pass this unit with a test (%{{score}})",
-    "toTop": "To the top",
+    "summit": "Summit: {{level}}",
+    "summitEnd": "Summit",
+    "lockedDesc": "Finish the earlier lessons to unlock this.",
     "toHere": "Back to my lesson"
+  },
+  "levels": {
+    "A1": "Beginner",
+    "A2": "Elementary",
+    "B1": "Intermediate",
+    "B2": "Upper intermediate",
+    "C1": "Advanced",
+    "C2": "Proficiency"
   },
   "practice": {
     "planning": "Planning time",
@@ -163,7 +197,25 @@
     "wordsError_translation": "no translation",
     "wordsError_schedule": "review data isn't valid",
     "saved": "Saved",
-    "savedEmpty": "Tap the bookmark on a unit, guidebook or story to keep it here."
+    "savedEmpty": "Tap the bookmark on a unit, guidebook or story to keep it here.",
+    "tabs": {
+      "activities": "Activities"
+    },
+    "groups": {
+      "speak": "Speaking",
+      "review": "Review",
+      "skills": "Skills",
+      "challenge": "Challenges"
+    },
+    "wordsHint": "Back up your list as CSV or import one.",
+    "wordsExportShort": "Export",
+    "wordsImportShort": "Import",
+    "wordExample": "Example",
+    "wordStrength": "Strength: {{n}}/5",
+    "wordStrengthHint": "Strength grows as you practise the word (Daily review, Cards, Listening).",
+    "dueAbout": "Review words you're about to forget",
+    "cardsAbout": "Study your words with flashcards",
+    "listenAbout": "Pick what you hear"
   },
   "league": {
     "title": "{{name}} League",
@@ -229,6 +281,39 @@
       "speak": "Speaking"
     },
     "table": "Show as table"
+  },
+  "goals": {
+    "title": "Goals",
+    "week": "Weekly goal",
+    "month": "Monthly goal",
+    "weekShort": "week",
+    "monthShort": "month",
+    "measure": "Measure",
+    "target": "Target",
+    "targetAria": "Target each {{period}}",
+    "progress": "{{n}} of {{goal}} {{unit}}",
+    "lastWeek": "Last week: {{n}} {{unit}}",
+    "lastMonth": "Last month: {{n}} {{unit}}",
+    "report": "Report",
+    "weekReport": "Weekly report",
+    "monthReport": "Monthly report",
+    "range": "{{from}} – {{to}}",
+    "metrics": {
+      "xp": "XP",
+      "words": "New words",
+      "speak": "Speaking minutes"
+    },
+    "units": {
+      "xp": "XP",
+      "words_one": "word",
+      "words_other": "words",
+      "speak": "min"
+    },
+    "goalDone": "Goal reached",
+    "goalLeft": "{{n}} {{unit}} to go",
+    "goalShort": "{{n}} {{unit}} short",
+    "notifyTitle": "Your week in Sprigo",
+    "notifyBody": "{{n}} XP last week. See your profile for the full report."
   },
   "profile": {
     "since": "Learning since {{date}}",
@@ -551,6 +636,7 @@
     "betaUpdatesDesc": "Get test versions before everyone else. They can have bugs; you also keep getting every regular release.",
     "usage": {
       "title": "Token usage",
+      "details": "Details",
       "desc": "What your AI provider has answered, estimated from list prices.",
       "month": "Month",
       "empty": "No AI usage this month yet.",
@@ -569,7 +655,8 @@
         "tutor": "Tutor & roleplay",
         "lookup": "Word lookups",
         "memory": "Memory",
-        "garden": "Garden notes"
+        "garden": "Garden notes",
+        "title": "Titles"
       }
     }
   },
@@ -581,6 +668,10 @@
     "qLessons_other": "Complete {{count}} lessons",
     "chestTitle": "You have an unopened harvest basket",
     "chestTap": "Tap to open",
+    "gems_one": "{{count}} coin",
+    "gems_other": "{{count}} coins",
+    "hearts_one": "{{count}} drop",
+    "hearts_other": "{{count}} drops",
     "qPractice_one": "Finish {{count}} practice session",
     "qPractice_other": "Finish {{count}} practice sessions"
   },
@@ -691,6 +782,13 @@
     "model": "Model",
     "modelDesc": "Test the connection to list the available models",
     "smallModel": "Models under {{min}} can write lessons with wrong answers. A model of {{min}} or more is recommended.",
+    "guide": {
+      "good": "Measured: good for live lessons.",
+      "weak": "Measured: quick, but only {{pct}}% of exercises passed.",
+      "slow": "Measured: too slow for live lessons.",
+      "weakSlow": "Measured: too slow, and only {{pct}}% of exercises passed.",
+      "details": "First sentence {{secs}} s · {{pct}}% of exercises pass · {{hardware}}, {{date}}"
+    },
     "test": "Test connection",
     "save": "Save",
     "connected": "Connected — {{count}} models found",
@@ -836,7 +934,6 @@
     "accent_en-GB": "British"
   },
   "data": {
-    "section": "Data",
     "folder": "Data folder",
     "default": "Default folder",
     "desktopOnly": "Only available in the desktop app",
@@ -1008,7 +1105,8 @@
     "invalidJson": "This file is not valid JSON.",
     "fileTooLarge": "This file is larger than {{size}}.",
     "imageFailed": "The image could not be read.",
-    "errors": "Please fix these first:"
+    "errors": "Please fix these first:",
+    "add": "Add a tutor"
   },
   "biome": {
     "meadow": "Meadow",
@@ -1083,15 +1181,15 @@
     "topics": {
       "ai": {
         "q": "How do I set up the AI?",
-        "a": "Sprigo needs a language model to write lessons. The easiest is Ollama: install it and open Sprigo; it finds Ollama and offers to download qwen3:8b (about 5.2 GB). LM Studio works too: start its local server and load a model.\nNo local model? Use a cloud provider (OpenAI, Anthropic, Gemini, OpenRouter) with your own API key. Keys stay in the system keychain.\nChange it in Settings → AI & voice → AI provider."
+        "a": "Sprigo needs a language model to write lessons. The easiest is Ollama: install it and open Sprigo; it finds Ollama and offers to download qwen3.5:4b (about 3.3 GB). LM Studio works too: start its local server and load a model.\nNo local model? Use a cloud provider (OpenAI, Anthropic, Gemini, OpenRouter) with your own API key. Keys stay in the system keychain.\nChange it in Settings → AI & voice → AI provider."
       },
       "aiConnect": {
         "q": "“No local model found” or “Could not connect”",
-        "a": "Ollama: start the Ollama app. Sprigo looks for it at http://localhost:11434. If it has no models, let Sprigo download the suggested one, or run: ollama pull qwen3:8b\nLM Studio: start its local server and load a model.\nCloud: check the API key and your account's credit.\nA VPN or firewall can also block localhost."
+        "a": "Ollama: start the Ollama app. Sprigo looks for it at http://localhost:11434. If it has no models, let Sprigo download the suggested one, or run: ollama pull qwen3.5:4b\nLM Studio: start its local server and load a model.\nCloud: check the API key and your account's credit.\nA VPN or firewall can also block localhost."
       },
       "weak": {
         "q": "Why are lessons weak or wrong sometimes?",
-        "a": "Usually the model is too small. Use one with 8B parameters or more (16 GB of memory is a good start). If one exercise is wrong, appeal it in the lesson.\nLessons are generated once and cached, so a slow model mostly affects the first visit to a step."
+        "a": "Usually the model is too small or simply weak. The settings show what each tested model scored; pick one marked as measured good. If one exercise is wrong, appeal it in the lesson.\nLessons are generated once and cached, so a slow model mostly affects the first visit to a step."
       },
       "mic": {
         "q": "Sprigo doesn't hear me",
@@ -1128,5 +1226,35 @@
     "notInGuide": "The AI's guide left this pattern out. Try again.",
     "alsoIn": "Also in: {{units}}",
     "practise": "Practise this"
+  },
+  "notes": {
+    "title": "Notes & journal",
+    "subtitle": "Your own words: a short entry in the language you're learning, and a note on any unit. Kept on this device and included in your data export.",
+    "tabs": {
+      "journal": "Journal",
+      "units": "Unit notes"
+    },
+    "today": "Today",
+    "writeIn": "A few sentences in {{lang}}.",
+    "entryLabel": "Today's journal entry",
+    "pastEntryLabel": "Journal entry from {{date}}",
+    "past": "Earlier entries",
+    "empty": "Nothing written yet. Start with today.",
+    "noCourse": "Choose a course to keep notes on its units.",
+    "unitsHint": "Your own notes on the units of {{lang}}.",
+    "unitLabel": "{{level}} · your note",
+    "noteLabel": "Note on {{unit}}",
+    "notePlaceholder": "Words, rules, examples…",
+    "noNote": "No note yet",
+    "save": "Save",
+    "saved": "Saved",
+    "saveFailed": "The note could not be saved.",
+    "delete": "Delete",
+    "deleted": "Deleted",
+    "check": "Check my entry",
+    "checking": "Checking…",
+    "checkTitle": "Your entry, checked",
+    "checkNoAi": "Set up the AI to have your entry checked.",
+    "checkFailed": "The entry could not be checked."
   }
 }

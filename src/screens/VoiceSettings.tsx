@@ -13,7 +13,7 @@ import { useLangName } from "./Profiles";
 import { wav16 } from "../wav";
 
 const gap = (g: string) => ({ "--od-gap": g }) as React.CSSProperties;
-const sheet = { ...gap("14px"), textAlign: "left" } as React.CSSProperties;
+const sheet = { ...gap("var(--s-5)"), textAlign: "left" } as React.CSSProperties;
 
 const TTS = [
   { p: "system", bars: 1, color: "var(--orange)" },
@@ -58,7 +58,7 @@ export function TtsRow() {
   useEffect(() => { ttsProvider().then(setV); }, []);
   const now = speakingWith(); // the last line spoke with another engine than the saved one (it fell back)
   return (
-    <div className="card od-row" style={gap("12px")}>
+    <div className="od-row" style={gap("var(--s-4)")}>
       <span className="od-field od-fill"><b>{t("settings.tts")}</b><span className="muted small">{t(ttsName(v))}</span>
         {now && now !== v && <span className="small" style={{ color: "var(--orange)" }}>{t("voice.using", { name: t(`voice.engine.${now}`) })}</span>}
         {!ttsSpeaks(v, lang) && <span className="small" style={{ color: "var(--orange)" }}>{t("voice.notForLang", { lang: langName(lang) })}</span>}</span>
@@ -122,8 +122,8 @@ function TtsSheet({ initial, onChange }: { initial: TtsProvider; onChange: (v: T
   };
   return (
     <div className="od-stack" style={sheet}>
-      <h3 style={{ textAlign: "center" }}>{t("settings.tts")}</h3>
-      <div className="od-stack" style={gap("8px")} role="radiogroup" aria-label={t("settings.tts")}>
+      <h3 className="od-center">{t("settings.tts")}</h3>
+      <div className="od-stack" style={gap("var(--s-3)")} role="radiogroup" aria-label={t("settings.tts")}>
         {TTS.filter(({ p }) => !(isCompanion && p !== "system" && p !== "piper")).map(({ p, bars, color }) => (
           <div key={p} className={`voice-option${v === p ? " on" : ""}`}>
             <button role="radio" aria-checked={v === p} disabled={pct !== null || !ttsSpeaks(p, lang)} onClick={() => pick(p)}>
@@ -139,12 +139,12 @@ function TtsSheet({ initial, onChange }: { initial: TtsProvider; onChange: (v: T
           </div>
         ))}
       </div>
-      <label className="od-stack" style={gap("4px")}>
+      <label className="od-stack" style={gap("var(--s-2)")}>
         <span className="small"><b>{t("voice.speed")}</b> <span className="muted">{speed.toFixed(1)}×</span></span>
         <input type="range" min={SPEED.min} max={SPEED.max} step={0.1} value={speed} onChange={(e) => pickSpeed(Number(e.target.value))} />
       </label>
       {accents && (
-        <div className="od-stack" style={gap("6px")}>
+        <div className="od-stack" style={gap("var(--s-3)")}>
           <span id="tts-accent" className="small"><b>{t("voice.accent")}</b></span>
           <div className="seg" role="radiogroup" aria-labelledby="tts-accent">
             {accents.map((a) => {
@@ -155,13 +155,13 @@ function TtsSheet({ initial, onChange }: { initial: TtsProvider; onChange: (v: T
         </div>
       )}
       {pct !== null && (
-        <div className="od-stack" style={gap("6px")} role="status">
+        <div className="od-stack" style={gap("var(--s-3)")} role="status">
           <div className="progress-track"><div className="progress-fill green" style={{ width: `${Math.round(pct * 100)}%` }} /></div>
           <span className="muted small">{t("voice.downloading", { pct: Math.round(pct * 100) })}</span>
         </div>
       )}
       {err && <p className="small" role="status" style={{ color: "var(--red)", overflowWrap: "anywhere" }}>{err}</p>}
-      <div className="od-stack sheet-actions" style={gap("8px")}>
+      <div className="od-stack sheet-actions" style={gap("var(--s-3)")}>
         <button className="btn btn-blue btn-block" disabled={pct !== null || testing} aria-busy={testing} onClick={() => speak(hello, lang, { gender: "f" })}>{t("voice.listen")}</button>
         <button className="btn btn-ghost btn-block" onClick={closeSheet}>{t("sheet.cancel")}</button>
       </div>
@@ -210,7 +210,7 @@ function ElevenSheet({ onSaved, onCancel }: { onSaved: () => void; onCancel: () 
   );
   return (
     <div className="od-stack" style={sheet}>
-      <h3 style={{ textAlign: "center" }}>{t("settings.ttsElevenlabs")}</h3>
+      <h3 className="od-center">{t("settings.ttsElevenlabs")}</h3>
       <p className="small">{t("voice.elevenlabsDesc")}</p>
       <label className="od-field"><b>{t("voice.elevenKey")}</b><span className="muted small">{t("ai.apiKeyDesc")}</span>
         <input className="input" type="password" autoComplete="off" spellCheck={false} value={key} onChange={(e) => setKey(e.target.value)} />
@@ -218,8 +218,8 @@ function ElevenSheet({ onSaved, onCancel }: { onSaved: () => void; onCancel: () 
       {voiceField(t("voice.elevenVoiceF"), vf, setVf, ELEVEN_VOICES.f)}
       {voiceField(t("voice.elevenVoiceM"), vm, setVm, ELEVEN_VOICES.m)}
       {status && <p className="small" role="status" style={{ color: status.ok ? "var(--green)" : "var(--red)", overflowWrap: "anywhere" }}>{status.msg}</p>}
-      <div className="od-stack sheet-actions" style={gap("8px")}>
-        <div className="od-row" style={gap("8px")}>
+      <div className="od-stack sheet-actions" style={gap("var(--s-3)")}>
+        <div className="od-row" style={gap("var(--s-3)")}>
           <button className="btn btn-ghost" disabled={busy || !key.trim()} onClick={test}>{t("ai.test")}</button>
           <button className="btn btn-primary od-fill" disabled={busy || !key.trim()} onClick={save}>{t("ai.save")}</button>
         </div>
@@ -260,14 +260,14 @@ function LocalTtsSheet({ onSaved, onCancel }: { onSaved: () => void; onCancel: (
   );
   return (
     <div className="od-stack" style={sheet}>
-      <h3 style={{ textAlign: "center" }}>{t("settings.ttsLocal")}</h3>
+      <h3 className="od-center">{t("settings.ttsLocal")}</h3>
       <p className="small">{t("voice.localDesc")}</p>
       {field("baseURL", t("voice.localUrl"))}
       {field("model", t("voice.localModel"))}
       {field("voice", t("voice.localVoice"))}
       {status && <p className="small" role="status" style={{ color: status.ok ? "var(--green)" : "var(--red)", overflowWrap: "anywhere" }}>{status.msg}</p>}
-      <div className="od-stack sheet-actions" style={gap("8px")}>
-        <div className="od-row" style={gap("8px")}>
+      <div className="od-stack sheet-actions" style={gap("var(--s-3)")}>
+        <div className="od-row" style={gap("var(--s-3)")}>
           <button className="btn btn-ghost" disabled={busy || !ready} onClick={test}>{t("ai.test")}</button>
           <button className="btn btn-primary od-fill" disabled={busy || !ready} onClick={save}>{t("ai.save")}</button>
         </div>
@@ -286,7 +286,7 @@ export function SttRow() {
   useEffect(() => { sttProvider().then(setV); if (isTauri) whisperModels().then(([c]) => setModel(c)).catch(() => {}); }, []);
   const better = course && WHISPER_FOR[course.iso];
   return (
-    <div className="card od-row" style={gap("12px")}>
+    <div className="od-row" style={gap("var(--s-4)")}>
       <span className="od-field od-fill"><b>{t("settings.stt")}</b><span className="muted small">{t(v === "deepgram" ? "settings.sttDeepgram" : "settings.sttWhisper")}</span>
         {v === "whisper" && better && model && model !== better &&
           <span className="small" style={{ color: "var(--orange)" }}>{t("voice.whisperFor", { lang: langName(course.iso), name: t(`voice.whisper${cap(better)}`) })}</span>}</span>
@@ -321,8 +321,8 @@ function SttSheet({ initial, onChange }: { initial: SttProvider; onChange: (v: S
   };
   return (
     <div className="od-stack" style={sheet}>
-      <h3 style={{ textAlign: "center" }}>{t("settings.stt")}</h3>
-      <div className="od-stack" style={gap("8px")} role="radiogroup" aria-label={t("settings.stt")}>
+      <h3 className="od-center">{t("settings.stt")}</h3>
+      <div className="od-stack" style={gap("var(--s-3)")} role="radiogroup" aria-label={t("settings.stt")}>
         {STT.map(({ p, icon, color }) => (
           <div key={p} className={`voice-option${v === p ? " on" : ""}`}>
             <button role="radio" aria-checked={v === p} onClick={() => pick(p)}>
@@ -335,7 +335,7 @@ function SttSheet({ initial, onChange }: { initial: SttProvider; onChange: (v: S
           </div>
         ))}
       </div>
-      <div className="od-stack sheet-actions" style={gap("8px")}>
+      <div className="od-stack sheet-actions" style={gap("var(--s-3)")}>
         <button className="btn btn-blue btn-block" onClick={() => openSheet(<SttTrySheet provider={v} onBack={back} />)}><Icon name="mic" /> {t("voice.try")}</button>
         <button className="btn btn-ghost btn-block" onClick={closeSheet}>{t("sheet.cancel")}</button>
       </div>
@@ -391,10 +391,10 @@ function WhisperSheet({ onBack }: { onBack: () => void }) {
   };
   return (
     <div className="od-stack" style={sheet}>
-      <h3 style={{ textAlign: "center" }}>{t("voice.whisperModel")}</h3>
+      <h3 className="od-center">{t("voice.whisperModel")}</h3>
       <p className="small">{t("voice.whisperModelDesc")}</p>
       {better && cur !== better && <p className="small" style={{ color: "var(--orange)" }}>{t("voice.whisperFor", { lang: langName(course.iso), name: t(`voice.whisper${cap(better)}`) })}</p>}
-      <div className="od-stack" style={gap("8px")} role="radiogroup" aria-label={t("voice.whisperModel")}>
+      <div className="od-stack" style={gap("var(--s-3)")} role="radiogroup" aria-label={t("voice.whisperModel")}>
         {WHISPER.map((m, i) => (
           <Fragment key={m}>
             <div className={`voice-option${cur === m ? " on" : ""}`}>
@@ -405,7 +405,7 @@ function WhisperSheet({ onBack }: { onBack: () => void }) {
               {have.includes(m) && <button className="icon-btn" aria-label={t("voice.whisperRemove", { name: t(`voice.whisper${cap(m)}`) })} disabled={!!busy} onClick={() => setAsk(ask === m ? null : m)}><Icon name="trash" /></button>}
             </div>
             {ask === m && (
-              <div className="od-row" style={gap("8px")} role="alert">
+              <div className="od-row" style={gap("var(--s-3)")} role="alert">
                 <span className="small od-fill">{t("voice.whisperRemoveAsk", { name: t(`voice.whisper${cap(m)}`) })}</span>
                 <button className="btn btn-ghost" onClick={() => setAsk(null)}>{t("sheet.cancel")}</button>
                 <button className="btn btn-danger" onClick={() => remove(m)}>{t("profiles.delete")}</button>
@@ -415,7 +415,7 @@ function WhisperSheet({ onBack }: { onBack: () => void }) {
         ))}
       </div>
       {busy && (
-        <div className="od-stack" style={gap("6px")} role="status">
+        <div className="od-stack" style={gap("var(--s-3)")} role="status">
           <div className="progress-track"><div className="progress-fill green" style={{ width: `${Math.round(busy.pct * 100)}%` }} /></div>
           <span className="muted small">{t("voice.downloading", { pct: Math.round(busy.pct * 100) })}</span>
         </div>
@@ -454,8 +454,8 @@ function SttTrySheet({ provider, onBack }: { provider: SttProvider; onBack: () =
   useEffect(() => { list.current?.scrollTo(0, list.current.scrollHeight); }, [heard]);
   return (
     <div className="od-stack" style={sheet}>
-      <h3 style={{ textAlign: "center" }}>{t("voice.tryTitle", { name: t(sttName(provider)) })}</h3>
-      <div className="od-row" style={gap("10px")} role="status">
+      <h3 className="od-center">{t("voice.tryTitle", { name: t(sttName(provider)) })}</h3>
+      <div className="od-row" style={gap("var(--s-4)")} role="status">
         <span className="voice-icon" style={{ color: err ? "var(--text-faint)" : "var(--red)" }}><Icon name="mic" /></span>
         <div className="progress-track od-fill"><div className="progress-fill green" style={{ width: `${Math.min(100, Math.round(level * 800))}%`, transition: "none" }} /></div>
       </div>
@@ -498,14 +498,14 @@ function DeepgramSheet({ onSaved, onCancel }: { onSaved: () => void; onCancel: (
   };
   return (
     <div className="od-stack" style={sheet}>
-      <h3 style={{ textAlign: "center" }}>{t("settings.sttDeepgram")}</h3>
+      <h3 className="od-center">{t("settings.sttDeepgram")}</h3>
       <p className="small">{t("voice.deepgramDesc")}</p>
       <label className="od-field"><b>{t("voice.deepgramKey")}</b><span className="muted small">{t("ai.apiKeyDesc")}</span>
         <input className="input" type="password" autoComplete="off" spellCheck={false} value={key} onChange={(e) => setKey(e.target.value)} />
       </label>
       {status && <p className="small" role="status" style={{ color: status.ok ? "var(--green)" : "var(--red)", overflowWrap: "anywhere" }}>{status.msg}</p>}
-      <div className="od-stack sheet-actions" style={gap("8px")}>
-        <div className="od-row" style={gap("8px")}>
+      <div className="od-stack sheet-actions" style={gap("var(--s-3)")}>
+        <div className="od-row" style={gap("var(--s-3)")}>
           <button className="btn btn-ghost" disabled={busy || !key.trim()} onClick={test}>{t("ai.test")}</button>
           <button className="btn btn-primary od-fill" disabled={busy || !key.trim()} onClick={save}>{t("ai.save")}</button>
         </div>

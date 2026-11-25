@@ -5,7 +5,7 @@ import { generate, generatePlain, generateStream } from "./ai";
 import { applyMemoryOps, cachedGuides, enrollmentProfile, getCached, listMemories, listMistakes, markMemoriesUsed, memoryOn, putCached } from "./db";
 import { REGISTRY, givesAway, langEn, lessonPrompt, mistakeLine, lessonSchema, plannedActivities, checkPrompt, checkSchema, rejected, reviewSystem, shuffleAnswer, solvePrompt, solveSchema, solveSystem, systemPrompt, toItems, type Item, type LessonContext, isEchoCorrection } from "./activities";
 import { CHAT_MAX_TURNS, CHAT_MIN_TURNS, FREE_GOAL, type Character } from "./characters";
-import { CEFR, levelsOf, storyId, type Course, type CourseLevel, type Cefr } from "./course";
+import { CEFR, guideId, levelsOf, storyId, type Course, type CourseLevel, type Cefr } from "./course";
 import { looseTutor, tutorPrompt, tutorSchema, tutorSystem, type TutorEvent, type TutorMsg } from "./tutor";
 import { cleanOps, looseMemory, memoryPrompt, memorySchema, memorySystem, pickMemories, type MemorySource } from "./memory";
 import { practicePrompt, practiceSchema, toPracticeSet, type PracticeSet } from "./practice";
@@ -346,7 +346,7 @@ export const unitWords = (u: Unit) => [...new Set(u.steps.flatMap((s) => s.vocab
 export const unitGrammar = (u: Unit) => [...new Set(u.steps.flatMap((s) => s.grammar.map((g) => g.pattern)))];
 
 export async function loadGuide(enrollmentId: number, c: Base, unit: Unit): Promise<Guide> {
-  const key = `guide:${unit.id}`;
+  const key = guideId(c.level, unit.id);
   const cached = await getCached<Guide>(enrollmentId, key);
   if (cached) return cached;
   const g = await generate(guideSchema, systemPrompt(c), [
@@ -368,7 +368,7 @@ export function lessonWord(enrollmentId: number, c: Base, word: string, sentence
   let p = looked.get(mk);
   if (!p) {
     p = (async () => {
-      const hit = await getCached<Lookup>(enrollmentId, key) ?? fromGuides(await cachedGuides<Guide>(enrollmentId), word, c.course.iso);
+      const hit = await getCached<Lookup>(enrollmentId, key) ?? fromGuides(await cachedGuides<Guide>(enrollmentId, c.level), word, c.course.iso);
       if (hit) return hit;
       const r = await generate(lookupSchema, systemPrompt(c), [
         `The learner tapped the word "${word}" in: "${sentence}".`,

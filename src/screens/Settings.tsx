@@ -1,17 +1,19 @@
-import { useEffect, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useApp } from "../store";
 import { languages } from "../i18n";
 import type { ThemePref } from "../theme";
 import { SMALL_MODEL_B, isSmallModel } from "../modelSize";
+import { guideFor, verdictOf, type Measurement } from "../modelGuide";
+import { MEASURED } from "../modelGuideData";
 import { PROVIDERS, RECOMMENDED_OLLAMA, detectLocal, getKey, listModels, pullOllama, setKey, type AiConfig, type ProviderId } from "../ai";
 import { aiUsage, aiUsageMonths, getSetting, isCompanion, isTauri, isWeb, setSetting } from "../db";
-import { monthOf, summarize, type UsageRow } from "../usage";
+import { monthOf, summarize, type UsageMonth, type UsageRow } from "../usage";
 import { setCompanion, tailscaleStatus, type TailscaleStatus } from "../companion";
 import { CourseFlag, CourseSheet, NATIVE, ProfileForm, useLangName } from "./Profiles";
 import { notifyAllowed } from "../notify";
 import { betaOn, findUpdate, UpdateSheet } from "../Update";
-import { DataSection } from "./DataSettings";
+import { DataRow } from "./DataSettings";
 import { InfoTip, SttRow, TtsRow } from "./VoiceSettings";
 import { Icon, type IconName } from "../icons";
 import { HelpButton, HelpSheet, openLink } from "../Help";
@@ -19,18 +21,32 @@ import { HelpButton, HelpSheet, openLink } from "../Help";
 const TEXT_SIZES = [1, 1.15, 1.3];
 const gap = (g: string) => ({ "--od-gap": g }) as React.CSSProperties;
 
+/** Related settings share one card; CSS draws a thin divider between the rows. */
+function Group({ children }: { children: React.ReactNode }) {
+  return <div className="card set-group">{children}</div>;
+}
+
+/** A boolean row's state at a glance: the track colour and the thumb's side carry it, so there is no text to translate. */
+export function Switch({ checked, onChange, labelledBy, disabled }: {
+  checked: boolean; onChange: (on: boolean) => void; labelledBy: string; disabled?: boolean;
+}) {
+  return (
+    <button type="button" role="switch" aria-checked={checked} aria-labelledby={labelledBy} disabled={disabled}
+      className="switch" onClick={() => onChange(!checked)} />
+  );
+}
+
 export function ToggleRow({ k, initial, onChange }: { k: string; initial: boolean; onChange?: (on: boolean) => void }) {
   const { t } = useTranslation();
+  const id = useId();
   // ponytail: rows without onChange are visual only, as in the design; wired when each feature lands.
   const [on, setOnState] = useState(initial);
   const setOn = (v: boolean) => { setOnState(v); onChange?.(v); };
   return (
-    <div className="card od-row" style={gap("12px")}>
-      <b className="od-fill">{t(`settings.${k}`)}</b>
+    <div className="od-row" style={gap("var(--s-4)")}>
+      <b className="od-fill" id={id}>{t(`settings.${k}`)}</b>
       <InfoTip label={t("voice.about", { name: t(`settings.${k}`) })}>{t(`settings.${k}Desc`)}</InfoTip>
-      <button className={`btn ${on ? "btn-primary" : "btn-ghost"}`} style={{ minWidth: 84 }} aria-pressed={on} onClick={() => setOn(!on)}>
-        {t(on ? "settings.on" : "settings.off")}
-      </button>
+      <Switch checked={on} onChange={setOn} labelledBy={id} />
     </div>
   );
 }
@@ -40,6 +56,7 @@ const TAILSCALE_DOWNLOAD = "https://tailscale.com/download";
 function PhoneRow() {
   const { t } = useTranslation();
   const { toast, openSheet } = useApp();
+  const id = useId();
   const [ts, setTs] = useState<TailscaleStatus | null>(null);
   const [on, setOn] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -68,14 +85,12 @@ function PhoneRow() {
   };
   const note = !ts.installed ? "settings.phoneMissing" : "settings.phoneSignIn"; // ready: the ⓘ sheet explains it
   return (
-    <div className="card od-row" style={gap("12px")}>
-      <span className="od-field od-fill"><b>{t("settings.phone")}</b>{!ready && <span className="muted small">{t(note)}</span>}</span>
+    <div className="od-row" style={gap("var(--s-4)")}>
+      <span className="od-field od-fill"><b id={id}>{t("settings.phone")}</b>{!ready && <span className="muted small">{t(note)}</span>}</span>
       <button className="icon-btn" aria-label={t("settings.phoneAbout")} onClick={() => openSheet(<PhoneInfoSheet />)}><Icon name="info" /></button>
       {on && ready && <button className="icon-btn" aria-label={t("settings.phoneShowQr")} disabled={busy} onClick={() => turn(true)}><Icon name="qr" /></button>}
       {/* An unready Tailscale still lets the learner switch an old "on" off. */}
-      <button className={`btn ${on ? "btn-primary" : "btn-ghost"}`} style={{ minWidth: 84 }} aria-pressed={on} disabled={busy || (!ready && !on)} onClick={() => turn(!on)}>
-        {t(on ? "settings.on" : "settings.off")}
-      </button>
+      <Switch checked={on} onChange={turn} labelledBy={id} disabled={busy || (!ready && !on)} />
     </div>
   );
 }
@@ -84,15 +99,15 @@ function PhoneInfoSheet() {
   const { t } = useTranslation();
   const { closeSheet } = useApp();
   return (
-    <div className="od-stack" style={gap("12px")}>
-      <div className="od-row" style={gap("4px")}><h3>{t("settings.phone")}</h3><HelpButton topic="phone" /></div>
+    <div className="od-stack" style={gap("var(--s-4)")}>
+      <div className="od-row" style={gap("var(--s-2)")}><h3>{t("settings.phone")}</h3><HelpButton topic="phone" /></div>
       <p className="muted">{t("settings.phoneDesc")}</p>
-      <ol className="od-stack small" style={{ ...gap("8px"), paddingLeft: 20 }}>
+      <ol className="od-stack small" style={{ ...gap("var(--s-3)"), paddingLeft: "var(--s-6)" }}>
         <li>{t("settings.phoneHow1")}</li>
         <li>{t("settings.phoneHow2")}</li>
         <li>{t("settings.phoneHow3")}</li>
       </ol>
-      <div className="od-stack sheet-actions" style={gap("8px")}>
+      <div className="od-stack sheet-actions" style={gap("var(--s-3)")}>
         <button className="btn btn-blue btn-block" onClick={() => openLink(TAILSCALE_DOWNLOAD)}>{t("settings.phoneGetTailscale")}</button>
         <button className="btn btn-ghost btn-block" onClick={closeSheet}>{t("settings.phoneOk")}</button>
       </div>
@@ -104,13 +119,13 @@ function PhoneQrSheet({ url, qr }: { url: string; qr: string }) {
   const { t } = useTranslation();
   const { closeSheet } = useApp();
   return (
-    <div className="od-stack" style={{ ...gap("12px"), alignItems: "center", textAlign: "center" }}>
+    <div className="od-stack" style={{ ...gap("var(--s-4)"), alignItems: "center", textAlign: "center" }}>
       <h3>{t("settings.phoneScan")}</h3>
       <p className="muted small">{t("settings.phoneScanDesc")}</p>
       {/* SVG made by our own Rust side from the tailnet address; white behind it so dark mode still scans. */}
-      <div style={{ background: "#fff", padding: 8, borderRadius: 12, lineHeight: 0 }} dangerouslySetInnerHTML={{ __html: qr }} />
+      <div style={{ background: "#fff", padding: "var(--s-3)", borderRadius: "var(--r)", lineHeight: 0 }} dangerouslySetInnerHTML={{ __html: qr }} />
       <code className="small" style={{ userSelect: "all", overflowWrap: "anywhere" }}>{url}</code>
-      <div className="od-stack sheet-actions" style={{ ...gap("8px"), alignSelf: "stretch" }}>
+      <div className="od-stack sheet-actions" style={{ ...gap("var(--s-3)"), alignSelf: "stretch" }}>
         <button className="btn btn-ghost btn-block" onClick={closeSheet}>{t("settings.phoneOk")}</button>
       </div>
     </div>
@@ -121,10 +136,10 @@ function PhoneApproveSheet({ url }: { url: string }) {
   const { t } = useTranslation();
   const { closeSheet } = useApp();
   return (
-    <div className="od-stack" style={gap("12px")}>
+    <div className="od-stack" style={gap("var(--s-4)")}>
       <h3>{t("settings.phoneApprove")}</h3>
       <p className="muted">{t("settings.phoneApproveDesc")}</p>
-      <div className="od-stack sheet-actions" style={gap("8px")}>
+      <div className="od-stack sheet-actions" style={gap("var(--s-3)")}>
         <button className="btn btn-blue btn-block" onClick={() => openLink(url)}>{t("settings.phoneApproveOpen")}</button>
         <button className="btn btn-ghost btn-block" onClick={closeSheet}>{t("sheet.cancel")}</button>
       </div>
@@ -160,8 +175,8 @@ function LocalSetup({ onPick }: { onPick: (p: ProviderId, models: string[]) => v
   const name = found.ollama?.length ? "Ollama" : found.lmstudio?.length ? "LM Studio" : null;
   if (name) return <p className="small" role="status" style={{ color: "var(--green)" }}>{t("ai.foundLocal", { name })}</p>;
   return (
-    <div className="card od-stack" style={gap("10px")} role="status">
-      <div className="od-row" style={{ ...gap("8px"), justifyContent: "flex-end" }}>
+    <div className="card od-stack" style={gap("var(--s-4)")} role="status">
+      <div className="od-row" style={{ ...gap("var(--s-3)"), justifyContent: "flex-end" }}>
         <HelpButton topic="aiConnect" />
       </div>
       {found.ollama ? <>
@@ -169,7 +184,7 @@ function LocalSetup({ onPick }: { onPick: (p: ProviderId, models: string[]) => v
         <span className="muted small">{t("ai.pullDesc", RECOMMENDED_OLLAMA)}</span>
         {pull === null
           ? <button className="btn btn-blue" onClick={download}>{t("ai.pull", RECOMMENDED_OLLAMA)}</button>
-          : <div className="od-stack" style={gap("6px")}>
+          : <div className="od-stack" style={gap("var(--s-3)")}>
               <div className="progress-track"><div className="progress-fill green" style={{ width: `${Math.round(pull * 100)}%` }} /></div>
               <span className="muted small">{t("ai.pulling", { pct: Math.round(pull * 100) })}</span>
             </div>}
@@ -194,8 +209,9 @@ const AI_ROWS: { p: ProviderId; icon: IconName; color: string }[] = [
 ];
 
 /** #48: what the learner's own key has cost, this month and earlier ones with usage, split by feature and model. */
-function UsageCard() {
+function UsageSummary() {
   const { t, i18n } = useTranslation();
+  const { openSheet } = useApp();
   const [rows, setRows] = useState<UsageRow[]>([]);
   const [month, setMonth] = useState<string>(() => monthOf());
   const [months, setMonths] = useState<string[]>(() => [monthOf()]);
@@ -212,35 +228,60 @@ function UsageCard() {
   const monthName = (m: string) => new Intl.DateTimeFormat(lang, { month: "long", year: "numeric" }).format(new Date(+m.slice(0, 4), +m.slice(5, 7) - 1, 1));
   const data = summarize(rows, month);
   const cost = (priced: boolean, unpriced: boolean, v: number) => priced ? `${usd(v)}${unpriced ? "*" : ""}` : t("settings.usage.noPrice");
+  return (<>
+    <div className="od-row" style={{ ...gap("var(--s-3)"), flexWrap: "wrap" }}>
+      <span className="od-field od-fill"><b>{t("settings.usage.title")}</b><span className="muted small">{t("settings.usage.desc")}</span></span>
+      <select className="select" aria-label={t("settings.usage.month")} value={month} onChange={(e) => setMonth(e.target.value)}>
+        {months.map((m) => <option key={m} value={m}>{monthName(m)}</option>)}
+      </select>
+      <button className="btn btn-ghost" onClick={() => openSheet(<UsageSheet data={data} month={monthName(month)} lang={lang} />)}>
+        {t("settings.usage.details")}
+      </button>
+    </div>
+    {!data.features.length
+      ? <p className="muted small">{t("settings.usage.empty")}</p>
+      : <div className="od-row" style={gap("var(--s-4)")}>
+          <span className="od-field od-fill"><b>{t("settings.usage.total")}</b>
+            <span className="muted small">{t("settings.usage.tokens", { input: num(data.input), output: num(data.output) })}</span></span>
+          <span className="od-field" style={{ textAlign: "end" }}><b>{cost(data.priced, data.unpriced, data.usd)}</b>
+            <span className="muted small">{t("settings.usage.estimate")}</span></span>
+        </div>}
+  </>);
+}
+
+/** The per-feature breakdown, behind Token usage's Details button: the row above stays one line. */
+function UsageSheet({ data, month, lang }: { data: UsageMonth; month: string; lang: string }) {
+  const { t } = useTranslation();
+  const { closeSheet } = useApp();
+  const num = (v: number) => new Intl.NumberFormat(lang).format(v);
+  const usd = (v: number) => new Intl.NumberFormat(lang, { style: "currency", currency: "USD", minimumFractionDigits: 2, maximumFractionDigits: v > 0 && v < 1 ? 4 : 2 }).format(v);
+  const cost = (priced: boolean, unpriced: boolean, v: number) => priced ? `${usd(v)}${unpriced ? "*" : ""}` : t("settings.usage.noPrice");
   return (
-    <div className="card od-stack" style={gap("10px")}>
-      <div className="od-row" style={gap("8px")}>
-        <span className="od-field od-fill"><b>{t("settings.usage.title")}</b><span className="muted small">{t("settings.usage.desc")}</span></span>
-        <select className="select" aria-label={t("settings.usage.month")} value={month} onChange={(e) => setMonth(e.target.value)}>
-          {months.map((m) => <option key={m} value={m}>{monthName(m)}</option>)}
-        </select>
-      </div>
+    <div className="od-stack" style={{ ...gap("var(--s-4)"), textAlign: "left" }}>
+      <h3>{t("settings.usage.title")}</h3>
+      <p className="muted small" style={{ marginBottom: 0 }}>{month}</p>
       {!data.features.length
         ? <p className="muted small">{t("settings.usage.empty")}</p>
         : <>
-            <div className="od-row" style={gap("12px")}>
+            <div className="od-row" style={gap("var(--s-4)")}>
               <span className="od-field od-fill"><b>{t("settings.usage.total")}</b>
                 <span className="muted small">{t("settings.usage.tokens", { input: num(data.input), output: num(data.output) })}</span></span>
               <span className="od-field" style={{ textAlign: "end" }}><b>{cost(data.priced, data.unpriced, data.usd)}</b>
                 <span className="muted small">{t("settings.usage.estimate")}</span></span>
             </div>
             {data.features.map((f) => (
-              <div key={f.feature} className="od-row" style={gap("12px")}>
+              <div key={f.feature} className="od-row" style={gap("var(--s-4)")}>
                 <span className="od-field od-fill"><b>{t(`settings.usage.features.${f.feature}`)}</b>
                   <span className="muted small">{t("settings.usage.tokens", { input: num(f.input), output: num(f.output) })}</span>
-                  <span className="muted small" style={{ overflowWrap: "anywhere" }}>
+                  <span className="muted small od-anywhere">
                     {f.models.map((m) => `${PROVIDERS[m.provider as ProviderId]?.label ?? m.provider} · ${m.model}`).join(", ")}
                   </span></span>
                 <b className="small">{cost(f.priced, f.unpriced, f.usd)}</b>
               </div>
             ))}
-            <p className="muted small">{t("settings.usage.note")}</p>
+            <p className="muted small" style={{ marginBottom: 0 }}>{t("settings.usage.note")}</p>
           </>}
+      <button className="btn btn-ghost btn-block" onClick={closeSheet}>{t("sheet.close")}</button>
     </div>
   );
 }
@@ -252,11 +293,11 @@ export function AiSheet() {
   const [found, setFound] = useState<{ p: ProviderId; models: string[] } | null>(null); // first run: a local server with models
   const configure = (p: ProviderId) => openSheet(<AiConfigSheet provider={p} models={found?.p === p ? found.models : []} />);
   return (
-    <div className="od-stack" style={{ ...gap("14px"), textAlign: "left" }}>
-      <div className="od-row" style={{ ...gap("4px"), justifyContent: "center" }}><h3>{t("ai.title")}</h3><HelpButton topic="ai" /></div>
+    <div className="od-stack" style={{ ...gap("var(--s-5)"), textAlign: "left" }}>
+      <div className="od-row" style={{ ...gap("var(--s-2)"), justifyContent: "center" }}><h3>{t("ai.title")}</h3><HelpButton topic="ai" /></div>
       {ai && <p className="muted small">{t("ai.backupDesc")}</p>}
       {!ai && <LocalSetup onPick={(p, models) => setFound({ p, models })} />}
-      <div className="od-stack" style={gap("8px")} role="radiogroup" aria-label={t("ai.provider")}>
+      <div className="od-stack" style={gap("var(--s-3)")} role="radiogroup" aria-label={t("ai.provider")}>
         {AI_ROWS.map(({ p, icon, color }) => (
           <div key={p} className={`voice-option${ai?.provider === p ? " on" : ""}`}>
             <button role="radio" aria-checked={ai?.provider === p} onClick={() => ai?.provider !== p && configure(p)}>
@@ -271,6 +312,22 @@ export function AiSheet() {
       </div>
       <button className="btn btn-ghost btn-block" onClick={closeSheet}>{t("sheet.cancel")}</button>
     </div>
+  );
+}
+
+/** What the model measured like (#37): pnpm bench latency and pnpm eval quality, bundled in modelGuideData.ts. */
+function ModelGuide({ m }: { m: Measurement }) {
+  const { t, i18n } = useTranslation();
+  const lang = i18n.resolvedLanguage ?? "en";
+  const pct = Math.round(m.quality);
+  const secs = new Intl.NumberFormat(lang, { maximumFractionDigits: 1 }).format(m.sayMs / 1000);
+  const date = new Intl.DateTimeFormat(lang, { day: "numeric", month: "short", year: "numeric" }).format(new Date(`${m.measured}T12:00:00`));
+  const verdict = verdictOf(m);
+  return (
+    <span className="small" style={{ color: verdict === "good" ? "var(--green)" : "var(--orange)" }}>
+      {t(`ai.guide.${verdict}`, { pct })}
+      <span className="muted"> · {t("ai.guide.details", { secs, pct, hardware: m.hardware, date })}</span>
+    </span>
   );
 }
 
@@ -291,6 +348,10 @@ function AiConfigSheet({ provider, models: found }: { provider: ProviderId; mode
 
   useEffect(() => { getKey(provider).then((k) => setKeyState(k ?? "")); }, [provider]);
   const cfg: AiConfig = { provider, baseURL: baseURL.trim(), model: model.trim() };
+  // The measured guidance sits outside the label and is linked by aria-describedby, so it does not become part of the
+  // field's accessible name. A small model keeps the size warning even when it was measured.
+  const measured = needsKey ? null : guideFor(cfg.model, MEASURED);
+  const small = !needsKey && isSmallModel(cfg.model);
 
   const test = async () => {
     setBusy(true); setStatus(null);
@@ -314,8 +375,8 @@ function AiConfigSheet({ provider, models: found }: { provider: ProviderId; mode
   const unsetBackup = async () => { await setAiBackup(null); toast(t("ai.backupRemoved")); back(); };
 
   return (
-    <div className="od-stack" style={{ ...gap("14px"), textAlign: "left" }}>
-      <h3 style={{ textAlign: "center" }}>{PROVIDERS[provider].label}</h3>
+    <div className="od-stack" style={{ ...gap("var(--s-5)"), textAlign: "left" }}>
+      <h3 className="od-center">{PROVIDERS[provider].label}</h3>
       <p className="small">{t(`ai.${provider}Info`)}</p>
       <label className="od-field"><b>{t("ai.baseURL")}</b>
         <input className="input" value={baseURL} spellCheck={false} onChange={(e) => setBaseURL(e.target.value)} placeholder={PROVIDERS[provider].baseURL} />
@@ -326,13 +387,19 @@ function AiConfigSheet({ provider, models: found }: { provider: ProviderId; mode
         </label>
       )}
       <label className="od-field"><b>{t("ai.model")}</b><span className="muted small">{t("ai.modelDesc")}</span>
-        <input className="input" list="ai-models" value={model} spellCheck={false} onChange={(e) => setModel(e.target.value)} />
+        <input className="input" list="ai-models" value={model} spellCheck={false} onChange={(e) => setModel(e.target.value)}
+          aria-describedby={measured || small ? "ai-model-note" : undefined} />
         <datalist id="ai-models">{models.map((m) => <option key={m} value={m} />)}</datalist>
-        {!needsKey && isSmallModel(cfg.model) && <span className="small" role="note" style={{ color: "var(--orange)" }}>{t("ai.smallModel", { min: `${SMALL_MODEL_B}B` })}</span>}
       </label>
+      {(measured || small) && (
+        <div id="ai-model-note" className="od-stack" style={gap("2px")} role="note">
+          {measured && <ModelGuide m={measured} />}
+          {small && <span className="small" style={{ color: "var(--orange)" }}>{t("ai.smallModel", { min: `${SMALL_MODEL_B}B` })}</span>}
+        </div>
+      )}
       {status && <p className="small" role="status" style={{ color: status.ok ? "var(--green)" : "var(--red)", overflowWrap: "anywhere" }}>{status.msg}</p>}
-      <div className="od-stack sheet-actions" style={gap("8px")}>
-        <div className="od-row" style={gap("8px")}>
+      <div className="od-stack sheet-actions" style={gap("var(--s-3)")}>
+        <div className="od-row" style={gap("var(--s-3)")}>
           <button className="btn btn-ghost" disabled={busy || (needsKey && !key.trim())} onClick={test}>{t("ai.test")}</button>
           <button className="btn btn-primary od-fill" disabled={busy || !cfg.model || (needsKey && !key.trim())} onClick={() => save()}>{t("ai.save")}</button>
         </div>
@@ -359,7 +426,7 @@ function VersionRow() {
     u ? openSheet(<UpdateSheet update={u} />) : toast(t("update.none"));
   };
   return (<>
-    <div className="card od-row" style={gap("12px")}>
+    <div className="od-row" style={gap("var(--s-4)")}>
       <b className="od-fill">{t("update.version", { version })}</b>
       <InfoTip label={t("voice.about", { name: t("update.section") })}>{t("update.desc")}</InfoTip>
       <button className="btn btn-ghost" disabled={busy} onClick={check}>{t("update.check")}</button>
@@ -382,7 +449,7 @@ export function Settings() {
   const [tab, setTab] = useState<Tab>(ai || isCompanion ? "profile" : "ai"); // AI not set up yet → its tab, so the warning shows
   return (
     <>
-      <h1 className="section-title" style={{ marginTop: 24 }}>{t("settings.title")}</h1>
+      <h1 className="section-title" style={{ marginTop: "var(--s-6)" }}>{t("settings.title")}</h1>
       <div className="tabs" role="tablist" aria-label={t("settings.title")}>
         {tabs.map((k) => (
           <button key={k} role="tab" id={`set-tab-${k}`} aria-selected={tab === k} aria-controls="set-panel" onClick={() => setTab(k)}>
@@ -391,97 +458,110 @@ export function Settings() {
         ))}
       </div>
 
-      <div id="set-panel" role="tabpanel" aria-labelledby={`set-tab-${tab}`} className="od-stack" style={gap("12px")}>
+      <div id="set-panel" role="tabpanel" aria-labelledby={`set-tab-${tab}`} className="od-stack" style={gap("var(--s-4)")}>
         {tab === "profile" && <>
-          <div className="card od-row">
-            <span style={{ fontSize: 28 }}>{course && <CourseFlag c={course} />}</span>
-            <span className="od-field od-fill"><b>{course ? langName(course.iso) : "—"}</b>
-              <span className="muted small">{t("settings.courseDesc", { level: enrollment?.level, native: langName(profile!.native_lang) })}</span></span>
-            <button className="btn btn-ghost" onClick={() => openSheet(<CourseSheet />)}>{t("settings.change")}</button>
-          </div>
-          <div className="card od-row" style={gap("12px")}>
-            <label className="od-field od-fill" htmlFor="native-lang"><b>{t("profiles.native")}</b><span className="muted small">{t("profiles.nativeDesc")}</span></label>
-            <select id="native-lang" className="select" value={profile!.native_lang} onChange={(e) => updateProfile({ native_lang: e.target.value })}>
-              {NATIVE.map((l) => <option key={l} value={l}>{langName(l)}</option>)}
-            </select>
-          </div>
-          <div className="card od-row" style={gap("12px")}>
-            <span className="od-field od-fill"><b>{profile!.name}</b><span className="muted small">{t("settings.profileDesc")}</span></span>
-            <button className="btn btn-ghost" onClick={() => openSheet(<><h3 style={{ marginBottom: 14 }}>{t("settings.editProfile")}</h3><ProfileForm initial={profile!} onDone={closeSheet} /></>)}>{t("settings.edit")}</button>
-          </div>
+          <Group>
+            <div className="od-row">
+              <span style={{ fontSize: "var(--fs-24)" }}>{course && <CourseFlag c={course} />}</span>
+              <span className="od-field od-fill"><b>{course ? langName(course.iso) : "—"}</b>
+                <span className="muted small">{t("settings.courseDesc", {
+                  level: enrollment && t(`levels.${enrollment.level}`, { defaultValue: course?.levels[enrollment.level]?.title ?? enrollment.level }),
+                  native: langName(profile!.native_lang),
+                })}</span></span>
+              <button className="btn btn-ghost" onClick={() => openSheet(<CourseSheet />)}>{t("settings.change")}</button>
+            </div>
+            <div className="od-row" style={gap("var(--s-4)")}>
+              <label className="od-field od-fill" htmlFor="native-lang"><b>{t("profiles.native")}</b><span className="muted small">{t("profiles.nativeDesc")}</span></label>
+              <select id="native-lang" className="select" value={profile!.native_lang} onChange={(e) => updateProfile({ native_lang: e.target.value })}>
+                {NATIVE.map((l) => <option key={l} value={l}>{langName(l)}</option>)}
+              </select>
+            </div>
+            <div className="od-row" style={gap("var(--s-4)")}>
+              <label className="od-field od-fill" htmlFor="ui-lang"><b>{t("settings.language")}</b></label>
+              <select id="ui-lang" className="select" value={i18n.resolvedLanguage} onChange={(e) => { i18n.changeLanguage(e.target.value); updateProfile({ ui_lang: e.target.value }); }}>
+                {languages.map((l) => <option key={l.code} value={l.code}>{l.name}</option>)}
+              </select>
+            </div>
+            <div className="od-row" style={gap("var(--s-4)")}>
+              <span className="od-field od-fill"><b>{profile!.name}</b><span className="muted small">{t("settings.profileDesc")}</span></span>
+              <button className="btn btn-ghost" onClick={() => openSheet(<><h3 style={{ marginBottom: "var(--s-5)" }}>{t("settings.editProfile")}</h3><ProfileForm initial={profile!} onDone={closeSheet} /></>)}>{t("settings.edit")}</button>
+            </div>
+          </Group>
           <button className="btn btn-ghost btn-block mobile-only" onClick={logout}>{t("settings.logout")}</button>
+          <Group>
+            <div className="od-row" style={gap("var(--s-4)")}>
+              <span className="od-field od-fill"><b>{t("help.title")}</b><span className="muted small">{t("help.tagline")}</span></span>
+              <button className="btn btn-ghost" onClick={() => openSheet(<HelpSheet />)}>{t("help.view")}</button>
+            </div>
+            {!isCompanion && <VersionRow />}
+          </Group>
         </>}
 
         {tab === "prefs" && <>
-          <ToggleRow k="hearts" initial={s.heartsOn} onChange={(heartsOn) => setS((s) => ({ ...s, heartsOn }))} />
-          <ToggleRow k="sound" initial={s.soundOn} onChange={(soundOn) => setS((s) => ({ ...s, soundOn }))} />
-          <ToggleRow k="speaking" initial={s.speakOn} onChange={(speakOn) => setS((s) => ({ ...s, speakOn }))} />
-          <ToggleRow k="bargeIn" initial={s.bargeIn} onChange={(bargeIn) => setS((s) => ({ ...s, bargeIn }))} />
-          {!isCompanion && <ToggleRow k="reminder" initial={s.reminderOn} onChange={async (reminderOn) => {
-            setS((s) => ({ ...s, reminderOn }));
-            if (reminderOn && !(await notifyAllowed())) toast(t("settings.reminderBlocked"));
-          }} />}
-          <ToggleRow k="reduceMotion" initial={s.reduceMotion} onChange={(reduceMotion) => setS((s) => ({ ...s, reduceMotion }))} />
-          {isCompanion && <TtsRow />}
+          <Group>
+            <ToggleRow k="hearts" initial={s.heartsOn} onChange={(heartsOn) => setS((s) => ({ ...s, heartsOn }))} />
+            <ToggleRow k="sound" initial={s.soundOn} onChange={(soundOn) => setS((s) => ({ ...s, soundOn }))} />
+            <ToggleRow k="speaking" initial={s.speakOn} onChange={(speakOn) => setS((s) => ({ ...s, speakOn }))} />
+            <ToggleRow k="bargeIn" initial={s.bargeIn} onChange={(bargeIn) => setS((s) => ({ ...s, bargeIn }))} />
+            {!isCompanion && <ToggleRow k="reminder" initial={s.reminderOn} onChange={async (reminderOn) => {
+              setS((s) => ({ ...s, reminderOn }));
+              if (reminderOn && !(await notifyAllowed())) toast(t("settings.reminderBlocked"));
+            }} />}
+            <ToggleRow k="reduceMotion" initial={s.reduceMotion} onChange={(reduceMotion) => setS((s) => ({ ...s, reduceMotion }))} />
+            {isCompanion && <TtsRow />}
+          </Group>
           <h2 className="section-title">{t("settings.appearance")}</h2>
-          <div className="card od-row" style={{ ...gap("12px"), flexWrap: "wrap" }}>
-            <b className="od-fill">{t("settings.theme")}</b>
-            <div className="seg" role="radiogroup" aria-label={t("settings.theme")}>
-              {themes.map((th) => (
-                <button key={th} role="radio" aria-checked={theme === th} className={`btn ${theme === th ? "btn-blue" : "btn-ghost"}`} onClick={() => setTheme(th)}>
-                  {t(`settings.theme${cap(th)}`)}
-                </button>
-              ))}
+          <Group>
+            <div className="od-row" style={{ ...gap("var(--s-4)"), flexWrap: "wrap" }}>
+              <b className="od-fill">{t("settings.theme")}</b>
+              <div className="seg" role="radiogroup" aria-label={t("settings.theme")}>
+                {themes.map((th) => (
+                  <button key={th} role="radio" aria-checked={theme === th} className={`btn ${theme === th ? "btn-blue" : "btn-ghost"}`} onClick={() => setTheme(th)}>
+                    {t(`settings.theme${cap(th)}`)}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
-          <div className="card od-row" style={{ ...gap("12px"), flexWrap: "wrap" }}>
-            <b className="od-fill">{t("settings.textSize")}</b>
-            <div className="seg" role="radiogroup" aria-label={t("settings.textSize")}>
-              {TEXT_SIZES.map((f) => (
-                <button key={f} role="radio" aria-checked={s.textSize === f} className={`btn ${s.textSize === f ? "btn-blue" : "btn-ghost"}`} onClick={() => setS((s) => ({ ...s, textSize: f }))}>
-                  {Math.round(f * 100)}%
-                </button>
-              ))}
+            <div className="od-row" style={{ ...gap("var(--s-4)"), flexWrap: "wrap" }}>
+              <b className="od-fill">{t("settings.textSize")}</b>
+              <div className="seg" role="radiogroup" aria-label={t("settings.textSize")}>
+                {TEXT_SIZES.map((f) => (
+                  <button key={f} role="radio" aria-checked={s.textSize === f} className={`btn ${s.textSize === f ? "btn-blue" : "btn-ghost"}`} onClick={() => setS((s) => ({ ...s, textSize: f }))}>
+                    {Math.round(f * 100)}%
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
-          <ToggleRow k="readableFont" initial={s.readableFont} onChange={(readableFont) => setS((s) => ({ ...s, readableFont }))} />
-          <ToggleRow k="highContrast" initial={s.highContrast} onChange={(highContrast) => setS((s) => ({ ...s, highContrast }))} />
-          <div className="card od-row" style={gap("12px")}>
-            <label className="od-fill" htmlFor="ui-lang"><b>{t("settings.language")}</b></label>
-            <select id="ui-lang" className="select" value={i18n.resolvedLanguage} onChange={(e) => { i18n.changeLanguage(e.target.value); updateProfile({ ui_lang: e.target.value }); }}>
-              {languages.map((l) => <option key={l.code} value={l.code}>{l.name}</option>)}
-            </select>
-          </div>
+            <ToggleRow k="readableFont" initial={s.readableFont} onChange={(readableFont) => setS((s) => ({ ...s, readableFont }))} />
+            <ToggleRow k="highContrast" initial={s.highContrast} onChange={(highContrast) => setS((s) => ({ ...s, highContrast }))} />
+          </Group>
         </>}
 
         {tab === "ai" && <>
-          <div className="card od-row" style={gap("12px")}>
-            <span className="od-field od-fill"><b>{t("ai.title")}</b>
-              {ai ? <span className="muted small" style={{ overflowWrap: "anywhere" }}>{PROVIDERS[ai.provider].label} · {ai.model}</span>
-                : <span className="small" style={{ color: "var(--orange)", fontWeight: 800 }}>{t("ai.notSet")}</span>}</span>
-            <button className={`btn ${ai ? "btn-ghost" : "btn-primary"}`} onClick={() => openSheet(<AiSheet />)}>{t(ai ? "settings.change" : "ai.setUp")}</button>
-          </div>
-          <UsageCard />
-          <TtsRow />
-          <SttRow />
+          <Group>
+            <div className="od-row" style={gap("var(--s-4)")}>
+              <span className="od-field od-fill"><b>{t("ai.title")}</b>
+                {ai ? <span className="muted small od-anywhere">{PROVIDERS[ai.provider].label} · {ai.model}</span>
+                  : <span className="small" style={{ color: "var(--orange)", fontWeight: 800 }}>{t("ai.notSet")}</span>}</span>
+              <button className={`btn ${ai ? "btn-ghost" : "btn-primary"}`} onClick={() => openSheet(<AiSheet />)}>{t(ai ? "settings.change" : "ai.setUp")}</button>
+            </div>
+            <UsageSummary />
+            <TtsRow />
+            <SttRow />
+          </Group>
         </>}
 
-        {tab === "privacy" && <>
-          <ToggleRow k="memory" initial={s.memoryOn} onChange={(memoryOn) => setS((s) => ({ ...s, memoryOn }))} />
-          <ToggleRow k="speech" initial={s.speechOn} onChange={(speechOn) => setS((s) => ({ ...s, speechOn }))} />
-          <DataSection />
-          {isTauri && <PhoneRow />}
-        </>}
+        {tab === "privacy" && (
+          <Group>
+            <ToggleRow k="memory" initial={s.memoryOn} onChange={(memoryOn) => setS((s) => ({ ...s, memoryOn }))} />
+            <ToggleRow k="speech" initial={s.speechOn} onChange={(speechOn) => setS((s) => ({ ...s, speechOn }))} />
+            <DataRow />
+            {isTauri && <PhoneRow />}
+          </Group>
+        )}
       </div>
 
-      <div className="od-stack" style={{ marginTop: 28, ...gap("10px") }}>
-        <div className="card od-row" style={gap("12px")}>
-          <span className="od-field od-fill"><b>{t("help.title")}</b><span className="muted small">{t("help.tagline")}</span></span>
-          <button className="btn btn-ghost" onClick={() => openSheet(<HelpSheet />)}>{t("help.view")}</button>
-        </div>
-        {!isCompanion && <VersionRow />}
-      </div>
-      <p className="muted small" style={{ textAlign: "center", marginTop: 8 }}>
+      <p className="muted small" style={{ textAlign: "center", marginTop: "var(--s-3)" }}>
         {t("update.madeBy")} <a href={AUTHOR_URL} onClick={(e) => { e.preventDefault(); void openLink(AUTHOR_URL); }}>mehmetozer.dev</a>
       </p>
     </>

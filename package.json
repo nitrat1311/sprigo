@@ -1,7 +1,7 @@
 {
   "name": "sprigo",
   "private": true,
-  "version": "1.13.0",
+  "version": "1.14.0",
   "license": "MIT",
   "type": "module",
   "scripts": {
@@ -13,7 +13,8 @@
     "test:e2e": "playwright test",
     "fetch-model": "sh scripts/fetch-model.sh",
     "bench": "node scripts/bench.ts",
-    "eval": "node scripts/eval.ts"
+    "eval": "node scripts/eval.ts",
+    "guide": "node scripts/guide.ts"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^4.0.91",

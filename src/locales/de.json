@@ -2,6 +2,15 @@
   "_meta": {
     "name": "Deutsch"
   },
+  "error": {
+    "title": "Etwas ist schiefgelaufen",
+    "desc": "Beim Zeichnen dieses Bildschirms ist in Sprigo ein unerwarteter Fehler aufgetreten. Deine Daten sind sicher. Lade neu, um weiterzumachen; wenn es wieder passiert, kopiere die Details unten und schicke sie dem Entwickler.",
+    "reload": "Neu laden",
+    "details": "Technische Details",
+    "copy": "Details kopieren",
+    "copied": "Kopiert",
+    "version": "Version"
+  },
   "boot": {
     "newerTitle": "Diese Daten stammen aus einer neueren Version",
     "newerDesc": "Deine Daten wurden mit einer neueren Version von Sprigo gespeichert. Aktualisiere die App, um sie zu öffnen. Diese Version ändert nichts daran.",
@@ -35,7 +44,9 @@
     "friends": "Freunde",
     "notifications": "Mitteilungen",
     "settings": "Einstellungen",
-    "grammar": "Grammatik"
+    "grammar": "Grammatik",
+    "notes": "Notizen",
+    "account": "Kontomenü"
   },
   "common": {
     "soon": "Bald verfügbar",
@@ -50,6 +61,19 @@
     "unit": "Einheit",
     "guide": "Lernführer",
     "story": "Geschichte"
+  },
+  "search": {
+    "label": "Lektionen und Lernführer durchsuchen",
+    "placeholder": "Einheiten, Wörter, Grammatik durchsuchen…",
+    "none": "Kein Treffer für „{{query}}“.",
+    "more": "Es werden nur die ersten {{count}} Treffer angezeigt. Tippe weiter, um die Suche einzugrenzen.",
+    "count_one": "{{count}} Treffer",
+    "count_other": "{{count}} Treffer",
+    "unit": "Einheit",
+    "step": "Lektion",
+    "vocabulary": "Vokabeln",
+    "grammar": "Grammatik",
+    "guide": "Lernführer"
   },
   "learn": {
     "kicker": "{{level}} · Einheit {{unit}}",
@@ -83,8 +107,18 @@
     "legendTicket_one": "{{count}} Ticket",
     "legendTicket_other": "{{count}} Tickets",
     "skipUnit": "Einheit per Test überspringen ({{score}} %)",
-    "toTop": "Nach oben",
+    "summit": "Gipfel: {{level}}",
+    "summitEnd": "Gipfel",
+    "lockedDesc": "Schließe die vorigen Lektionen ab, um diese freizuschalten.",
     "toHere": "Zu meiner Lektion"
+  },
+  "levels": {
+    "A1": "Anfänger",
+    "A2": "Grundlagen",
+    "B1": "Mittelstufe",
+    "B2": "Obere Mittelstufe",
+    "C1": "Fortgeschritten",
+    "C2": "Meisterschaft"
   },
   "practice": {
     "planning": "Planungszeit",
@@ -163,7 +197,25 @@
     "wordsError_translation": "keine Übersetzung",
     "wordsError_schedule": "Wiederholungsdaten ungültig",
     "saved": "Gespeichert",
-    "savedEmpty": "Tippe auf das Lesezeichen bei einer Einheit, einem Lernführer oder einer Geschichte, um sie hier zu behalten."
+    "savedEmpty": "Tippe auf das Lesezeichen bei einer Einheit, einem Lernführer oder einer Geschichte, um sie hier zu behalten.",
+    "tabs": {
+      "activities": "Übungen"
+    },
+    "groups": {
+      "speak": "Sprechen",
+      "review": "Wiederholen",
+      "skills": "Fähigkeiten",
+      "challenge": "Herausforderungen"
+    },
+    "wordsHint": "Sichere deine Liste als CSV oder importiere eine.",
+    "wordsExportShort": "Exportieren",
+    "wordsImportShort": "Importieren",
+    "wordExample": "Beispiel",
+    "wordStrength": "Stärke: {{n}}/5",
+    "wordStrengthHint": "Die Stärke wächst, wenn du das Wort übst (Tageswiederholung, Karten, Hören).",
+    "dueAbout": "Wiederhole Wörter, die du bald vergisst",
+    "cardsAbout": "Lerne deine Wörter mit Karteikarten",
+    "listenAbout": "Wähle, was du hörst"
   },
   "league": {
     "title": "{{name}}-Liga",
@@ -229,6 +281,39 @@
       "speak": "Sprechen"
     },
     "table": "Als Tabelle zeigen"
+  },
+  "goals": {
+    "title": "Ziele",
+    "week": "Wochenziel",
+    "month": "Monatsziel",
+    "weekShort": "Woche",
+    "monthShort": "Monat",
+    "measure": "Messgröße",
+    "target": "Ziel",
+    "targetAria": "Ziel pro {{period}}",
+    "progress": "{{n}} von {{goal}} {{unit}}",
+    "lastWeek": "Letzte Woche: {{n}} {{unit}}",
+    "lastMonth": "Letzter Monat: {{n}} {{unit}}",
+    "report": "Bericht",
+    "weekReport": "Wochenbericht",
+    "monthReport": "Monatsbericht",
+    "range": "{{from}} – {{to}}",
+    "metrics": {
+      "xp": "XP",
+      "words": "Neue Wörter",
+      "speak": "Sprechminuten"
+    },
+    "units": {
+      "xp": "XP",
+      "words_one": "Wort",
+      "words_other": "Wörter",
+      "speak": "Min."
+    },
+    "goalDone": "Ziel erreicht",
+    "goalLeft": "Noch {{n}} {{unit}}",
+    "goalShort": "{{n}} {{unit}} zu wenig",
+    "notifyTitle": "Deine Woche in Sprigo",
+    "notifyBody": "Letzte Woche {{n}} XP. Den ganzen Bericht findest du im Profil."
   },
   "profile": {
     "since": "Lernt seit {{date}}",
@@ -551,6 +636,7 @@
     "betaUpdatesDesc": "Testversionen vor allen anderen erhalten. Sie können Fehler haben; reguläre Versionen bekommst du weiterhin.",
     "usage": {
       "title": "Token-Nutzung",
+      "details": "Details",
       "desc": "Was dein KI-Anbieter geantwortet hat, geschätzt aus Listenpreisen.",
       "month": "Monat",
       "empty": "Diesen Monat noch keine KI-Nutzung.",
@@ -569,7 +655,8 @@
         "tutor": "Tutor & Rollenspiel",
         "lookup": "Wortsuche",
         "memory": "Gedächtnis",
-        "garden": "Garten-Notizen"
+        "garden": "Garten-Notizen",
+        "title": "Titel"
       }
     }
   },
@@ -581,6 +668,10 @@
     "qLessons_other": "Schließe {{count}} Lektionen ab",
     "chestTitle": "Du hast einen ungeöffneten Erntekorb",
     "chestTap": "Zum Öffnen tippen",
+    "gems_one": "{{count}} Münze",
+    "gems_other": "{{count}} Münzen",
+    "hearts_one": "{{count}} Tropfen",
+    "hearts_other": "{{count}} Tropfen",
     "qPractice_one": "Beende {{count}} Übungseinheit",
     "qPractice_other": "Beende {{count}} Übungseinheiten"
   },
@@ -691,6 +782,13 @@
     "model": "Modell",
     "modelDesc": "Teste die Verbindung, um die verfügbaren Modelle aufzulisten",
     "smallModel": "Modelle unter {{min}} können Lektionen mit falschen Antworten schreiben. Empfohlen wird ein Modell ab {{min}}.",
+    "guide": {
+      "good": "Gemessen: gut für Live-Lektionen.",
+      "weak": "Gemessen: schnell, aber nur {{pct}} % der Übungen bestanden.",
+      "slow": "Gemessen: zu langsam für Live-Lektionen.",
+      "weakSlow": "Gemessen: zu langsam, und nur {{pct}} % der Übungen bestanden.",
+      "details": "Erster Satz {{secs}} s · {{pct}} % der Übungen bestanden · {{hardware}}, {{date}}"
+    },
     "test": "Verbindung testen",
     "save": "Speichern",
     "connected": "Verbunden – {{count}} Modelle gefunden",
@@ -836,7 +934,6 @@
     "accent_en-GB": "Britisch"
   },
   "data": {
-    "section": "Daten",
     "folder": "Datenordner",
     "default": "Standardordner",
     "desktopOnly": "Nur in der Desktop-App verfügbar",
@@ -1008,7 +1105,8 @@
     "invalidJson": "Diese Datei ist kein gültiges JSON.",
     "fileTooLarge": "Diese Datei ist größer als {{size}}.",
     "imageFailed": "Das Bild konnte nicht gelesen werden.",
-    "errors": "Bitte zuerst das hier beheben:"
+    "errors": "Bitte zuerst das hier beheben:",
+    "add": "Tutor hinzufügen"
   },
   "biome": {
     "meadow": "Wiese",
@@ -1083,15 +1181,15 @@
     "topics": {
       "ai": {
         "q": "Wie richte ich die KI ein?",
-        "a": "Sprigo braucht ein Sprachmodell, das die Lektionen schreibt. Am einfachsten ist Ollama: installieren und Sprigo öffnen; Sprigo findet Ollama und bietet an, qwen3:8b (etwa 5,2 GB) herunterzuladen. LM Studio geht auch: lokalen Server starten und ein Modell laden.\nKein lokales Modell? Nutze einen Cloud-Anbieter (OpenAI, Anthropic, Gemini, OpenRouter) mit deinem eigenen API-Schlüssel. Schlüssel bleiben im Schlüsselbund des Systems.\nÄndern unter Einstellungen → KI & Stimme → KI-Anbieter."
+        "a": "Sprigo braucht ein Sprachmodell, das die Lektionen schreibt. Am einfachsten ist Ollama: installieren und Sprigo öffnen; Sprigo findet Ollama und bietet an, qwen3.5:4b (etwa 3,3 GB) herunterzuladen. LM Studio geht auch: lokalen Server starten und ein Modell laden.\nKein lokales Modell? Nutze einen Cloud-Anbieter (OpenAI, Anthropic, Gemini, OpenRouter) mit deinem eigenen API-Schlüssel. Schlüssel bleiben im Schlüsselbund des Systems.\nÄndern unter Einstellungen → KI & Stimme → KI-Anbieter."
       },
       "aiConnect": {
         "q": "„Kein lokales Modell gefunden“ oder „Keine Verbindung“",
-        "a": "Ollama: Starte die Ollama-App. Sprigo sucht sie unter http://localhost:11434. Hat sie keine Modelle, lass Sprigo das vorgeschlagene herunterladen oder führe aus: ollama pull qwen3:8b\nLM Studio: lokalen Server starten und ein Modell laden.\nCloud: API-Schlüssel und Guthaben prüfen.\nAuch ein VPN oder eine Firewall kann localhost blockieren."
+        "a": "Ollama: Starte die Ollama-App. Sprigo sucht sie unter http://localhost:11434. Hat sie keine Modelle, lass Sprigo das vorgeschlagene herunterladen oder führe aus: ollama pull qwen3.5:4b\nLM Studio: lokalen Server starten und ein Modell laden.\nCloud: API-Schlüssel und Guthaben prüfen.\nAuch ein VPN oder eine Firewall kann localhost blockieren."
       },
       "weak": {
         "q": "Warum sind Lektionen manchmal schwach oder falsch?",
-        "a": "Meist ist das Modell zu klein. Nimm eines mit 8B Parametern oder mehr (16 GB Arbeitsspeicher sind ein guter Anfang). Ist eine Übung falsch, kannst du in der Lektion Einspruch einlegen.\nLektionen werden einmal erzeugt und gespeichert; ein langsames Modell merkst du vor allem beim ersten Öffnen eines Schritts."
+        "a": "Meist ist das Modell zu klein oder einfach schwach. In den Einstellungen siehst du, wie jedes getestete Modell abgeschnitten hat; nimm eines, das als gemessen gut markiert ist. Ist eine Übung falsch, kannst du in der Lektion Einspruch einlegen.\nLektionen werden einmal erzeugt und gespeichert; ein langsames Modell merkst du vor allem beim ersten Öffnen eines Schritts."
       },
       "mic": {
         "q": "Sprigo hört mich nicht",
@@ -1128,5 +1226,35 @@
     "notInGuide": "Der KI-Leitfaden hat dieses Muster ausgelassen. Versuch es noch einmal.",
     "alsoIn": "Auch in: {{units}}",
     "practise": "Üben"
+  },
+  "notes": {
+    "title": "Notizen & Tagebuch",
+    "subtitle": "Deine eigenen Worte: ein kurzer Eintrag in deiner Lernsprache und eine Notiz zu jeder Einheit. Bleibt auf diesem Gerät und ist im Datenexport enthalten.",
+    "tabs": {
+      "journal": "Tagebuch",
+      "units": "Notizen zu Einheiten"
+    },
+    "today": "Heute",
+    "writeIn": "Ein paar Sätze auf {{lang}}.",
+    "entryLabel": "Heutiger Tagebucheintrag",
+    "pastEntryLabel": "Tagebucheintrag vom {{date}}",
+    "past": "Frühere Einträge",
+    "empty": "Noch nichts geschrieben. Fang mit heute an.",
+    "noCourse": "Wähle einen Kurs, um Notizen zu seinen Einheiten zu machen.",
+    "unitsHint": "Deine eigenen Notizen zu den Einheiten von {{lang}}.",
+    "unitLabel": "{{level}} · deine Notiz",
+    "noteLabel": "Notiz zu {{unit}}",
+    "notePlaceholder": "Wörter, Regeln, Beispiele…",
+    "noNote": "Noch keine Notiz",
+    "save": "Speichern",
+    "saved": "Gespeichert",
+    "saveFailed": "Die Notiz konnte nicht gespeichert werden.",
+    "delete": "Löschen",
+    "deleted": "Gelöscht",
+    "check": "Eintrag prüfen",
+    "checking": "Wird geprüft…",
+    "checkTitle": "Dein Eintrag, geprüft",
+    "checkNoAi": "Richte die KI ein, um deinen Eintrag prüfen zu lassen.",
+    "checkFailed": "Der Eintrag konnte nicht geprüft werden."
   }
 }

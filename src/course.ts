@@ -81,6 +81,12 @@ export function parseStoryId(id: string): { level: Cefr; unit: string } | null {
   const m = /^story:([A-C][12]):(.+)$/.exec(id);
   return m ? { level: m[1] as Cefr, unit: m[2] } : null;
 }
+/** A unit's cached guidebook: `guide:<level>:<unit>`, like story ids, because unit ids may repeat across levels (#183). */
+export const guideId = (level: Cefr, unit: string) => `guide:${level}:${unit}`;
+export function parseGuideId(id: string): { level: Cefr; unit: string } | null {
+  const m = /^guide:([A-C][12]):(.+)$/.exec(id);
+  return m ? { level: m[1] as Cefr, unit: m[2] } : null;
+}
 /** A unit's bookmark ref (#45): `level:unit`, because unit ids may repeat across levels like story ids. */
 export const unitRef = (level: Cefr, unit: string) => `${level}:${unit}`;
 export function parseUnitRef(ref: string): { level: Cefr; unit: string } | null {

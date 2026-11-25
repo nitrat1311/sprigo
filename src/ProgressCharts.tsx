@@ -86,7 +86,7 @@ export function ProgressCharts({ xpDays, wordDays, accuracy, speech }:
   const added = words[words.length - 1] - (words[0] - (wordDays[wordRange[0]] ?? 0));
   const weeks = lastWeeks(end, 8), wpm = weeks.map((w) => speech[w] ?? 0), spoken = wpm.filter(Boolean);
   return (
-    <div className="od-grid profile-cards" style={{ "--od-cols": 2, "--od-gap": "12px" } as React.CSSProperties}>
+    <div className="od-grid profile-cards" style={{ "--od-cols": 2, "--od-gap": "var(--s-4)" } as React.CSSProperties}>
       <Chart title={t("progress.xpTitle")} summary={t("progress.xpSummary", { n: xp.reduce((a, b) => a + b, 0) })}
         days={xpRange} values={xp} kind="bar" color="var(--gold-dark)" unit="XP" />
       <Chart title={t("progress.wordsTitle")} summary={t("progress.wordsSummary", { n: words[words.length - 1], added })}

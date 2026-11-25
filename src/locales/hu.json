@@ -2,6 +2,15 @@
   "_meta": {
     "name": "Magyar"
   },
+  "error": {
+    "title": "Valami hiba történt",
+    "desc": "A Sprigo váratlan hibába futott a képernyő rajzolása közben. Az adataid biztonságban vannak. Töltsd újra az oldalt a folytatáshoz; ha újra előfordul, másold ki az alábbi részleteket, és küldd el a fejlesztőnek.",
+    "reload": "Újratöltés",
+    "details": "Technikai részletek",
+    "copy": "Részletek másolása",
+    "copied": "Másolva",
+    "version": "Verzió"
+  },
   "boot": {
     "newerTitle": "Ezek az adatok egy újabb verzióból származnak",
     "newerDesc": "Az adataidat a Sprigo egy újabb verziója mentette. Frissítsd az alkalmazást a megnyitásukhoz. Ez a verzió nem módosítja őket.",
@@ -35,7 +44,9 @@
     "friends": "Barátok",
     "notifications": "Értesítések",
     "settings": "Beállítások",
-    "grammar": "Nyelvtan"
+    "grammar": "Nyelvtan",
+    "notes": "Jegyzetek",
+    "account": "Fiókmenü"
   },
   "common": {
     "soon": "Hamarosan",
@@ -50,6 +61,19 @@
     "unit": "Egység",
     "guide": "Útmutató",
     "story": "Történet"
+  },
+  "search": {
+    "label": "Keresés a leckékben és útmutatókban",
+    "placeholder": "Egységek, szavak, nyelvtan keresése…",
+    "none": "Nincs találat erre: „{{query}}”.",
+    "more": "Csak az első {{count}} találat látható. Folytasd a gépelést a szűkítéshez.",
+    "count_one": "{{count}} találat",
+    "count_other": "{{count}} találat",
+    "unit": "Egység",
+    "step": "Lecke",
+    "vocabulary": "Szókincs",
+    "grammar": "Nyelvtan",
+    "guide": "Útmutató"
   },
   "learn": {
     "kicker": "{{level}} · {{unit}}. egység",
@@ -83,8 +107,18 @@
     "legendTicket_one": "{{count}} jegy",
     "legendTicket_other": "{{count}} jegy",
     "skipUnit": "Egység teljesítése teszttel ({{score}}%)",
-    "toTop": "Az elejére",
+    "summit": "Csúcs: {{level}}",
+    "summitEnd": "Csúcs",
+    "lockedDesc": "Az előző leckék teljesítésével nyílik meg.",
     "toHere": "Vissza a leckémhez"
+  },
+  "levels": {
+    "A1": "Kezdő",
+    "A2": "Alapszint",
+    "B1": "Középszint",
+    "B2": "Középszint felett",
+    "C1": "Haladó",
+    "C2": "Mesterszint"
   },
   "practice": {
     "planning": "Tervezési idő",
@@ -163,7 +197,25 @@
     "wordsError_translation": "nincs fordítás",
     "wordsError_schedule": "az ismétlési adatok érvénytelenek",
     "saved": "Mentett elemek",
-    "savedEmpty": "Koppints egy egység, egy útmutató vagy egy történet könyvjelzőjére, hogy itt tartsd."
+    "savedEmpty": "Koppints egy egység, egy útmutató vagy egy történet könyvjelzőjére, hogy itt tartsd.",
+    "tabs": {
+      "activities": "Gyakorlatok"
+    },
+    "groups": {
+      "speak": "Beszéd",
+      "review": "Ismétlés",
+      "skills": "Készségek",
+      "challenge": "Kihívások"
+    },
+    "wordsHint": "Mentsd a listádat CSV-be, vagy importálj egyet.",
+    "wordsExportShort": "Exportálás",
+    "wordsImportShort": "Importálás",
+    "wordExample": "Példa",
+    "wordStrength": "Erősség: {{n}}/5",
+    "wordStrengthHint": "Az erősség nő, ahogy gyakorlod a szót (Napi ismétlés, Kártyák, Hallás).",
+    "dueAbout": "Ismételd a szavakat, amiket mindjárt elfelejtesz",
+    "cardsAbout": "Tanuld a szavaidat kártyákkal",
+    "listenAbout": "Válaszd ki, amit hallasz"
   },
   "league": {
     "title": "{{name}} liga",
@@ -229,6 +281,39 @@
       "speak": "Beszéd"
     },
     "table": "Megjelenítés táblázatként"
+  },
+  "goals": {
+    "title": "Célok",
+    "week": "Heti cél",
+    "month": "Havi cél",
+    "weekShort": "hét",
+    "monthShort": "hónap",
+    "measure": "Mérőszám",
+    "target": "Cél értéke",
+    "targetAria": "Cél értéke: {{period}}",
+    "progress": "{{n}} / {{goal}} {{unit}}",
+    "lastWeek": "Múlt héten: {{n}} {{unit}}",
+    "lastMonth": "Múlt hónapban: {{n}} {{unit}}",
+    "report": "Jelentés",
+    "weekReport": "Heti jelentés",
+    "monthReport": "Havi jelentés",
+    "range": "{{from}} – {{to}}",
+    "metrics": {
+      "xp": "XP",
+      "words": "Új szavak",
+      "speak": "Beszédpercek"
+    },
+    "units": {
+      "xp": "XP",
+      "words_one": "szó",
+      "words_other": "szó",
+      "speak": "perc"
+    },
+    "goalDone": "Cél teljesítve",
+    "goalLeft": "Még {{n}} {{unit}}",
+    "goalShort": "{{n}} {{unit}} hiányzott",
+    "notifyTitle": "A heti összefoglalód",
+    "notifyBody": "Múlt héten {{n}} XP-t szereztél. A teljes jelentés a profilodban vár."
   },
   "profile": {
     "since": "{{date}} óta tanul",
@@ -551,6 +636,7 @@
     "betaUpdatesDesc": "Mindenki más előtt megkapod a tesztverziókat. Lehetnek bennük hibák; a rendes kiadásokat továbbra is megkapod.",
     "usage": {
       "title": "Tokenhasználat",
+      "details": "Részletek",
       "desc": "Amit az AI-szolgáltatód válaszolt, listaárakból becsülve.",
       "month": "Hónap",
       "empty": "Ebben a hónapban még nincs AI-használat.",
@@ -569,7 +655,8 @@
         "tutor": "Tutor és szerepjáték",
         "lookup": "Szókeresés",
         "memory": "Memória",
-        "garden": "Kertjegyzetek"
+        "garden": "Kertjegyzetek",
+        "title": "Címek"
       }
     }
   },
@@ -581,6 +668,10 @@
     "qLessons_other": "Fejezz be {{count}} leckét",
     "chestTitle": "Van egy bontatlan szüreti kosarad",
     "chestTap": "Koppints a kinyitáshoz",
+    "gems_one": "{{count}} érme",
+    "gems_other": "{{count}} érme",
+    "hearts_one": "{{count}} csepp",
+    "hearts_other": "{{count}} csepp",
     "qPractice_one": "Fejezz be {{count}} gyakorlást",
     "qPractice_other": "Fejezz be {{count}} gyakorlást"
   },
@@ -691,6 +782,13 @@
     "model": "Modell",
     "modelDesc": "Teszteld a kapcsolatot az elérhető modellek listázásához",
     "smallModel": "{{min}} alatt a modellek hibás válaszokat írhatnak a leckékbe. Legalább {{min}} méretű modell ajánlott.",
+    "guide": {
+      "good": "Mérve: jó az élő leckékhez.",
+      "weak": "Mérve: gyors, de a feladatoknak csak {{pct}}%-a sikerült.",
+      "slow": "Mérve: túl lassú az élő leckékhez.",
+      "weakSlow": "Mérve: túl lassú, és a feladatoknak csak {{pct}}%-a sikerült.",
+      "details": "Első mondat {{secs}} mp · a feladatok {{pct}}%-a sikeres · {{hardware}}, {{date}}"
+    },
     "test": "Kapcsolat tesztelése",
     "save": "Mentés",
     "connected": "Kapcsolódva – {{count}} modell található",
@@ -836,7 +934,6 @@
     "accent_en-GB": "Brit"
   },
   "data": {
-    "section": "Adatok",
     "folder": "Adatmappa",
     "default": "Alapértelmezett mappa",
     "desktopOnly": "Csak az asztali alkalmazásban érhető el",
@@ -1008,7 +1105,8 @@
     "invalidJson": "Ez a fájl nem érvényes JSON.",
     "fileTooLarge": "Ez a fájl nagyobb, mint {{size}}.",
     "imageFailed": "A képet nem sikerült beolvasni.",
-    "errors": "Előbb javítsd ezeket:"
+    "errors": "Előbb javítsd ezeket:",
+    "add": "Tutor hozzáadása"
   },
   "biome": {
     "meadow": "Rét",
@@ -1083,15 +1181,15 @@
     "topics": {
       "ai": {
         "q": "Hogyan állítsam be az MI-t?",
-        "a": "A Sprigónak nyelvi modell kell a leckék megírásához. A legegyszerűbb az Ollama: telepítsd, és nyisd meg a Sprigót; megtalálja az Ollamát, és felajánlja a qwen3:8b letöltését (kb. 5,2 GB). Az LM Studio is működik: indítsd el a helyi szerverét, és tölts be egy modellt.\nNincs helyi modelled? Használj felhőszolgáltatót (OpenAI, Anthropic, Gemini, OpenRouter) a saját API-kulcsoddal. A kulcsok a rendszer kulcstartójában maradnak.\nMódosítás: Beállítások → MI és hang → MI-szolgáltató."
+        "a": "A Sprigónak nyelvi modell kell a leckék megírásához. A legegyszerűbb az Ollama: telepítsd, és nyisd meg a Sprigót; megtalálja az Ollamát, és felajánlja a qwen3.5:4b letöltését (kb. 3,3 GB). Az LM Studio is működik: indítsd el a helyi szerverét, és tölts be egy modellt.\nNincs helyi modelled? Használj felhőszolgáltatót (OpenAI, Anthropic, Gemini, OpenRouter) a saját API-kulcsoddal. A kulcsok a rendszer kulcstartójában maradnak.\nMódosítás: Beállítások → MI és hang → MI-szolgáltató."
       },
       "aiConnect": {
         "q": "„Nem található helyi modell” vagy „Nem sikerült kapcsolódni”",
-        "a": "Ollama: indítsd el az Ollama alkalmazást. A Sprigo itt keresi: http://localhost:11434. Ha nincs modellje, hagyd, hogy a Sprigo letöltse a javasoltat, vagy futtasd: ollama pull qwen3:8b\nLM Studio: indítsd el a helyi szerverét, és tölts be egy modellt.\nFelhő: ellenőrizd az API-kulcsot és a fiókod egyenlegét.\nVPN vagy tűzfal is blokkolhatja a localhostot."
+        "a": "Ollama: indítsd el az Ollama alkalmazást. A Sprigo itt keresi: http://localhost:11434. Ha nincs modellje, hagyd, hogy a Sprigo letöltse a javasoltat, vagy futtasd: ollama pull qwen3.5:4b\nLM Studio: indítsd el a helyi szerverét, és tölts be egy modellt.\nFelhő: ellenőrizd az API-kulcsot és a fiókod egyenlegét.\nVPN vagy tűzfal is blokkolhatja a localhostot."
       },
       "weak": {
         "q": "Miért gyengék vagy hibásak néha a leckék?",
-        "a": "Általában túl kicsi a modell. Használj legalább 8B paraméteres modellt (16 GB memória jó kiindulás). Ha egy feladat hibás, fellebbezd meg a leckében.\nA leckék egyszer készülnek el, és elmentődnek, így egy lassú modell főleg egy lépés első megnyitását lassítja."
+        "a": "Általában túl kicsi a modell, vagy egyszerűen gyenge. A beállításokban látod, hogyan teljesített minden tesztelt modell; válassz egy mérten jónak jelöltet. Ha egy feladat hibás, fellebbezd meg a leckében.\nA leckék egyszer készülnek el, és elmentődnek, így egy lassú modell főleg egy lépés első megnyitását lassítja."
       },
       "mic": {
         "q": "A Sprigo nem hall engem",
@@ -1128,5 +1226,35 @@
     "notInGuide": "Az MI útmutatója kihagyta ezt a mintát. Próbáld újra.",
     "alsoIn": "Szerepel még: {{units}}",
     "practise": "Gyakorold"
+  },
+  "notes": {
+    "title": "Jegyzetek és napló",
+    "subtitle": "A saját szavaid: rövid bejegyzés a tanult nyelven, és jegyzet bármelyik leckéhez. Ezen az eszközön marad, és az adatexport része.",
+    "tabs": {
+      "journal": "Napló",
+      "units": "Leckejegyzetek"
+    },
+    "today": "Ma",
+    "writeIn": "Néhány mondat ezen a nyelven: {{lang}}.",
+    "entryLabel": "Mai naplóbejegyzés",
+    "pastEntryLabel": "Naplóbejegyzés: {{date}}",
+    "past": "Korábbi bejegyzések",
+    "empty": "Még nincs semmi. Kezdd a mával.",
+    "noCourse": "Válassz kurzust, hogy jegyzetet írhass a leckéihez.",
+    "unitsHint": "A saját jegyzeteid ehhez: {{lang}}.",
+    "unitLabel": "{{level}} · a jegyzeted",
+    "noteLabel": "Jegyzet ehhez: {{unit}}",
+    "notePlaceholder": "Szavak, szabályok, példák…",
+    "noNote": "Még nincs jegyzet",
+    "save": "Mentés",
+    "saved": "Mentve",
+    "saveFailed": "A jegyzetet nem sikerült menteni.",
+    "delete": "Törlés",
+    "deleted": "Törölve",
+    "check": "Bejegyzés ellenőrzése",
+    "checking": "Ellenőrzés…",
+    "checkTitle": "Az ellenőrzött bejegyzésed",
+    "checkNoAi": "Állítsd be az AI-t a bejegyzés ellenőrzéséhez.",
+    "checkFailed": "A bejegyzést nem sikerült ellenőrizni."
   }
 }

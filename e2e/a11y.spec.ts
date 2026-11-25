@@ -45,6 +45,9 @@ test("main screens, a sheet and a lesson have no serious axe findings", async ({
   await page.getByRole("button", { name: "Grammar" }).click();
   await expect(page.getByRole("heading", { name: /^A1 · / })).toBeVisible();
   expect(await axe(page)).toEqual([]);
+  await page.getByRole("button", { name: "Notes", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "Notes & journal" })).toBeVisible();
+  expect(await axe(page)).toEqual([]);
   await page.getByRole("button", { name: "Learn" }).click();
   await expect(page.getByText("Greetings & Introductions")).toBeVisible();
   expect(await axe(page)).toEqual([]);
@@ -56,7 +59,7 @@ test("main screens, a sheet and a lesson have no serious axe findings", async ({
 test("a sheet takes focus, keeps Tab inside and gives focus back on Escape", async ({ page }) => {
   await onboard(page);
   await page.getByRole("tab", { name: "AI & voice" }).click();
-  const opener = page.locator(".card", { hasText: "AI provider" }).getByRole("button", { name: "Change" });
+  const opener = page.locator("#set-panel .od-row").filter({ has: page.getByText("AI provider", { exact: true }) }).getByRole("button", { name: "Change" });
   await opener.focus();
   await page.keyboard.press("Enter");
   const sheet = page.getByRole("dialog", { name: "AI provider" });
@@ -86,7 +89,9 @@ for (const theme of ["light", "dark"]) test(`high contrast passes axe colour con
   await page.addInitScript((t) => localStorage.setItem("sprigo.theme", t), theme);
   await onboard(page);
   await page.getByRole("tab", { name: "Preferences" }).click();
-  await page.locator(".card", { hasText: "High contrast" }).getByRole("button", { name: "Off" }).click();
+  const highContrast = page.getByRole("switch", { name: "High contrast" });
+  await highContrast.click();
+  await expect(highContrast).toHaveAttribute("aria-checked", "true");
   expect(await axe(page, true)).toEqual([]);
   await page.getByRole("button", { name: "Practice" }).click();
   await expect(page.getByRole("button", { name: /^Verb forms/ })).toBeVisible();
@@ -107,7 +112,7 @@ for (const theme of ["light", "dark"]) test(`high contrast passes axe colour con
 test("the tutor list and form are labelled and have no serious axe findings", async ({ page }) => {
   await onboard(page);
   await page.getByRole("button", { name: "Roleplay", exact: true }).click();
-  await page.getByRole("button", { name: /My tutors/ }).click();
+  await page.getByRole("button", { name: /Add a tutor/ }).click();
   const list = page.getByRole("dialog", { name: "My tutors" });
   await expect(list).toBeVisible();
   expect(await axe(page)).toEqual([]);

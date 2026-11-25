@@ -11,20 +11,18 @@ import { HelpButton } from "../Help";
 const gap = (g: string) => ({ "--od-gap": g }) as React.CSSProperties;
 const dialog = () => import("@tauri-apps/plugin-dialog");
 
-export function DataSection() {
+/** Settings > Privacy & data: where the database lives. One row, sharing the tab's single group. */
+export function DataRow() {
   const { t } = useTranslation();
   const { openSheet } = useApp();
   const [loc, setLoc] = useState<Location | null>(null);
   useEffect(() => { if (isTauri) dataLocation().then(setLoc); }, []);
   return (
-    <>
-      <h2 className="section-title">{t("data.section")}</h2>
-      <div className="card od-row" style={gap("12px")}>
-        <span className="od-field od-fill"><b>{t("data.folder")}</b>
-          <span className="muted small" style={{ overflowWrap: "anywhere" }}>{!isTauri ? t("data.desktopOnly") : loc?.dataDir ?? "…"}</span></span>
-        <button className="btn btn-ghost" disabled={!loc} onClick={() => loc && openSheet(<DataSheet loc={loc} />)}>{t("settings.change")}</button>
-      </div>
-    </>
+    <div className="od-row" style={gap("var(--s-4)")}>
+      <span className="od-field od-fill"><b>{t("data.folder")}</b>
+        <span className="muted small od-anywhere">{!isTauri ? t("data.desktopOnly") : loc?.dataDir ?? "…"}</span></span>
+      <button className="btn btn-ghost" disabled={!loc} onClick={() => loc && openSheet(<DataSheet loc={loc} />)}>{t("settings.change")}</button>
+    </div>
   );
 }
 
@@ -84,12 +82,12 @@ function DataSheet({ loc }: { loc: Location }) {
   const reveal = async () => (await import("@tauri-apps/plugin-opener")).revealItemInDir(dbFile(loc.dataDir));
 
   const cancel = <button className="btn btn-ghost btn-block" disabled={busy} onClick={() => ask ? setAsk(null) : closeSheet()}>{t("sheet.cancel")}</button>;
-  const sheet = { ...gap("12px"), textAlign: "left" } as React.CSSProperties;
+  const sheet = { ...gap("var(--s-4)"), textAlign: "left" } as React.CSSProperties;
 
   if (ask?.kind === "exists") return (
     <div className="od-stack" style={sheet}>
-      <h3 style={{ textAlign: "center" }}>{t("data.existsTitle")}</h3>
-      <p className="muted small" style={{ overflowWrap: "anywhere" }}>{ask.dir}</p>
+      <h3 className="od-center">{t("data.existsTitle")}</h3>
+      <p className="muted small od-anywhere">{ask.dir}</p>
       <p className="small">{t("data.copyNote")}</p>
       <button className="btn btn-primary btn-block" disabled={busy} onClick={run(() => switchTo(ask.dir, false))}>{t("data.useThere")}</button>
       <button className="btn btn-ghost btn-block" disabled={busy} onClick={run(() => switchTo(ask.dir, true))}>{t("data.copyThere")}</button>
@@ -98,8 +96,8 @@ function DataSheet({ loc }: { loc: Location }) {
   );
   if (ask?.kind === "import") return (
     <div className="od-stack" style={sheet}>
-      <h3 style={{ textAlign: "center" }}>{t("data.importTitle")}</h3>
-      <p className="muted small" style={{ overflowWrap: "anywhere" }}>{ask.file}</p>
+      <h3 className="od-center">{t("data.importTitle")}</h3>
+      <p className="muted small od-anywhere">{ask.file}</p>
       <p className="small">{t("data.importDesc")}</p>
       <button className="btn btn-danger btn-block" disabled={busy} onClick={run(() => importDb(ask.file))}>{t("data.importConfirm")}</button>
       {cancel}
@@ -107,14 +105,14 @@ function DataSheet({ loc }: { loc: Location }) {
   );
   return (
     <div className="od-stack" style={sheet}>
-      <div className="od-row" style={{ ...gap("4px"), justifyContent: "center" }}><h3>{t("data.title")}</h3><HelpButton topic="data" /></div>
+      <div className="od-row" style={{ ...gap("var(--s-2)"), justifyContent: "center" }}><h3>{t("data.title")}</h3><HelpButton topic="data" /></div>
       <span className="od-field"><b>{t(loc.dataDir === loc.defaultDir ? "data.default" : "data.folder")}</b>
-        <span className="muted small" style={{ overflowWrap: "anywhere" }}>{loc.dataDir}</span></span>
+        <span className="muted small od-anywhere">{loc.dataDir}</span></span>
       <p className="small">{t("data.hint")}</p>
       <p className="small" style={{ fontWeight: 800 }}>{t("data.note")}</p>
       <button className="btn btn-primary btn-block" disabled={busy} onClick={run(pickFolder)}>{t("data.move")}</button>
       {loc.dataDir !== loc.defaultDir && <button className="btn btn-ghost btn-block" disabled={busy} onClick={run(() => moveTo(loc.defaultDir))}>{t("data.useDefault")}</button>}
-      <div className="od-row" style={gap("10px")}>
+      <div className="od-row" style={gap("var(--s-4)")}>
         <button className="btn btn-ghost od-fill" disabled={busy} onClick={run(exportDb)}>{t("data.export")}</button>
         <button className="btn btn-ghost od-fill" disabled={busy} onClick={run(pickImport)}>{t("data.import")}</button>
       </div>

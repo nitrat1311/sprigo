@@ -1,0 +1,111 @@
+// Lesson search (#44): unit and lesson titles, vocabulary and grammar straight from the course YAML,
+// plus the guidebook text already written for it. Pure module (no Vite/Tauri imports), so
+// `node --test` runs src/search.test.ts directly.
+import { levelsOf, type Cefr, type Course } from "./course.ts";
+import type { Guide } from "./lessons.ts";
+
+export type SearchKind = "unit" | "step" | "vocabulary" | "grammar" | "guide";
+export type SearchHit = {
+  level: Cefr;
+  unitId: string;
+  unitTitle: string;
+  kind: SearchKind;
+  /** The title, word or pattern the result is about; a guidebook hit names the entry it explains. */
+  text: string;
+  /** A unit or lesson title in the learner's language, the way the path shows it under the English title. */
+  translation?: string;
+  /** The guidebook line that matched, when there is one. */
+  note?: string;
+};
+
+/** A cached guidebook and the level and unit it was written for (`guide:<level>:<unit>` keys). */
+export type Guidebook = { level: Cefr; unit: string; guide: Guide };
+
+/** Case and accents fold, so "adios" finds "adiós". */
+const fold = (s: string) => s.toLowerCase().normalize("NFD").replace(/\p{Diacritic}/gu, "");
+
+const str = (v: unknown) => (typeof v === "string" ? v : "");
+const objects = (v: unknown) =>
+  Array.isArray(v) ? v.filter((x): x is Record<string, unknown> => !!x && typeof x === "object") : [];
+
+type SafeGuide = {
+  vocabulary: { word: string; translation: string; example: string; example_translation: string }[];
+  grammar: { pattern: string; explanation: string; example: string }[];
+};
+/** A cached guidebook is model output: keep only entries with the fields the search reads. */
+function safeGuide(guide: Guide): SafeGuide {
+  const g = (typeof guide === "object" && guide ? guide : {}) as { vocabulary?: unknown; grammar?: unknown };
+  return {
+    vocabulary: objects(g.vocabulary)
+      .map((v) => ({ word: str(v.word), translation: str(v.translation), example: str(v.example), example_translation: str(v.example_translation) }))
+      .filter((v) => v.word),
+    grammar: objects(g.grammar)
+      .map((v) => ({ pattern: str(v.pattern), explanation: str(v.explanation), example: str(v.example) }))
+      .filter((v) => v.pattern),
+  };
+}
+
+const NOTE_MAX = 160;
+/** One line, so a guidebook explanation stays a caption rather than a paragraph. */
+function snippet(s: string) {
+  const text = s.replace(/\s+/g, " ").trim();
+  return text.length > NOTE_MAX ? `${text.slice(0, NOTE_MAX - 1).trimEnd()}…` : text;
+}
+
+/** Hits in course order; one per kind and text per unit. Queries shorter than two letters find nothing.
+ *  `translations` maps an English unit/lesson title to its translation (see titleTranslations.ts), so a query in
+ *  the learner's language finds the unit too; it stays plain data here, the caller owns i18n and the AI cache. */
+export function searchCourse(
+  course: Course,
+  query: string,
+  guidebooks: Guidebook[] = [],
+  translations: Record<string, string> = {},
+): SearchHit[] {
+  const needle = fold(query.trim());
+  if (needle.length < 2) return [];
+  const hit = (s: string) => fold(s).includes(needle);
+  const hitTitle = (title: string) => hit(title) || hit(str(translations[title]));
+  const hits: SearchHit[] = [];
+  const levels = levelsOf(course);
+  const books = guidebooks.map((g) => ({ level: g.level, unit: g.unit, guide: safeGuide(g.guide) }));
+  for (const level of levels) {
+    for (const unit of course.levels[level]!.units) {
+      // Guidebooks carry their level, so a unit id used at two levels keeps each level's own text (#183).
+      const guides = books.filter((g) => g.level === level && g.unit === unit.id).map((g) => g.guide);
+      // A guidebook repeats the YAML lists and adds a translation or explanation to each entry.
+      const words = new Map(guides.flatMap((g) => g.vocabulary).map((v) => [fold(v.word), v]));
+      const patterns = new Map(guides.flatMap((g) => g.grammar).map((g) => [fold(g.pattern), g]));
+      const seen = new Set<string>();
+      const add = (kind: SearchKind, text: string, note?: string) => {
+        const key = `${kind}:${fold(text)}`;
+        if (seen.has(key)) return;
+        seen.add(key);
+        // A translation identical to the title adds nothing: the path shows it once.
+        const translation = kind === "unit" || kind === "step" ? str(translations[text]).trim() : "";
+        hits.push({
+          level, unitId: unit.id, unitTitle: unit.title, kind, text,
+          ...(translation && fold(translation) !== fold(text) ? { translation } : {}),
+          ...(note?.trim() ? { note: snippet(note) } : {}),
+        });
+      };
+      if (hitTitle(unit.title)) add("unit", unit.title);
+      for (const step of unit.steps) if (hitTitle(step.title)) add("step", step.title);
+      for (const word of new Set(unit.steps.flatMap((s) => s.vocabulary)))
+        if (hit(word)) add("vocabulary", word, words.get(fold(word))?.translation);
+      for (const pattern of new Set(unit.steps.flatMap((s) => s.grammar.map((g) => g.pattern))))
+        if (hit(pattern)) add("grammar", pattern, patterns.get(fold(pattern))?.explanation);
+      // Guidebook text a YAML word or pattern did not already cover: its translation, example or explanation.
+      for (const entry of words.values()) {
+        if (seen.has(`vocabulary:${fold(entry.word)}`)) continue;
+        const matched = [entry.word, entry.translation, entry.example, entry.example_translation].find(hit);
+        if (matched) add("guide", entry.word, matched === entry.word ? "" : matched);
+      }
+      for (const entry of patterns.values()) {
+        if (seen.has(`grammar:${fold(entry.pattern)}`)) continue;
+        const matched = [entry.pattern, entry.explanation, entry.example].find(hit);
+        if (matched) add("guide", entry.pattern, matched === entry.pattern ? "" : matched);
+      }
+    }
+  }
+  return hits;
+}

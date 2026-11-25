@@ -30,16 +30,16 @@ export function Rail() {
           aria-label={`${t("garden.open")} · ${t("profile.streakDays", { count: s.streak })}`}>
           <span style={{ display: "contents" }} dangerouslySetInnerHTML={{ __html: treeSvg(tree, true) }} />{s.streak}
         </button>
-        <span className="stat-chip" style={{ color: "var(--gold-dark)" }}><Icon name="gem" />{s.gems}</span>
-        {s.heartsOn && <span className="stat-chip" style={{ color: "var(--blue)" }}><Icon name="drop" />{s.hearts}</span>}
+        <span className="stat-chip" role="img" aria-label={t("rail.gems", { count: s.gems })} style={{ color: "var(--gold-dark)" }}><Icon name="gem" />{s.gems}</span>
+        {s.heartsOn && <span className="stat-chip" role="img" aria-label={t("rail.hearts", { count: s.hearts })} style={{ color: "var(--blue)" }}><Icon name="drop" />{s.hearts}</span>}
       </div></div>
 
       <div className="rail-card">
-        <div className="od-row" style={{ justifyContent: "space-between", marginBottom: 6 }}>
+        <div className="od-row" style={{ justifyContent: "space-between", marginBottom: "var(--s-3)" }}>
           <h3>{t("rail.dailyQuests")}</h3>
           <span className="small" style={{ fontWeight: 800, color: "var(--gold-dark)" }}>{Math.round(pct)}%</span>
         </div>
-        <div className="progress-track" style={{ marginBottom: 10 }}><div className="progress-fill" style={{ width: `${pct}%` }} /></div>
+        <div className="progress-track" style={{ marginBottom: "var(--s-4)" }}><div className="progress-fill" style={{ width: `${pct}%` }} /></div>
         {s.quests.map((q) => (
           <div className="quest" key={q.id}>
             <span className="q-icon"><Icon name={q.icon} /></span>
@@ -53,15 +53,15 @@ export function Rail() {
       </div>
 
       <div className="rail-card">
-        <div className="od-row" style={{ justifyContent: "space-between", marginBottom: 8 }}>
+        <div className="od-row" style={{ justifyContent: "space-between", marginBottom: "var(--s-3)" }}>
           <h3>{t("league.title", { name: league.name })}</h3>
-          <button className="small" style={{ fontWeight: 800, color: "var(--blue)" }} onClick={() => go("league")}>{t("league.all")}</button>
+          <button className="small link-btn" onClick={() => go("league")}>{t("league.all")}</button>
         </div>
         {league.rows.slice(0, 5).map((p, i) => (
           <div className={`league-row ${p.me ? "me" : ""}`} key={p.n}>
             <span className={`league-rank ${i < 3 ? "top" : ""}`}>{i + 1}</span>
-            <span className="avatar" style={{ width: 30, height: 30, fontSize: 13, background: p.c }}>{p.n[0]}</span>
-            <span className="league-name" style={{ fontSize: 14 }}>{p.n}</span>
+            <span className="avatar" style={{ width: 30, height: 30, fontSize: "var(--fs-13)", background: p.c }}>{p.n[0]}</span>
+            <span className="league-name" style={{ fontSize: "var(--fs-15)" }}>{p.n}</span>
             <span className="league-xp">{p.xp} XP</span>
           </div>
         ))}
@@ -69,13 +69,13 @@ export function Rail() {
 
       {s.chests > 0 && (
         <div className="rail-card" style={{ textAlign: "center" }}>
-          <h3 style={{ marginBottom: 10 }}>{t("rail.chestTitle")}</h3>
+          <h3 style={{ marginBottom: "var(--s-4)" }}>{t("rail.chestTitle")}</h3>
           <div style={{ display: "flex", justifyContent: "center" }}>
-            <button className="chest-box" onClick={openChest} style={{ width: 96, height: 96, borderRadius: 18 }} aria-label={t("rail.chestTap")}>
+            <button className="chest-box" onClick={openChest} style={{ width: 96, height: 96 }} aria-label={t("rail.chestTap")}>
               <Icon name="basket" />
             </button>
           </div>
-          <p className="muted small" style={{ marginTop: 10 }}>{t("rail.chestTap")}</p>
+          <p className="muted small" style={{ marginTop: "var(--s-4)" }}>{t("rail.chestTap")}</p>
         </div>
       )}
     </>
