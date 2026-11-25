@@ -1,6 +1,6 @@
 import { tensesFor } from "../conjugation";
 import { ProgressCharts } from "../ProgressCharts";
-import { useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Icon, type IconName } from "../icons";
 import { useApp } from "../store";
@@ -8,6 +8,8 @@ import { useStartLesson } from "../Lesson";
 import { CardsSheet } from "../Flashcards";
 import { WriteSheet } from "../Write";
 import { useSpeakBlock } from "../Mic";
+import { SpeakButton } from "../SpeakButton";
+import type { Item } from "../activities";
 import { msLeft, rivalXp, zones, PROMOTE, DEMOTE, TIERS } from "../league";
 import * as db from "../db";
 import { dueToday } from "../srs";
@@ -101,16 +103,17 @@ export function Practice() {
   const { t } = useTranslation();
   const { toast, enrollment, lessonId, openSheet, course, go, setViewLevel } = useApp();
   const start = useStartLesson();
-  const [data, setData] = useState<{ mistakes: number; words: db.Word[]; timed: number; saved: db.Bookmark[] }>({ mistakes: 0, words: [], timed: 0, saved: [] });
+  const [data, setData] = useState<{ mistakes: number; words: db.Word[]; timed: number; saved: db.Bookmark[]; cached: Item[] }>({ mistakes: 0, words: [], timed: 0, saved: [], cached: [] });
   const [loaded, reload] = useState(0);
+  const [tab, setTab] = useState<"activities" | "saved" | "words">("activities");
   // Reloads when a practice session closes (lessonId → null) or words were imported.
   useEffect(() => {
     if (!enrollment || lessonId) return;
-    Promise.all([db.listMistakes(enrollment.id), db.listWords(enrollment.id), db.cachedLessonItems(enrollment.id), db.listBookmarks(enrollment.id)])
-      .then(([m, words, cached, saved]) => setData({ mistakes: m.length, words, timed: cached.length, saved }));
+    Promise.all([db.listMistakes(enrollment.id), db.listWords(enrollment.id), db.cachedLessonItems<Item>(enrollment.id), db.listBookmarks(enrollment.id)])
+      .then(([m, words, cached, saved]) => setData({ mistakes: m.length, words, timed: cached.length, saved, cached }));
   }, [enrollment?.id, lessonId, loaded]);
   useEffect(() => { const r = () => reload((n) => n + 1); addEventListener(BOOKMARKS_CHANGED, r); return () => removeEventListener(BOOKMARKS_CHANGED, r); }, []);
-  const { mistakes, words, timed, saved } = data;
+  const { mistakes, words, timed, saved, cached } = data;
   // Bookmarked targets are ids only; one whose unit no longer exists is not shown.
   const savedItems = saved.flatMap((b) => {
     const at = b.kind === "story" ? parseStoryId(b.ref) : parseUnitRef(b.ref);
@@ -120,72 +123,145 @@ export function Practice() {
   const due = dueToday(words, new Date()).length;
   const speakBlock = useSpeakBlock();
   const conjTenses = course && enrollment ? tensesFor(course.iso, enrollment.level) : [];
-  const card = (onClick: () => void, icon: IconName, bg: string, fg: string, title: string, desc: string) => (
-    <button className="card row-item" onClick={onClick}>
-      <span style={iconBox(bg, fg)}><Icon name={icon} /></span>
-      <span className="od-field od-fill"><b>{title}</b><span className="muted small">{desc}</span></span>
-      <span className="btn btn-ghost pe-none">{t("practice.start")}</span>
+  // A tile per activity; `locked` = its prerequisite is missing. Tiles always describe the activity; the click toasts why it's locked.
+  const card = (onClick: () => void, icon: IconName, bg: string, fg: string, title: string, desc: string, locked = false) => (
+    <button className="card practice-tile" data-locked={locked || undefined} onClick={onClick} title={`${title}\n${desc}`}>
+      <span style={iconBox(bg, fg, 40, "var(--r-sm)")}><Icon name={icon} /></span>
+      <b>{title}</b>
+      <span className="muted small">{desc}</span>
+      {locked && <span className="practice-lock" aria-hidden="true"><Icon name="lock" /></span>}
     </button>
   );
+  const group = (title: string, tiles: React.ReactNode[]) => (
+    <section className="practice-group">
+      <h2 className="practice-group-title">{title}</h2>
+      <div className="practice-tiles">{tiles}</div>
+    </section>
+  );
+  const needWords = (n: number) => t("practice.needWords", { count: n });
+  const tabs = [
+    { k: "activities" as const, label: t("practice.tabs.activities") },
+    { k: "saved" as const, label: t("practice.saved"), n: savedItems.length },
+    { k: "words" as const, label: t("practice.myWords"), n: words.length },
+  ];
   return (
     <>
       <h1 className="section-title" style={{ marginTop: "var(--s-6)" }}>{t("practice.title")}</h1>
-      <p className="muted" style={{ marginBottom: "var(--s-6)" }}>{t("practice.subtitle")}</p>
-      <div className="od-grid" style={{ "--od-cols": 1, "--od-gap": "var(--s-4)" } as React.CSSProperties}>
-        {card(() => openSheet(<TutorSheet />), "video", "var(--green-tint)", "var(--green)", t("tutor.card"), t("tutor.cardDesc"))}
-        {card(() => mistakes ? start("practice-mistakes") : toast(t("practice.noMistakes")), "refresh", "var(--red-tint)", "var(--red)", t("practice.mistakes"),
-          mistakes ? t("practice.mistakesCount", { count: mistakes }) : t("practice.noMistakes"))}
-        {/* Speaking: bundled Whisper (DECISIONS D2). */}
-        {card(() => speakBlock ? toast(t(speakBlock)) : words.length ? start("practice-speak") : toast(t("practice.needWords", { count: 1 })),
-          "mic", "var(--sky)", "var(--blue)", t("practice.speak"), speakBlock ? t(speakBlock) : words.length ? t("practice.speakDesc") : t("practice.needWords", { count: 1 }))}
-        {card(() => openSheet(<WriteSheet />), "pen", "var(--purple-tint)", "var(--purple-dark)", t("write.title"), t("write.cardDesc"))}
-        {conjTenses.length > 0 && card(() => start("practice-conjugate"), "dumbbell", "var(--gold-tint)", "var(--gold-dark)", t("conjugate.title"),
-          t("conjugate.desc", { tenses: conjTenses.join(", ") }))}
-        {card(() => speakBlock ? toast(t(speakBlock)) : openSheet(<DrillsSheet />), "clock", "var(--sky)", "var(--blue)", t("practice.drills"), speakBlock ? t(speakBlock) : t("practice.drillsDesc"))}
-        {card(() => words.length < LISTEN_MIN_WORDS ? toast(t("practice.needWords", { count: LISTEN_MIN_WORDS })) : due ? start("practice-due") : toast(t("practice.noDue")),
-          "refresh", "var(--green-tint)", "var(--green)", t("practice.due"),
-          words.length < LISTEN_MIN_WORDS ? t("practice.needWords", { count: LISTEN_MIN_WORDS }) : due ? t("practice.dueDesc", { count: due }) : t("practice.noDue"))}
-        {card(() => words.length ? openSheet(<CardsSheet onAdded={() => reload((n) => n + 1)} />) : toast(t("practice.needWords", { count: 1 })),
-          "story", "var(--gold-tint)", "var(--gold-dark)", t("cards.title"), words.length ? t("cards.desc", { count: due }) : t("practice.needWords", { count: 1 }))}
-        {card(() => words.length >= LISTEN_MIN_WORDS ? start("practice-listen") : toast(t("practice.needWords", { count: LISTEN_MIN_WORDS })),
-          "headphones", "var(--purple-tint)", "var(--purple-dark)", t("practice.listen"), words.length >= LISTEN_MIN_WORDS ? t("practice.listenDesc", { count: Math.min(6, words.length) }) : t("practice.needWords", { count: LISTEN_MIN_WORDS }))}
-        {card(() => words.length >= MADNESS_MIN_WORDS ? start("practice-madness") : toast(t("practice.needWords", { count: MADNESS_MIN_WORDS })),
-          "bolt", "var(--gold-tint)", "var(--gold-dark)", t("league.matchName"), words.length >= MADNESS_MIN_WORDS ? t("practice.madnessDesc") : t("practice.needWords", { count: MADNESS_MIN_WORDS }))}
-        {card(() => timed ? start("practice-timed") : toast(t("practice.needLesson")),
-          "clock", "var(--red-tint)", "var(--orange)", t("practice.timed"), timed ? t("practice.timedDesc") : t("practice.needLesson"))}
-      </div>
-      <h2 className="section-title">{t("practice.saved")} <span className="muted small" style={{ fontWeight: 700 }}>({savedItems.length})</span></h2>
-      {!savedItems.length && <p className="muted small">{t("practice.savedEmpty")}</p>}
-      <div className="od-stack" style={{ "--od-gap": "var(--s-4)" } as React.CSSProperties}>
-        {savedItems.map((x) => (
-          <div className="card row-item" key={x.key}>
-            <button className="od-row od-fill" style={{ "--od-gap": "var(--s-4)", textAlign: "left" } as React.CSSProperties} onClick={() => {
-              if (x.kind === "story") return start(x.ref);
-              if (x.kind === "guide") return openSheet(<GuideSheet unitId={x.unitId} level={x.level} />);
-              Object.assign(jumpTo, { unit: x.unitId, until: Date.now() + 1000 }); setViewLevel(x.level); go("learn");
-            }}>
-              <span style={iconBox("var(--gold-tint)", "var(--gold-dark)", 40, "var(--r-sm)")}><Icon name={x.kind === "story" ? "story" : x.kind === "guide" ? "book" : "star"} /></span>
-              <span className="od-field od-fill"><b>{x.title}</b><span className="muted small">{x.level} · {t(`bookmark.${x.kind}`)}</span></span>
-            </button>
-            <BookmarkButton kind={x.kind} target={x.ref} title={x.title} />
-          </div>
+      <p className="muted" style={{ marginBottom: "var(--s-5)" }}>{t("practice.subtitle")}</p>
+      <div className="tabs" role="tablist" aria-label={t("practice.title")}>
+        {tabs.map(({ k, label, n }) => (
+          <button key={k} role="tab" id={`prac-tab-${k}`} aria-selected={tab === k} aria-controls="prac-panel" onClick={() => setTab(k)}>
+            {label}{n !== undefined && <span className="tab-count">{n}</span>}
+          </button>
         ))}
       </div>
-      <h2 className="section-title">{t("practice.myWords")} <span className="muted small" style={{ fontWeight: 700 }}>({words.length})</span></h2>
-      {enrollment && <WordsFile enrollment={enrollment} words={words} onImported={() => reload((n) => n + 1)} />}
-      {!words.length && <p className="muted small">{t("practice.noWords")}</p>}
-      <div className="od-cluster" style={{ "--od-gap": "var(--s-4)" } as React.CSSProperties}>
-        {words.map((w) => {
-          const col = w.strength >= 4 ? "var(--green)" : w.strength >= 2 ? "var(--gold)" : "var(--red)";
-          return (
-            <button className="word-chip" key={w.word} onClick={() => toast(`'${w.word}' = ${w.translation}`)} aria-label={t("practice.wordAria", { word: w.word, meaning: w.translation, strength: w.strength })}>
-              <span>{w.word}</span>
-              <span className="strength" aria-hidden="true"><i style={{ width: `${(w.strength / 5) * 100}%`, background: col }} /></span>
-            </button>
-          );
-        })}
+      <div id="prac-panel" role="tabpanel" aria-labelledby={`prac-tab-${tab}`}>
+        {tab === "activities" && <>
+          {group(t("practice.groups.speak"), [
+            <Fragment key="tutor">{card(() => openSheet(<TutorSheet />), "video", "var(--green-tint)", "var(--green)", t("tutor.card"), t("tutor.cardDesc"))}</Fragment>,
+            /* Speaking: bundled Whisper (DECISIONS D2). */
+            <Fragment key="speak">{card(() => speakBlock ? toast(t(speakBlock)) : words.length ? start("practice-speak") : toast(needWords(1)),
+              "mic", "var(--sky)", "var(--blue)", t("practice.speak"), t("practice.speakDesc"), !!speakBlock || !words.length)}</Fragment>,
+            <Fragment key="rehearse">{card(() => openSheet(<RehearseSheet />), "users", "var(--sky)", "var(--blue)", t("roleplay.rehearse"), t("roleplay.rehearseDesc"))}</Fragment>,
+            <Fragment key="drills">{card(() => speakBlock ? toast(t(speakBlock)) : openSheet(<DrillsSheet />), "clock", "var(--sky)", "var(--blue)", t("practice.drills"), t("practice.drillsDesc"), !!speakBlock)}</Fragment>,
+          ])}
+          {group(t("practice.groups.review"), [
+            <Fragment key="mistakes">{card(() => mistakes ? start("practice-mistakes") : toast(t("practice.noMistakes")), "refresh", "var(--red-tint)", "var(--red)", t("practice.mistakes"),
+              mistakes ? t("practice.mistakesCount", { count: mistakes }) : t("practice.noMistakes"), !mistakes)}</Fragment>,
+            <Fragment key="due">{card(() => words.length < LISTEN_MIN_WORDS ? toast(needWords(LISTEN_MIN_WORDS)) : due ? start("practice-due") : toast(t("practice.noDue")),
+              "refresh", "var(--green-tint)", "var(--green)", t("practice.due"),
+              words.length < LISTEN_MIN_WORDS ? t("practice.dueAbout") : due ? t("practice.dueDesc", { count: due }) : t("practice.noDue"), words.length < LISTEN_MIN_WORDS || !due)}</Fragment>,
+            <Fragment key="cards">{card(() => words.length ? openSheet(<CardsSheet onAdded={() => reload((n) => n + 1)} />) : toast(needWords(1)),
+              "story", "var(--gold-tint)", "var(--gold-dark)", t("cards.title"), words.length ? t("cards.desc", { count: due }) : t("practice.cardsAbout"), !words.length)}</Fragment>,
+          ])}
+          {group(t("practice.groups.skills"), [
+            <Fragment key="write">{card(() => openSheet(<WriteSheet />), "pen", "var(--purple-tint)", "var(--purple-dark)", t("write.title"), t("write.cardDesc"))}</Fragment>,
+            ...(conjTenses.length > 0 ? [<Fragment key="conj">{card(() => start("practice-conjugate"), "dumbbell", "var(--gold-tint)", "var(--gold-dark)", t("conjugate.title"),
+              t("conjugate.desc", { tenses: conjTenses.join(", ") }))}</Fragment>] : []),
+            <Fragment key="listen">{card(() => words.length >= LISTEN_MIN_WORDS ? start("practice-listen") : toast(needWords(LISTEN_MIN_WORDS)),
+              "headphones", "var(--purple-tint)", "var(--purple-dark)", t("practice.listen"),
+              words.length >= LISTEN_MIN_WORDS ? t("practice.listenDesc", { count: Math.min(6, words.length) }) : t("practice.listenAbout"), words.length < LISTEN_MIN_WORDS)}</Fragment>,
+          ])}
+          {group(t("practice.groups.challenge"), [
+            <Fragment key="madness">{card(() => words.length >= MADNESS_MIN_WORDS ? start("practice-madness") : toast(needWords(MADNESS_MIN_WORDS)),
+              "bolt", "var(--gold-tint)", "var(--gold-dark)", t("league.matchName"), t("practice.madnessDesc"), words.length < MADNESS_MIN_WORDS)}</Fragment>,
+            <Fragment key="timed">{card(() => timed ? start("practice-timed") : toast(t("practice.needLesson")),
+              "clock", "var(--red-tint)", "var(--orange)", t("practice.timed"), t("practice.timedDesc"), !timed)}</Fragment>,
+          ])}
+        </>}
+        {tab === "saved" && <>
+          {!savedItems.length && <p className="muted small">{t("practice.savedEmpty")}</p>}
+          <div className="od-stack" style={{ "--od-gap": "var(--s-4)" } as React.CSSProperties}>
+            {savedItems.map((x) => (
+              <div className="card row-item" key={x.key}>
+                <button className="od-row od-fill" style={{ "--od-gap": "var(--s-4)", textAlign: "left" } as React.CSSProperties} onClick={() => {
+                  if (x.kind === "story") return start(x.ref);
+                  if (x.kind === "guide") return openSheet(<GuideSheet unitId={x.unitId} level={x.level} />);
+                  Object.assign(jumpTo, { unit: x.unitId, until: Date.now() + 1000 }); setViewLevel(x.level); go("learn");
+                }}>
+                  <span style={iconBox("var(--gold-tint)", "var(--gold-dark)", 40, "var(--r-sm)")}><Icon name={x.kind === "story" ? "story" : x.kind === "guide" ? "book" : "star"} /></span>
+                  <span className="od-field od-fill"><b>{x.title}</b><span className="muted small">{x.level} · {t(`bookmark.${x.kind}`)}</span></span>
+                </button>
+                <BookmarkButton kind={x.kind} target={x.ref} title={x.title} />
+              </div>
+            ))}
+          </div>
+        </>}
+        {tab === "words" && <>
+          {enrollment && <WordsFile enrollment={enrollment} words={words} onImported={() => reload((n) => n + 1)} />}
+          {!words.length && <p className="muted small">{t("practice.noWords")}</p>}
+          <div className="od-cluster" style={{ "--od-gap": "var(--s-3)" } as React.CSSProperties}>
+            {words.map((w) => {
+              const col = w.strength >= 4 ? "var(--green)" : w.strength >= 2 ? "var(--gold)" : "var(--red)";
+              return (
+                <button className="word-chip" key={w.word} onClick={() => openSheet(<WordSheet word={w} example={exampleFor(w.word, cached)} lang={course?.iso ?? "en"} />)} aria-label={t("practice.wordAria", { word: w.word, meaning: w.translation, strength: w.strength })}>
+                  <span>{w.word}</span>
+                  <span className="strength" aria-hidden="true"><i style={{ width: `${(w.strength / 5) * 100}%`, background: col }} /></span>
+                </button>
+              );
+            })}
+          </div>
+        </>}
       </div>
     </>
+  );
+}
+
+/** A sentence from the learner's cached lessons that uses `word` (whole word, case-insensitive); the shortest wins. */
+export function exampleFor(word: string, items: Item[]): { text: string; translation?: string } | undefined {
+  const re = new RegExp(`(^|[^\\p{L}])${word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}($|[^\\p{L}])`, "iu");
+  const all: { text: string; translation?: string }[] = items.flatMap((it) => it.kind === "speak" ? [{ text: it.phrase, translation: it.translation }]
+    : it.kind === "bank" ? [{ text: it.answer.join(" ") }] : it.kind === "input" && !it.cells ? [{ text: it.answer }] : []);
+  // ponytail: a sentence, not the bare word; prefer ones with a translation, then the shortest.
+  return all.filter((x) => x.text.trim().includes(" ") && re.test(x.text))
+    .sort((a, b) => Number(!a.translation) - Number(!b.translation) || a.text.length - b.text.length)[0];
+}
+
+function WordSheet({ word: w, example, lang }: { word: db.Word; example?: { text: string; translation?: string }; lang: string }) {
+  const { t } = useTranslation();
+  const [hint, setHint] = useState(false);
+  const { closeSheet } = useApp();
+  return (
+    <div className="od-stack" style={{ "--od-gap": "var(--s-4)" } as React.CSSProperties}>
+      <h3 style={{ margin: 0 }}>{w.word}</h3>
+      <div className="od-row" style={{ "--od-gap": "var(--s-3)", justifyContent: "center" } as React.CSSProperties}>
+        <span>{w.translation}</span>
+        <SpeakButton className="icon-btn" text={w.word} lang={lang} aria-label={t("lesson.listen")} title={t("lesson.listen")}><Icon name="headphones" /></SpeakButton>
+      </div>
+      {example && <section className="od-stack" style={{ "--od-gap": "var(--s-2)" } as React.CSSProperties}>
+        <span className="practice-group-title" style={{ margin: 0 }}>{t("practice.wordExample")}</span>
+        <div className="card od-row" style={{ "--od-gap": "var(--s-3)", padding: "var(--s-4)" } as React.CSSProperties}>
+            <span className="od-field od-fill"><span>{example.text}</span>{example.translation && <span className="muted small">{example.translation}</span>}</span>
+            <SpeakButton className="icon-btn" text={example.text} lang={lang} aria-label={t("lesson.listen")} title={t("lesson.listen")}><Icon name="headphones" /></SpeakButton>
+          </div>
+      </section>}
+      <div className="od-row muted small" style={{ "--od-gap": "var(--s-2)", justifyContent: "center" } as React.CSSProperties}>
+        <span>{t("practice.wordStrength", { n: w.strength })}</span>
+        <button className="link-btn" style={{ display: "flex" }} aria-expanded={hint} aria-label={t("practice.wordStrengthHint")} title={t("practice.wordStrengthHint")} onClick={() => setHint((h) => !h)}><Icon name="info" /></button>
+      </div>
+      {hint && <p className="muted small" style={{ margin: 0 }}>{t("practice.wordStrengthHint")}</p>}
+      <button className="btn btn-ghost btn-block" onClick={closeSheet}>{t("sheet.close")}</button>
+    </div>
   );
 }
 
@@ -218,9 +294,10 @@ function WordsFile({ enrollment, words, onImported }: { enrollment: db.Enrollmen
     else toast(done);
   };
   return (
-    <div className="od-cluster" style={{ "--od-gap": "var(--s-3)", marginBottom: "var(--s-4)" } as React.CSSProperties}>
-      <button className="btn btn-ghost" disabled={!words.length} onClick={() => exportCsv().catch((e) => { console.error("export words", e); toast(t("practice.wordsFileFailed")); })}>{t("practice.wordsExport")}</button>
-      <button className="btn btn-ghost" onClick={() => pick.current?.click()}>{t("practice.wordsImport")}</button>
+    <div className="words-toolbar">
+      <span className="muted small od-fill">{t("practice.wordsHint")}</span>
+      <button className="link-btn small" disabled={!words.length} title={t("practice.wordsExport")} onClick={() => exportCsv().catch((e) => { console.error("export words", e); toast(t("practice.wordsFileFailed")); })}>{t("practice.wordsExportShort")}</button>
+      <button className="link-btn small" title={t("practice.wordsImport")} onClick={() => pick.current?.click()}>{t("practice.wordsImportShort")}</button>
       <input ref={pick} type="file" accept=".csv,.tsv,.txt,text/csv,text/tab-separated-values,text/plain" hidden
         onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ""; if (f) importFile(f).catch((err) => { console.error("import words", err); toast(t("practice.wordsFileFailed")); }); }} />
     </div>
@@ -665,11 +742,6 @@ export function Roleplay() {
         <span className="od-field od-fill"><b>{t("roleplay.rehearse")}</b><span className="muted small">{t("roleplay.rehearseDesc")}</span></span>
         <span className="btn btn-blue pe-none">{t("roleplay.start")}</span>
       </button>
-      <button className="card row-item" style={{ marginBottom: "var(--s-5)", width: "100%" }} onClick={() => openSheet(<TutorsSheet />)}>
-        <span style={iconBox("var(--purple-tint)", "var(--purple-dark)")}><Icon name="user" /></span>
-        <span className="od-field od-fill"><b>{t("tutorManage.title")}</b><span className="muted small">{t("tutorManage.cardDesc")}</span></span>
-        <span className="btn btn-ghost pe-none">{t("tutorManage.manage")}</span>
-      </button>
       <div className="rp-grid">
         {castOf(tutors).map(({ id, ch, tutor }) => (
           <div className="card rp-card" key={id}>
@@ -681,6 +753,11 @@ export function Roleplay() {
             </span>
           </div>
         ))}
+        {/* Add / manage tutors lives at the end of the cast, opening the same sheet the old "Manage" card did. */}
+        <button className="card rp-card rp-add" onClick={() => openSheet(<TutorsSheet />)}>
+          <span className="rp-face rp-add-face"><Icon name="user" /><b>+</b></span>
+          <span className="od-field"><b>{t("tutorManage.add")}</b><span className="muted">{t("tutorManage.cardDesc")}</span></span>
+        </button>
       </div>
     </>
   );

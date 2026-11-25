@@ -174,7 +174,25 @@
     "wordsError_translation": "nincs fordítás",
     "wordsError_schedule": "az ismétlési adatok érvénytelenek",
     "saved": "Mentett elemek",
-    "savedEmpty": "Koppints egy egység, egy útmutató vagy egy történet könyvjelzőjére, hogy itt tartsd."
+    "savedEmpty": "Koppints egy egység, egy útmutató vagy egy történet könyvjelzőjére, hogy itt tartsd.",
+    "tabs": {
+      "activities": "Gyakorlatok"
+    },
+    "groups": {
+      "speak": "Beszéd",
+      "review": "Ismétlés",
+      "skills": "Készségek",
+      "challenge": "Kihívások"
+    },
+    "wordsHint": "Mentsd a listádat CSV-be, vagy importálj egyet.",
+    "wordsExportShort": "Exportálás",
+    "wordsImportShort": "Importálás",
+    "wordExample": "Példa",
+    "wordStrength": "Erősség: {{n}}/5",
+    "wordStrengthHint": "Az erősség nő, ahogy gyakorlod a szót (Napi ismétlés, Kártyák, Hallás).",
+    "dueAbout": "Ismételd a szavakat, amiket mindjárt elfelejtesz",
+    "cardsAbout": "Tanuld a szavaidat kártyákkal",
+    "listenAbout": "Válaszd ki, amit hallasz"
   },
   "league": {
     "title": "{{name}} liga",
@@ -1024,7 +1042,8 @@
     "invalidJson": "Ez a fájl nem érvényes JSON.",
     "fileTooLarge": "Ez a fájl nagyobb, mint {{size}}.",
     "imageFailed": "A képet nem sikerült beolvasni.",
-    "errors": "Előbb javítsd ezeket:"
+    "errors": "Előbb javítsd ezeket:",
+    "add": "Tutor hozzáadása"
   },
   "biome": {
     "meadow": "Rét",

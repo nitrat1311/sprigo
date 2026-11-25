@@ -32,8 +32,13 @@ export function Grammar() {
             const lv = CEFR.indexOf(l.level);
             const reached = lv < cur || (lv === cur && (ui === 0 || units[ui].steps.some((st) => done.has(st.id))));
             return (
-              <div key={u.id} style={{ marginBottom: "var(--s-5)" }}>
-                <h3 style={{ margin: "0 0 var(--s-3)" }}>{u.title} {!reached && <span className="muted small">· {t("grammar.later")}</span>}</h3>
+              // Collapsed by default to keep the page short; a search opens every match.
+              <details key={u.id} className="grammar-unit" open={q.trim() ? true : undefined}>
+                <summary>
+                  <h3 className="od-fill">{u.title} {!reached && <span className="muted small">· {t("grammar.later")}</span>}</h3>
+                  <span className="muted small">{u.patterns.length}</span>
+                  <Icon name="down" />
+                </summary>
                 <div className="od-stack" style={{ "--od-gap": "var(--s-3)" } as React.CSSProperties}>
                   {u.patterns.map((e) => (
                     <button key={e.pattern} className="card row-item" lang={course!.iso} onClick={() => openSheet(<GrammarSheet entry={e} />)}>
@@ -41,7 +46,7 @@ export function Grammar() {
                     </button>
                   ))}
                 </div>
-              </div>
+              </details>
             );
           })}
         </section>

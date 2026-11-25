@@ -174,7 +174,25 @@
     "wordsError_translation": "keine Übersetzung",
     "wordsError_schedule": "Wiederholungsdaten ungültig",
     "saved": "Gespeichert",
-    "savedEmpty": "Tippe auf das Lesezeichen bei einer Einheit, einem Lernführer oder einer Geschichte, um sie hier zu behalten."
+    "savedEmpty": "Tippe auf das Lesezeichen bei einer Einheit, einem Lernführer oder einer Geschichte, um sie hier zu behalten.",
+    "tabs": {
+      "activities": "Übungen"
+    },
+    "groups": {
+      "speak": "Sprechen",
+      "review": "Wiederholen",
+      "skills": "Fähigkeiten",
+      "challenge": "Herausforderungen"
+    },
+    "wordsHint": "Sichere deine Liste als CSV oder importiere eine.",
+    "wordsExportShort": "Exportieren",
+    "wordsImportShort": "Importieren",
+    "wordExample": "Beispiel",
+    "wordStrength": "Stärke: {{n}}/5",
+    "wordStrengthHint": "Die Stärke wächst, wenn du das Wort übst (Tageswiederholung, Karten, Hören).",
+    "dueAbout": "Wiederhole Wörter, die du bald vergisst",
+    "cardsAbout": "Lerne deine Wörter mit Karteikarten",
+    "listenAbout": "Wähle, was du hörst"
   },
   "league": {
     "title": "{{name}}-Liga",
@@ -1024,7 +1042,8 @@
     "invalidJson": "Diese Datei ist kein gültiges JSON.",
     "fileTooLarge": "Diese Datei ist größer als {{size}}.",
     "imageFailed": "Das Bild konnte nicht gelesen werden.",
-    "errors": "Bitte zuerst das hier beheben:"
+    "errors": "Bitte zuerst das hier beheben:",
+    "add": "Tutor hinzufügen"
   },
   "biome": {
     "meadow": "Wiese",

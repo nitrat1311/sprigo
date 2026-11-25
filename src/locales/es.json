@@ -184,7 +184,25 @@
     "wordsExported_many": "{{count}} palabras exportadas",
     "wordsSkipped_many": "Se omitieron {{count}} filas:",
     "saved": "Guardados",
-    "savedEmpty": "Toca el marcador de una unidad, una guía o una historia para guardarla aquí."
+    "savedEmpty": "Toca el marcador de una unidad, una guía o una historia para guardarla aquí.",
+    "tabs": {
+      "activities": "Actividades"
+    },
+    "groups": {
+      "speak": "Hablar",
+      "review": "Repaso",
+      "skills": "Habilidades",
+      "challenge": "Desafíos"
+    },
+    "wordsHint": "Guarda tu lista en CSV o importa una.",
+    "wordsExportShort": "Exportar",
+    "wordsImportShort": "Importar",
+    "wordExample": "Ejemplo",
+    "wordStrength": "Fuerza: {{n}}/5",
+    "wordStrengthHint": "La fuerza sube al practicar la palabra (Repaso del día, Tarjetas, Escucha).",
+    "dueAbout": "Repasa las palabras que estás por olvidar",
+    "cardsAbout": "Estudia tus palabras con tarjetas",
+    "listenAbout": "Elige lo que oyes"
   },
   "league": {
     "title": "Liga {{name}}",
@@ -1054,7 +1072,8 @@
     "invalidJson": "Este archivo no es JSON válido.",
     "fileTooLarge": "Este archivo supera los {{size}}.",
     "imageFailed": "No se pudo leer la imagen.",
-    "errors": "Corrige esto primero:"
+    "errors": "Corrige esto primero:",
+    "add": "Añadir tutor"
   },
   "biome": {
     "meadow": "Pradera",

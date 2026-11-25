@@ -174,7 +174,25 @@
     "wordsError_translation": "no translation",
     "wordsError_schedule": "review data isn't valid",
     "saved": "Saved",
-    "savedEmpty": "Tap the bookmark on a unit, guidebook or story to keep it here."
+    "savedEmpty": "Tap the bookmark on a unit, guidebook or story to keep it here.",
+    "tabs": {
+      "activities": "Activities"
+    },
+    "groups": {
+      "speak": "Speaking",
+      "review": "Review",
+      "skills": "Skills",
+      "challenge": "Challenges"
+    },
+    "wordsHint": "Back up your list as CSV or import one.",
+    "wordsExportShort": "Export",
+    "wordsImportShort": "Import",
+    "wordExample": "Example",
+    "wordStrength": "Strength: {{n}}/5",
+    "wordStrengthHint": "Strength grows as you practise the word (Daily review, Cards, Listening).",
+    "dueAbout": "Review words you're about to forget",
+    "cardsAbout": "Study your words with flashcards",
+    "listenAbout": "Pick what you hear"
   },
   "league": {
     "title": "{{name}} League",
@@ -1024,7 +1042,8 @@
     "invalidJson": "This file is not valid JSON.",
     "fileTooLarge": "This file is larger than {{size}}.",
     "imageFailed": "The image could not be read.",
-    "errors": "Please fix these first:"
+    "errors": "Please fix these first:",
+    "add": "Add a tutor"
   },
   "biome": {
     "meadow": "Meadow",

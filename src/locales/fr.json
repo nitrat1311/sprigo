@@ -184,7 +184,25 @@
     "wordsExported_many": "{{count}} mots exportés",
     "wordsSkipped_many": "{{count}} lignes ignorées :",
     "saved": "Enregistrés",
-    "savedEmpty": "Touche le marque-page d'une unité, d'un guide ou d'une histoire pour le garder ici."
+    "savedEmpty": "Touche le marque-page d'une unité, d'un guide ou d'une histoire pour le garder ici.",
+    "tabs": {
+      "activities": "Activités"
+    },
+    "groups": {
+      "speak": "Expression orale",
+      "review": "Révision",
+      "skills": "Compétences",
+      "challenge": "Défis"
+    },
+    "wordsHint": "Sauvegarde ta liste en CSV ou importe-en une.",
+    "wordsExportShort": "Exporter",
+    "wordsImportShort": "Importer",
+    "wordExample": "Exemple",
+    "wordStrength": "Force : {{n}}/5",
+    "wordStrengthHint": "La force augmente quand tu pratiques le mot (Révision du jour, Cartes, Écoute).",
+    "dueAbout": "Révise les mots que tu vas bientôt oublier",
+    "cardsAbout": "Étudie tes mots avec des cartes",
+    "listenAbout": "Choisis ce que tu entends"
   },
   "league": {
     "title": "Ligue {{name}}",
@@ -1054,7 +1072,8 @@
     "invalidJson": "Ce fichier n’est pas un JSON valide.",
     "fileTooLarge": "Ce fichier dépasse {{size}}.",
     "imageFailed": "L’image n’a pas pu être lue.",
-    "errors": "Corrigez d’abord ceci :"
+    "errors": "Corrigez d’abord ceci :",
+    "add": "Ajouter un tuteur"
   },
   "biome": {
     "meadow": "Prairie",

@@ -174,7 +174,7 @@ function TutorForm({ initial }: { initial?: db.Tutor }) {
         <b>{t("tutorManage.voice")}</b>
         <div className="od-row" style={gap("var(--s-3)")}>
           <select className="select od-fill" aria-label={t("tutorManage.voice")} value={voice} onChange={(e) => setVoice(e.target.value)}>
-            {voices.map((v) => <option key={v} value={v}>{v}</option>)}
+            {voices.map((v) => <option key={v} value={v}>{voiceLabel(v)}</option>)}
             {ownVoice && <option value={voice}>{voice}</option>}
           </select>
           {!db.isCompanion && ( // Kokoro runs out of memory in the phone's Safari, so Settings does not offer it there either
@@ -386,3 +386,6 @@ export function TutorsSheet() {
     </div>
   );
 }
+
+/** "af_heart" → "Heart (af_heart)": Kokoro ids are lang+gender prefix, then the voice's name. */
+const voiceLabel = (id: string) => { const n = id.split("_").slice(1).join(" "); return n ? `${n[0].toUpperCase()}${n.slice(1)} (${id})` : id; };

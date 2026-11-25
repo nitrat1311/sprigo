@@ -484,6 +484,26 @@ button[aria-busy="true"]{cursor:progress}
 .tabs button{position:relative;padding:var(--s-3) var(--s-4);border-bottom:3px solid transparent;font-weight:800;color:var(--text-muted);white-space:nowrap}
 .tabs button:hover{color:var(--text)}
 .tabs button[aria-selected="true"]{color:var(--blue);border-bottom-color:var(--blue)}
+.tab-count{margin-left:var(--s-2);padding:0 var(--s-2);border-radius:var(--r-pill);background:var(--border);font-size:var(--fs-11)}
+.tabs button[aria-selected="true"] .tab-count{background:var(--blue);color:#fff}
+/* Practice: grouped activity tiles, 3 per row (2 on phones). */
+.practice-group+.practice-group{margin-top:var(--s-6)}
+.practice-group-title{margin:0 0 var(--s-3);font-size:var(--fs-12);font-weight:800;letter-spacing:var(--tr-caps);text-transform:uppercase;color:var(--text-muted)}
+.practice-tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--s-4)}
+.practice-tile{display:flex;flex-direction:column;align-items:flex-start;gap:var(--s-2);padding:var(--s-5);text-align:left;min-width:0}
+.practice-tile b{margin-top:var(--s-2);line-height:1.25}
+/* One line each so every tile is the same height; the full text is the tile's hover title. */
+.practice-tile b,.practice-tile > .muted{width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.practice-tile{position:relative}
+/* Locked: flat, dashed, faded — reads as "not yet", the description says why. */
+.practice-tile[data-locked]{background:transparent;box-shadow:none;border-style:dashed}
+.practice-tile[data-locked] > span:first-child{filter:grayscale(1);opacity:.45}
+.practice-tile[data-locked] b{color:var(--text-muted)}
+.practice-lock{position:absolute;top:var(--s-4);right:var(--s-4);display:flex;color:var(--text-faint)}
+.practice-lock svg{width:16px;height:16px}
+@media (max-width:767px){.tabs[aria-label] button{padding:var(--s-3) var(--s-2)}.practice-tiles{grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--s-3)}.practice-tile{padding:var(--s-4)}}
+@media (max-width:380px){.practice-tiles{grid-template-columns:1fr}}
+.words-toolbar{display:flex;align-items:center;flex-wrap:wrap;gap:var(--s-4);margin-bottom:var(--s-4)}
 .tab-dot{position:absolute;top:8px;right:4px;width:8px;height:8px;border-radius:50%;background:var(--orange)}
 .select{font:inherit;font-weight:800;color:var(--text);background:var(--card);border:2px solid var(--border);border-radius:var(--r);padding:var(--s-3) var(--s-4);min-height:44px;box-shadow:0 var(--edge-1) 0 var(--border)}
 /* WebKit (the macOS app) draws its own native select otherwise; the caret is two gradients so it takes the text colour. */
@@ -600,6 +620,10 @@ html[data-theme="dark"] .face .scene{filter:brightness(.6) saturate(.8)}
 .rp-card{display:flex;flex-direction:column;gap:var(--s-4)}
 .rp-face{position:relative;aspect-ratio:4/3;border-radius:var(--r);overflow:hidden}
 .rp-actions{display:grid;grid-template-columns:1fr 1fr;gap:var(--s-3)}
+.rp-add{text-align:left;border-style:dashed;box-shadow:none;background:transparent}
+.rp-add:hover{background:var(--surface)}
+.rp-add-face{display:flex;align-items:center;justify-content:center;gap:var(--s-2);background:var(--purple-tint);color:var(--purple-dark);font-size:var(--fs-34)}
+.rp-add-face svg{width:48px;height:48px}
 @media (max-width:560px){.rp-grid{grid-template-columns:1fr}}
 /* Tutor picker: one wide scene per tutor, name as a badge */
 .tutor-pick{position:relative;display:block;width:100%;aspect-ratio:2/1;padding:0;border:0;border-radius:var(--r);overflow:hidden;cursor:pointer;transition:transform .12s}
@@ -766,3 +790,12 @@ html[data-theme="dark"] .garden-hero{background:var(--btd)}
 /* phase 2b: promoted inline styles (B) */
 .od-center{text-align:center}
 .od-anywhere{overflow-wrap:anywhere}
+
+/* Grammar: units collapse under their heading. */
+.grammar-unit{border-bottom:1px solid var(--border)}
+.grammar-unit summary{display:flex;align-items:center;gap:var(--s-3);padding:var(--s-4) 0;cursor:pointer;list-style:none}
+.grammar-unit summary::-webkit-details-marker{display:none}
+.grammar-unit summary h3{margin:0}
+.grammar-unit summary svg{width:18px;height:18px;color:var(--text-faint);transition:transform .2s}
+.grammar-unit[open] summary svg{transform:rotate(180deg)}
+.grammar-unit[open] > .od-stack{padding-bottom:var(--s-5)}

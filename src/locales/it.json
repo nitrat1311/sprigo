@@ -175,7 +175,25 @@
     "wordsError_translation": "nessuna traduzione",
     "wordsError_schedule": "i dati di ripasso non sono validi",
     "saved": "Salvati",
-    "savedEmpty": "Tocca il segnalibro su un’unità, una guida o una storia per ritrovarla qui."
+    "savedEmpty": "Tocca il segnalibro su un’unità, una guida o una storia per ritrovarla qui.",
+    "tabs": {
+      "activities": "Attività"
+    },
+    "groups": {
+      "speak": "Parlato",
+      "review": "Ripasso",
+      "skills": "Abilità",
+      "challenge": "Sfide"
+    },
+    "wordsHint": "Salva la tua lista in CSV o importane una.",
+    "wordsExportShort": "Esporta",
+    "wordsImportShort": "Importa",
+    "wordExample": "Esempio",
+    "wordStrength": "Forza: {{n}}/5",
+    "wordStrengthHint": "La forza cresce esercitando la parola (Ripasso del giorno, Carte, Ascolto).",
+    "dueAbout": "Ripassa le parole che stai per dimenticare",
+    "cardsAbout": "Studia le tue parole con le flashcard",
+    "listenAbout": "Scegli ciò che senti"
   },
   "league": {
     "title": "Lega {{name}}",
@@ -1045,7 +1063,8 @@
     "invalidJson": "Questo file non è JSON valido.",
     "fileTooLarge": "Questo file supera {{size}}.",
     "imageFailed": "Impossibile leggere l’immagine.",
-    "errors": "Correggi prima questo:"
+    "errors": "Correggi prima questo:",
+    "add": "Aggiungi tutor"
   },
   "biome": {
     "meadow": "Prato",
