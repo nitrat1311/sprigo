@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Icon, type IconName } from "../icons";
 import { useApp } from "../store";
@@ -12,6 +12,8 @@ import { LiveButton } from "./Screens";
 import { BIOMES, biomeScene, biomeVars } from "../biomes";
 import { buildPath, checkpointId, levelsOf, unitRef, type Cefr, type PathNode, type PathUnit } from "../course";
 import { cachedTitleTranslations, missingTitles, translateTitles } from "../titleTranslations";
+import { searchCourse, type Guidebook, type SearchHit, type SearchKind } from "../search";
+import * as db from "../db";
 
 const CHEST_GEMS = 20;
 
@@ -282,6 +284,61 @@ let setupOffered = false;
  *  ponytail: valid for a second rather than cleared on use, StrictMode runs the layout effect twice. */
 export const jumpTo = { unit: "", until: 0 };
 
+const SEARCH_ICON: Record<SearchKind, IconName> = {
+  unit: "star", step: "story", vocabulary: "headphones", grammar: "pen", guide: "book",
+};
+const MAX_HITS = 25;
+
+/** Search over the course's units, lessons, words and grammar, and the guidebooks already written (#44). */
+function SearchBox() {
+  const { t } = useTranslation();
+  const { course, enrollment, openSheet, setViewLevel, toast } = useApp();
+  const [q, setQ] = useState("");
+  const [guides, setGuides] = useState<Guidebook[]>([]);
+  const query = q.trim(), active = query.length >= 2;
+  useEffect(() => {
+    if (!enrollment || !active) return;
+    // Loaded when the search starts, so a guidebook written since the screen opened is searched too.
+    db.cachedGuidebooks<Guide>(enrollment.id).then(setGuides).catch((e) => console.warn("guide search", e));
+  }, [enrollment?.id, active]);
+  const hits = useMemo(() => course ? searchCourse(course, query, guides) : [], [course, query, guides]);
+  if (!course || !enrollment) return null;
+  const levels = levelsOf(course);
+  const future = (h: SearchHit) => levels.indexOf(h.level) > levels.indexOf(enrollment.level);
+  const open = (h: SearchHit) => {
+    if (future(h)) return toast(t("learn.finishFirst", { level: enrollment.level }));
+    setQ("");
+    if (h.kind === "guide") return openSheet(<GuideSheet unitId={h.unitId} level={h.level} />);
+    setViewLevel(h.level);
+    // The next frame has rendered this level; then bring the unit's header into view (a whole unit is taller than the screen).
+    requestAnimationFrame(() => document.querySelector(`[data-unit="${h.unitId}"] .unit-head`)?.scrollIntoView({ block: "center", behavior: "smooth" }));
+  };
+  return <div className="search-box" role="search">
+    <input className="input" type="search" value={q} onChange={(e) => setQ(e.target.value)}
+      placeholder={t("search.placeholder")} aria-label={t("search.label")} />
+    <p className="search-status muted small" role="status">
+      {active ? (hits.length ? t("search.count", { count: hits.length }) : t("search.none", { query })) : ""}
+    </p>
+    {active && <div className="search-results">
+      {hits.length > 0 && <div className="od-stack" style={{ "--od-gap": "8px" } as React.CSSProperties}>
+        {hits.slice(0, MAX_HITS).map((h) => (
+          <button className="card row-item" key={`${h.level}:${h.unitId}:${h.kind}:${h.text}`} onClick={() => open(h)}>
+            <span className="od-field od-fill">
+              <b>{h.text}</b>
+              <span className="muted small">
+                {h.unitTitle} · {h.level} · {t(`search.${h.kind}`)}{future(h) ? ` · ${t("grammar.later")}` : ""}
+              </span>
+              {h.note && <span className="small">{h.note}</span>}
+            </span>
+            <Icon name={SEARCH_ICON[h.kind]} />
+          </button>
+        ))}
+      </div>}
+      {hits.length > MAX_HITS && <p className="muted small" style={{ margin: "8px 0 0" }}>{t("search.more", { count: MAX_HITS })}</p>}
+    </div>}
+  </div>;
+}
+
 export function Learn() {
   const { t } = useTranslation();
   const { course, enrollment, done, viewLevel, openSheet, courseErrors, ai, profile } = useApp();
@@ -338,6 +395,7 @@ export function Learn() {
     <>
       <LiveButton className="mobile-only" />
       {setup}{errors}
+      <SearchBox />
       <button className="btn btn-ghost" style={{ marginTop: "var(--s-6)" }} onClick={() => openSheet(<LevelSheet />)} aria-haspopup="dialog">
         {level} · {levelName(level)} <Icon name="down" />
       </button>

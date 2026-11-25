@@ -30,6 +30,28 @@ test("onboarding creates a profile and sets up local AI", async ({ page }) => {
   await expect(page.getByRole("dialog")).toBeHidden();
 });
 
+test("the model picker shows measured guidance", async ({ page }) => {
+  await onboard(page);
+  await page.getByRole("tab", { name: "AI & voice" }).click();
+  await page.locator(".card", { hasText: "AI provider" }).getByRole("button", { name: "Change" }).click();
+  await page.getByRole("dialog").getByRole("button", { name: "Ollama settings" }).click(); // the model field lives here
+  const sheet = page.getByRole("dialog");
+  const model = sheet.getByLabel(/Model/);
+  await model.fill("qwen3:8b");
+  await expect(sheet.getByText(/^Measured:/)).toBeVisible();
+  await expect(sheet.getByText(/\d+% of exercises pass/)).toBeVisible(); // the share, which does not depend on the machine
+  await expect(model).toHaveAttribute("aria-describedby", "ai-model-note"); // the note describes the field, not names it
+  await model.fill("gemma4:e2b-mlx");
+  await expect(sheet.getByText(/^Measured:/)).toBeVisible();
+  await expect(sheet.getByRole("note")).toContainText("Models under 4B"); // measured and under 4B: both notes stay
+  await model.fill("qwen3.5:4b"); // the suggested cross-platform tag was not measured
+  await expect(sheet.getByText(/^Measured:/)).toBeHidden();
+  await expect(sheet.getByRole("note")).toBeHidden(); // and at the suggested size it is not "too small"
+  await model.fill("tiny:1b");
+  await expect(sheet.getByText(/^Measured:/)).toBeHidden();
+  await expect(sheet.getByRole("note")).toContainText("Models under 4B"); // unmeasured: the size warning
+});
+
 test("help answers setup questions in the app, also from a setting's ?", async ({ page }) => {
   await onboard(page);
   await page.locator(".card", { hasText: "Help & FAQ" }).getByRole("button", { name: "Open" }).click();
@@ -96,6 +118,23 @@ test("first lessons run every exercise type", async ({ page }) => {
   await page.getByRole("button", { name: "Learn" }).click();
   await runLesson(page, /Basic Greetings/);
   await runLesson(page, /Introduce Yourself/);
+});
+
+test("search finds a lesson or word and opens its unit", async ({ page }) => {
+  await onboard(page);
+  await page.getByRole("button", { name: "Learn" }).click();
+  const search = page.getByLabel("Search lessons and guidebooks");
+  // Learn opens on the current lesson, far down the path; the sticky search must still be on screen.
+  await expect(search).toBeInViewport();
+  await search.fill("How Old");
+  const results = page.locator(".search-results");
+  await expect(results.getByRole("button", { name: /How Old Are You\?/ })).toBeVisible();
+  await results.getByRole("button", { name: /How Old Are You\?/ }).click();
+  await expect(results).toBeHidden();
+  await expect(page.getByRole("heading", { name: "Numbers & Colors" })).toBeInViewport();
+
+  await search.fill("adios"); // the query folds accents
+  await expect(results.getByRole("button", { name: /^adiós/ })).toBeVisible();
 });
 
 test("a double-click checks a selected answer and a click advances after feedback", async ({ page }) => {
@@ -243,11 +282,78 @@ test("the profile charts XP and words after a lesson", async ({ page }) => {
   await expect(page.getByRole("img", { name: "Speaking pace. Nothing yet" })).toBeVisible(); // no voice session in this run
 });
 
+test("weekly and monthly goals show progress, a report and stay after a reload", async ({ page }) => {
+  await onboard(page);
+  await page.getByRole("button", { name: "Learn" }).click();
+  await runLesson(page, /Basic Greetings/);
+  await page.getByRole("button", { name: "Profile", exact: true }).click();
+
+  await expect(page.getByRole("heading", { name: "Goals" })).toBeVisible();
+  const week = page.locator("section.card", { hasText: "Weekly goal" });
+  await expect(week).toBeVisible();
+  await expect(page.locator("section.card", { hasText: "Monthly goal" })).toBeVisible();
+
+  // A weekly goal in new words, saved when the field loses focus.
+  await week.getByLabel("Measure").selectOption("words");
+  await week.getByLabel("Target each week").fill("20");
+  await week.getByLabel("Target each week").blur();
+  await expect(week.getByText(/^\d+ of 20 words$/)).toBeVisible();
+  await expect(week.getByText(/^Last week: \d+ words$/)).toBeVisible();
+
+  // The report compares this week with the week before, for every metric.
+  await week.getByRole("button", { name: "Report" }).click();
+  const report = page.getByRole("dialog", { name: "Weekly report" });
+  await expect(report.locator(".od-field > b")).toHaveText(["XP", "New words", "Speaking minutes"]);
+  await expect(report.getByRole("status")).toContainText(/Goal reached|to go/);
+  await report.getByRole("button", { name: "Close" }).click();
+
+  await page.reload();
+  await page.getByRole("button", { name: "Profile", exact: true }).click();
+  const weekAgain = page.locator("section.card", { hasText: "Weekly goal" });
+  await expect(weekAgain.getByLabel("Measure")).toHaveValue("words");
+  await expect(weekAgain.getByLabel("Target each week")).toHaveValue("20");
+});
+
+test("changing what a goal measures keeps the target already typed", async ({ page }) => {
+  await onboard(page);
+  await page.getByRole("button", { name: "Profile", exact: true }).click();
+  const week = page.locator("section.card", { hasText: "Weekly goal" });
+
+  await week.getByLabel("Target each week").fill("35"); // typed, not yet blurred
+  await week.getByLabel("Measure").selectOption("words"); // commits the typed target with the new measure
+
+  await page.reload();
+  await page.getByRole("button", { name: "Profile", exact: true }).click();
+  const again = page.locator("section.card", { hasText: "Weekly goal" });
+  await expect(again.getByLabel("Measure")).toHaveValue("words");
+  await expect(again.getByLabel("Target each week")).toHaveValue("35");
+});
+
+test("a weekly summary opens once after the week turns", async ({ page }) => {
+  await page.clock.install({ time: new Date("2026-11-23T10:00:00") }); // a Monday
+  await onboard(page);
+  await page.getByRole("button", { name: "Learn" }).click();
+  await runLesson(page, /Basic Greetings/);
+
+  await page.clock.setFixedTime(new Date("2026-11-30T10:00:00")); // the next Monday: last week is over
+  await page.reload();
+  const report = page.getByRole("dialog", { name: "Weekly report" });
+  await expect(report).toBeVisible();
+  await expect(report.locator(".od-field > b")).toHaveText(["XP", "New words", "Speaking minutes"]);
+  // The finished week's XP, not today's (today has none yet).
+  await expect(report.locator(".card").first().locator("b").last()).toHaveText(/^[1-9]\d* XP$/);
+  await report.getByRole("button", { name: "Close" }).click();
+
+  await page.reload(); // already reported: no second summary
+  await expect(page.getByRole("dialog", { name: "Weekly report" })).toBeHidden();
+});
+
 test("a conjugation drill asks the cross-checked forms and queues a miss", async ({ page }) => {
   await onboard(page);
   await page.getByRole("button", { name: "Practice" }).click();
   await page.getByRole("button", { name: /^Verb forms.*presente/ }).click();
   const drill = page.getByRole("dialog", { name: "Lesson" });
+  await expect(drill.locator(".ctx-cells span")).toHaveCount(3); // the loading panel is also a .result-wrap: wait for the cells first
   for (let i = 0; !(await drill.locator(".result-wrap").isVisible()); i++) {
     expect(i).toBeLessThan(20);
     const next = drill.getByRole("button", { name: /^(Continue|Finish)$/ });
@@ -285,7 +391,7 @@ test("the grammar reference searches every pattern and drills one", async ({ pag
 test("a custom tutor is created through the UI, listed and can hold a chat", async ({ page }) => {
   await onboard(page);
   await page.getByRole("button", { name: "Roleplay", exact: true }).click();
-  await page.getByRole("button", { name: /My tutors/ }).click();
+  await page.getByRole("button", { name: /Add a tutor/ }).click();
   const list = page.getByRole("dialog", { name: "My tutors" });
   await expect(list.getByText("No tutors of your own yet.")).toBeVisible();
   await list.getByRole("button", { name: "Create tutor" }).click();
@@ -322,7 +428,7 @@ test("a custom tutor is created through the UI, listed and can hold a chat", asy
 test("a tutor package is imported, edited and deleted from the tutor list", async ({ page }) => {
   await onboard(page);
   await page.getByRole("button", { name: "Roleplay", exact: true }).click();
-  await page.getByRole("button", { name: /My tutors/ }).click();
+  await page.getByRole("button", { name: /Add a tutor/ }).click();
   await page.getByRole("dialog", { name: "My tutors" }).getByRole("button", { name: "Import a tutor" }).click();
   await page.getByRole("dialog").locator('input[type="file"]').setInputFiles("e2e/fixtures/boris-tutor.json");
 
@@ -354,7 +460,7 @@ test("a tutor package is imported, edited and deleted from the tutor list", asyn
 test("a tutor exports as a package the import flow takes again", async ({ page }) => {
   await onboard(page);
   await page.getByRole("button", { name: "Roleplay", exact: true }).click();
-  await page.getByRole("button", { name: /My tutors/ }).click();
+  await page.getByRole("button", { name: /Add a tutor/ }).click();
   const list = page.getByRole("dialog", { name: "My tutors" });
   await list.getByRole("button", { name: "Import a tutor" }).click();
   await page.getByRole("dialog").locator('input[type="file"]').setInputFiles("e2e/fixtures/boris-tutor.json");

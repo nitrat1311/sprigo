@@ -16,6 +16,7 @@ import { evictIds, type Memory, type MemoryOps, type MemorySource } from "./memo
 import { grade, newCard, review, strengthOf, type Grade, type WordCard } from "./srs";
 import { USAGE_SQL, type AiFeature, type UsageRow } from "./usage";
 import { newTutorId, parseTutorPackage, type CustomTutor, type TutorPackage, type TutorProfile, type TutorSource } from "./tutors";
+import { cleanEntry, cleanNote, isDayKey } from "./notes";
 export { NEW_STATS, type Stats };
 
 type Row = Record<string, any>;
@@ -207,6 +208,39 @@ export async function toggleBookmark(enrollmentId: number, kind: BookmarkKind, r
   return true;
 }
 
+// ---- Notes and journal (#46; the learner's own words, src/notes.ts) ----
+
+export type UnitNote = { unit_ref: string; text: string; updated_at: string };
+export async function listUnitNotes(enrollmentId: number) {
+  return (await db()).select<UnitNote>("SELECT unit_ref, text, updated_at FROM unit_notes WHERE enrollment_id = $1 ORDER BY updated_at DESC", [enrollmentId]);
+}
+/** Saves the unit's note; an empty text removes it, like an emptied memory. */
+export async function saveUnitNote(enrollmentId: number, unitRef: string, text: string) {
+  const d = await db(), clean = cleanNote(text);
+  if (!clean) return d.execute("DELETE FROM unit_notes WHERE enrollment_id = $1 AND unit_ref = $2", [enrollmentId, unitRef]);
+  await d.execute(
+    "INSERT INTO unit_notes(enrollment_id, unit_ref, text) VALUES ($1, $2, $3) ON CONFLICT DO UPDATE SET text = $3, updated_at = CURRENT_TIMESTAMP",
+    [enrollmentId, unitRef, clean]);
+}
+
+export type JournalEntry = { day: string; text: string; updated_at: string };
+/** The profile's entries, newest day first; a year is enough for the list (older ones stay in the export). */
+export async function listJournal(profileId: number, limit = 365) {
+  return (await db()).select<JournalEntry>("SELECT day, text, updated_at FROM journal WHERE profile_id = $1 ORDER BY day DESC LIMIT $2", [profileId, limit]);
+}
+/** Saves the day's entry; an empty text removes it. One entry per local day. */
+export async function saveJournalEntry(profileId: number, day: string, text: string) {
+  if (!isDayKey(day)) throw new Error(`Invalid journal day: ${day}`);
+  const d = await db(), clean = cleanEntry(text);
+  if (!clean) return d.execute("DELETE FROM journal WHERE profile_id = $1 AND day = $2", [profileId, day]);
+  await d.execute(
+    "INSERT INTO journal(profile_id, day, text) VALUES ($1, $2, $3) ON CONFLICT DO UPDATE SET text = $3, updated_at = CURRENT_TIMESTAMP",
+    [profileId, day, clean]);
+}
+export async function deleteJournalEntry(profileId: number, day: string) {
+  await (await db()).execute("DELETE FROM journal WHERE profile_id = $1 AND day = $2", [profileId, day]);
+}
+
 // ---- AI usage (#48; global like the AI config, cost is estimated in src/usage.ts) ----
 
 export async function addAiUsage(provider: string, model: string, feature: AiFeature, input: number, output: number) {
@@ -234,8 +268,20 @@ export async function putCached(enrollmentId: number, stepId: string, content: u
 
 /** Every cached unit guidebook (`guide:<unit>`), for word lookups (#28). */
 export async function cachedGuides<T>(enrollmentId: number) {
-  const r = await (await db()).select<{ content: string }>("SELECT content FROM content_cache WHERE enrollment_id = $1 AND step_id LIKE 'guide:%'", [enrollmentId]);
-  return r.map((x) => JSON.parse(x.content) as T);
+  return (await cachedGuidebooks<T>(enrollmentId)).map((x) => x.guide);
+}
+
+/** Cached guidebooks with their unit (#44 search), which the plain list doesn't keep. */
+export async function cachedGuidebooks<T>(enrollmentId: number) {
+  const r = await (await db()).select<{ step_id: string; content: string }>("SELECT step_id, content FROM content_cache WHERE enrollment_id = $1 AND step_id LIKE 'guide:%'", [enrollmentId]);
+  return r.flatMap((x) => {
+    try {
+      return [{ unit: x.step_id.slice("guide:".length), guide: JSON.parse(x.content) as T }];
+    } catch (e) {
+      console.warn("guidebook parse", x.step_id, e); // one corrupt cache row must not hide the rest
+      return [];
+    }
+  });
 }
 
 /** Levels passed via checkpoint or level test: marks every node of the level done and moves the enrollment on. */
@@ -304,6 +350,13 @@ export async function importWords(enrollmentId: number, words: { word: string; t
 export async function wordDays(enrollmentId: number) {
   const r = await (await db()).select<{ d: string; n: number }>(
     "SELECT date(created_at, 'localtime') AS d, COUNT(*) AS n FROM words WHERE enrollment_id = $1 GROUP BY d", [enrollmentId]);
+  return Object.fromEntries(r.map((x) => [x.d, x.n]));
+}
+/** New words per local day across all the profile's courses, for the goals report (#43). */
+export async function profileWordDays(profileId: number) {
+  const r = await (await db()).select<{ d: string; n: number }>(
+    `SELECT date(w.created_at, 'localtime') AS d, COUNT(*) AS n FROM words w
+     JOIN enrollments e ON e.id = w.enrollment_id WHERE e.profile_id = $1 AND w.created_at IS NOT NULL GROUP BY d`, [profileId]);
   return Object.fromEntries(r.map((x) => [x.d, x.n]));
 }
 // The list's words, for highlighting them in text (#27). Kept until the list changes.
@@ -417,6 +470,12 @@ export async function speechWeeks(profileId: number) {
     `SELECT date(created_at, 'localtime', '-6 days', 'weekday 1') AS w, ROUND(AVG(wpm)) AS wpm FROM speech_sessions
      WHERE profile_id = $1 AND words > 0 GROUP BY w`, [profileId]);
   return Object.fromEntries(r.map((x) => [x.w, x.wpm]));
+}
+/** Speaking milliseconds per local day, for the goals report (#43); minutes are rounded only when shown. */
+export async function speechMsDays(profileId: number) {
+  const r = await (await db()).select<{ d: string; ms: number }>(
+    "SELECT date(created_at, 'localtime') AS d, SUM(speech_ms) AS ms FROM speech_sessions WHERE profile_id = $1 GROUP BY d", [profileId]);
+  return Object.fromEntries(r.map((x) => [x.d, x.ms]));
 }
 /** The learner's usual per answer over their last 10 tutor calls (SPR-26); chats and drills are a different kind of talk. Null before they have said a few things. */
 export async function speechBaseline(profileId: number): Promise<Baseline | null> {

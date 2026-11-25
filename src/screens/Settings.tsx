@@ -4,6 +4,8 @@ import { useApp } from "../store";
 import { languages } from "../i18n";
 import type { ThemePref } from "../theme";
 import { SMALL_MODEL_B, isSmallModel } from "../modelSize";
+import { guideFor, verdictOf, type Measurement } from "../modelGuide";
+import { MEASURED } from "../modelGuideData";
 import { PROVIDERS, RECOMMENDED_OLLAMA, detectLocal, getKey, listModels, pullOllama, setKey, type AiConfig, type ProviderId } from "../ai";
 import { aiUsage, aiUsageMonths, getSetting, isCompanion, isTauri, isWeb, setSetting } from "../db";
 import { monthOf, summarize, type UsageRow } from "../usage";
@@ -274,6 +276,22 @@ export function AiSheet() {
   );
 }
 
+/** What the model measured like (#37): pnpm bench latency and pnpm eval quality, bundled in modelGuideData.ts. */
+function ModelGuide({ m }: { m: Measurement }) {
+  const { t, i18n } = useTranslation();
+  const lang = i18n.resolvedLanguage ?? "en";
+  const pct = Math.round(m.quality);
+  const secs = new Intl.NumberFormat(lang, { maximumFractionDigits: 1 }).format(m.sayMs / 1000);
+  const date = new Intl.DateTimeFormat(lang, { day: "numeric", month: "short", year: "numeric" }).format(new Date(`${m.measured}T12:00:00`));
+  const verdict = verdictOf(m);
+  return (
+    <span className="small" style={{ color: verdict === "good" ? "var(--green)" : "var(--orange)" }}>
+      {t(`ai.guide.${verdict}`, { pct })}
+      <span className="muted"> · {t("ai.guide.details", { secs, pct, hardware: m.hardware, date })}</span>
+    </span>
+  );
+}
+
 /** One provider's server, key and model; saving makes it the active provider. */
 function AiConfigSheet({ provider, models: found }: { provider: ProviderId; models: string[] }) {
   const { t } = useTranslation();
@@ -291,6 +309,10 @@ function AiConfigSheet({ provider, models: found }: { provider: ProviderId; mode
 
   useEffect(() => { getKey(provider).then((k) => setKeyState(k ?? "")); }, [provider]);
   const cfg: AiConfig = { provider, baseURL: baseURL.trim(), model: model.trim() };
+  // The measured guidance sits outside the label and is linked by aria-describedby, so it does not become part of the
+  // field's accessible name. A small model keeps the size warning even when it was measured.
+  const measured = needsKey ? null : guideFor(cfg.model, MEASURED);
+  const small = !needsKey && isSmallModel(cfg.model);
 
   const test = async () => {
     setBusy(true); setStatus(null);
@@ -326,10 +348,16 @@ function AiConfigSheet({ provider, models: found }: { provider: ProviderId; mode
         </label>
       )}
       <label className="od-field"><b>{t("ai.model")}</b><span className="muted small">{t("ai.modelDesc")}</span>
-        <input className="input" list="ai-models" value={model} spellCheck={false} onChange={(e) => setModel(e.target.value)} />
+        <input className="input" list="ai-models" value={model} spellCheck={false} onChange={(e) => setModel(e.target.value)}
+          aria-describedby={measured || small ? "ai-model-note" : undefined} />
         <datalist id="ai-models">{models.map((m) => <option key={m} value={m} />)}</datalist>
-        {!needsKey && isSmallModel(cfg.model) && <span className="small" role="note" style={{ color: "var(--orange)" }}>{t("ai.smallModel", { min: `${SMALL_MODEL_B}B` })}</span>}
       </label>
+      {(measured || small) && (
+        <div id="ai-model-note" className="od-stack" style={gap("2px")} role="note">
+          {measured && <ModelGuide m={measured} />}
+          {small && <span className="small" style={{ color: "var(--orange)" }}>{t("ai.smallModel", { min: `${SMALL_MODEL_B}B` })}</span>}
+        </div>
+      )}
       {status && <p className="small" role="status" style={{ color: status.ok ? "var(--green)" : "var(--red)", overflowWrap: "anywhere" }}>{status.msg}</p>}
       <div className="od-stack sheet-actions" style={gap("var(--s-3)")}>
         <div className="od-row" style={gap("var(--s-3)")}>

@@ -93,6 +93,9 @@ html[data-theme="dark"][data-contrast="high"]{
 }
 html[data-contrast="high"] .unit-head::after{display:none} /* decorative wave; also lets axe measure the text */
 html[data-contrast="high"] .unit.later .unit-head,html[data-contrast="high"] .unit-head .uh-kicker{opacity:1;filter:none} /* faded text fails contrast; the dimmed path still marks later units */
+/* An opacity group cannot be rescued for the text inside it: dim the pebbles and the connector instead of the labels. */
+html[data-contrast="high"] .unit.later .path{opacity:1;filter:none}
+html[data-contrast="high"] .unit.later .path .node-btn,html[data-contrast="high"] .unit.later .path .path-lines{opacity:.5;filter:saturate(.35)}
 html[data-theme="dark"][data-contrast="high"] .btn-gold{--coin:#000;--coin-edge:rgba(255,255,255,.35)}
 html[data-theme="dark"] .start-tag{color:var(--green-bright)}
 html[data-theme="dark"] .word-chip{box-shadow:0 var(--edge-1) 0 var(--border)}
@@ -513,6 +516,10 @@ button[aria-busy="true"]{cursor:progress}
 /* Profiles (not in the design; same visual language as .select / .avatar) */
 .input{font:inherit;font-weight:700;color:var(--text);background:var(--card);border:2px solid var(--border);border-radius:var(--r);padding:var(--s-3) var(--s-4);min-height:44px;width:100%}
 .input:focus-visible,.select:focus-visible{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px color-mix(in srgb,var(--blue) 35%,transparent)}
+/* Learn opens on the current lesson, far below the page top, so search stays pinned while its results scroll (#44). */
+.search-box{position:sticky;top:0;z-index:10;background:var(--bg);padding:20px 0 10px}
+.search-status{margin:8px 0 0;min-height:0}
+.search-results{max-height:50vh;overflow-y:auto;margin-top:10px}
 .sheet:focus,.lesson-overlay:focus{outline:none}
 .swatch{width:36px;height:36px;border-radius:50%;border:3px solid transparent;box-shadow:0 0 0 2px var(--border)}
 .swatch[aria-checked="true"]{border-color:var(--card);box-shadow:0 0 0 3px var(--blue)}

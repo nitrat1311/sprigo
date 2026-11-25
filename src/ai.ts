@@ -224,8 +224,10 @@ export function generatePlain(system: string, prompt: string, feature: AiFeature
   });
 }
 
-/** First-run setup suggests this when Ollama runs without models. ponytail: one fixed pick, a size-aware list if people ask */
-export const RECOMMENDED_OLLAMA = { model: "qwen3:8b", size: "5.2 GB" };
+/** First-run setup suggests this when Ollama runs without models. ponytail: one fixed pick, a size-aware list if people ask.
+ *  The plain tag is Ollama's cross-platform build (gguf, 3.3 GB); the measured `qwen3.5:4b-mlx` is Apple-only, so it is
+ *  deliberately not mapped onto this name: the guide shows this tag as unmeasured rather than borrow that number. */
+export const RECOMMENDED_OLLAMA = { model: "qwen3.5:4b", size: "3.3 GB" };
 
 /** Local servers found on this Mac with their models (null = not running). */
 export async function detectLocal(): Promise<Record<"ollama" | "lmstudio", string[] | null>> {
