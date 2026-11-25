@@ -477,6 +477,12 @@ export function Settings() {
               </select>
             </div>
             <div className="od-row" style={gap("var(--s-4)")}>
+              <label className="od-field od-fill" htmlFor="ui-lang"><b>{t("settings.language")}</b></label>
+              <select id="ui-lang" className="select" value={i18n.resolvedLanguage} onChange={(e) => { i18n.changeLanguage(e.target.value); updateProfile({ ui_lang: e.target.value }); }}>
+                {languages.map((l) => <option key={l.code} value={l.code}>{l.name}</option>)}
+              </select>
+            </div>
+            <div className="od-row" style={gap("var(--s-4)")}>
               <span className="od-field od-fill"><b>{profile!.name}</b><span className="muted small">{t("settings.profileDesc")}</span></span>
               <button className="btn btn-ghost" onClick={() => openSheet(<><h3 style={{ marginBottom: "var(--s-5)" }}>{t("settings.editProfile")}</h3><ProfileForm initial={profile!} onDone={closeSheet} /></>)}>{t("settings.edit")}</button>
             </div>
@@ -528,12 +534,6 @@ export function Settings() {
             </div>
             <ToggleRow k="readableFont" initial={s.readableFont} onChange={(readableFont) => setS((s) => ({ ...s, readableFont }))} />
             <ToggleRow k="highContrast" initial={s.highContrast} onChange={(highContrast) => setS((s) => ({ ...s, highContrast }))} />
-            <div className="od-row" style={gap("var(--s-4)")}>
-              <label className="od-fill" htmlFor="ui-lang"><b>{t("settings.language")}</b></label>
-              <select id="ui-lang" className="select" value={i18n.resolvedLanguage} onChange={(e) => { i18n.changeLanguage(e.target.value); updateProfile({ ui_lang: e.target.value }); }}>
-                {languages.map((l) => <option key={l.code} value={l.code}>{l.name}</option>)}
-              </select>
-            </div>
           </Group>
         </>}
 
