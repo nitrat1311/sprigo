@@ -59,7 +59,7 @@ function MemorySheet() {
                   </form>
                 : <span className="mem-item">
                     <button className="mem-text" title={t("memory.edit")} onClick={() => setEditing({ id: m.id, text: m.text })}>{m.text}</button>
-                    <button className="mem-x" aria-label={t("memory.forget", { text: m.text })} title={t("memory.forgetOne")} onClick={() => remove(m.id)}><Icon name="x" size={14} /></button>
+                    <button className="mem-x" aria-label={t("memory.forget", { text: m.text })} title={t("memory.forgetOne")} onClick={() => remove(m.id)}><Icon name="x" size={16} /></button>
                   </span>}
               </li>)}
             </ul>

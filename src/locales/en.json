@@ -35,7 +35,8 @@
     "friends": "Friends",
     "notifications": "Notifications",
     "settings": "Settings",
-    "grammar": "Grammar"
+    "grammar": "Grammar",
+    "account": "Account menu"
   },
   "common": {
     "soon": "Coming soon",
@@ -96,8 +97,18 @@
     "legendTicket_one": "{{count}} ticket",
     "legendTicket_other": "{{count}} tickets",
     "skipUnit": "Pass this unit with a test (%{{score}})",
-    "toTop": "To the top",
+    "summit": "Summit: {{level}}",
+    "summitEnd": "Summit",
+    "lockedDesc": "Finish the earlier lessons to unlock this.",
     "toHere": "Back to my lesson"
+  },
+  "levels": {
+    "A1": "Beginner",
+    "A2": "Elementary",
+    "B1": "Intermediate",
+    "B2": "Upper intermediate",
+    "C1": "Advanced",
+    "C2": "Proficiency"
   },
   "practice": {
     "planning": "Planning time",
@@ -176,7 +187,25 @@
     "wordsError_translation": "no translation",
     "wordsError_schedule": "review data isn't valid",
     "saved": "Saved",
-    "savedEmpty": "Tap the bookmark on a unit, guidebook or story to keep it here."
+    "savedEmpty": "Tap the bookmark on a unit, guidebook or story to keep it here.",
+    "tabs": {
+      "activities": "Activities"
+    },
+    "groups": {
+      "speak": "Speaking",
+      "review": "Review",
+      "skills": "Skills",
+      "challenge": "Challenges"
+    },
+    "wordsHint": "Back up your list as CSV or import one.",
+    "wordsExportShort": "Export",
+    "wordsImportShort": "Import",
+    "wordExample": "Example",
+    "wordStrength": "Strength: {{n}}/5",
+    "wordStrengthHint": "Strength grows as you practise the word (Daily review, Cards, Listening).",
+    "dueAbout": "Review words you're about to forget",
+    "cardsAbout": "Study your words with flashcards",
+    "listenAbout": "Pick what you hear"
   },
   "league": {
     "title": "{{name}} League",
@@ -582,7 +611,8 @@
         "tutor": "Tutor & roleplay",
         "lookup": "Word lookups",
         "memory": "Memory",
-        "garden": "Garden notes"
+        "garden": "Garden notes",
+        "title": "Titles"
       }
     }
   },
@@ -594,6 +624,10 @@
     "qLessons_other": "Complete {{count}} lessons",
     "chestTitle": "You have an unopened harvest basket",
     "chestTap": "Tap to open",
+    "gems_one": "{{count}} coin",
+    "gems_other": "{{count}} coins",
+    "hearts_one": "{{count}} drop",
+    "hearts_other": "{{count}} drops",
     "qPractice_one": "Finish {{count}} practice session",
     "qPractice_other": "Finish {{count}} practice sessions"
   },
@@ -1021,7 +1055,8 @@
     "invalidJson": "This file is not valid JSON.",
     "fileTooLarge": "This file is larger than {{size}}.",
     "imageFailed": "The image could not be read.",
-    "errors": "Please fix these first:"
+    "errors": "Please fix these first:",
+    "add": "Add a tutor"
   },
   "biome": {
     "meadow": "Meadow",

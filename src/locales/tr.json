@@ -35,7 +35,8 @@
     "friends": "Arkadaşlar",
     "notifications": "Bildirimler",
     "settings": "Ayarlar",
-    "grammar": "Dilbilgisi"
+    "grammar": "Dilbilgisi",
+    "account": "Hesap menüsü"
   },
   "common": {
     "soon": "Yakında",
@@ -96,8 +97,18 @@
     "legendTicket_one": "{{count}} bilet",
     "legendTicket_other": "{{count}} bilet",
     "skipUnit": "Üniteyi testle geç (%{{score}})",
-    "toTop": "En yukarı",
+    "summit": "Zirve: {{level}}",
+    "summitEnd": "Zirve",
+    "lockedDesc": "Bu dersi açmak için önceki dersleri tamamla.",
     "toHere": "Kaldığım yere"
+  },
+  "levels": {
+    "A1": "Başlangıç",
+    "A2": "Temel",
+    "B1": "Orta",
+    "B2": "Orta üstü",
+    "C1": "İleri",
+    "C2": "Ustalık"
   },
   "practice": {
     "planning": "Planlama süresi",
@@ -174,7 +185,25 @@
     "wordsError_translation": "çeviri yok",
     "wordsError_schedule": "tekrar verisi geçersiz",
     "saved": "Kaydedilenler",
-    "savedEmpty": "Burada tutmak için bir ünitedeki, rehberdeki veya hikâyedeki yer imine dokun."
+    "savedEmpty": "Burada tutmak için bir ünitedeki, rehberdeki veya hikâyedeki yer imine dokun.",
+    "tabs": {
+      "activities": "Alıştırmalar"
+    },
+    "groups": {
+      "speak": "Konuşma",
+      "review": "Tekrar",
+      "skills": "Beceriler",
+      "challenge": "Meydan okuma"
+    },
+    "wordsHint": "Listeni CSV olarak yedekle veya içe aktar.",
+    "wordsExportShort": "Dışa aktar",
+    "wordsImportShort": "İçe aktar",
+    "wordExample": "Örnek kullanım",
+    "wordStrength": "Güç: {{n}}/5",
+    "wordStrengthHint": "Kelime pratiği yaptıkça (Günün tekrarı, Kartlar, Dinleme) güç artar.",
+    "dueAbout": "Unutmak üzere olduğun kelimeleri tekrar et",
+    "cardsAbout": "Kelimelerini kartlarla çalış",
+    "listenAbout": "Duyduğunu seç"
   },
   "league": {
     "title": "{{name}} Ligi",
@@ -578,7 +607,8 @@
         "tutor": "Öğretmen ve rol yapma",
         "lookup": "Kelime aramaları",
         "memory": "Hafıza",
-        "garden": "Bahçe notları"
+        "garden": "Bahçe notları",
+        "title": "Başlıklar"
       }
     }
   },
@@ -589,6 +619,8 @@
     "qLessons": "{{count}} ders tamamla",
     "chestTitle": "Açılmamış bir hasat sepetin var",
     "chestTap": "Dokunarak aç",
+    "gems": "{{count}} jeton",
+    "hearts": "{{count}} damla",
     "qPractice": "{{count}} pratik oturumu bitir"
   },
   "sheet": {
@@ -1015,7 +1047,8 @@
     "invalidJson": "Bu dosya geçerli JSON değil.",
     "fileTooLarge": "Bu dosya {{size}} sınırından büyük.",
     "imageFailed": "Görsel okunamadı.",
-    "errors": "Önce şunları düzeltin:"
+    "errors": "Önce şunları düzeltin:",
+    "add": "Tutor ekle"
   },
   "biome": {
     "meadow": "Çayır",

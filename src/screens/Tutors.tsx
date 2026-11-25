@@ -16,7 +16,7 @@ import {
 const IMPORT_MAX = 4 * 1024 * 1024;
 /** Kokoro speaks English only: the voice preview is a short English line whatever course is open. */
 const VOICE_SAMPLE = "Hello! Nice to meet you. How are you today?";
-const gap = (g = "14px") => ({ "--od-gap": g }) as React.CSSProperties;
+const gap = (g = "var(--s-5)") => ({ "--od-gap": g }) as React.CSSProperties;
 
 type TopicRow = { id: string | null; goal: string };
 
@@ -45,7 +45,7 @@ function Errors({ errors }: { errors: string[] }) {
   return (
     <div role="alert" className="small" style={{ color: "var(--red)", textAlign: "left" }}>
       <b>{t("tutorManage.errors")}</b>
-      <ul style={{ margin: "6px 0 0", paddingLeft: 20 }}>{errors.map((e) => <li key={e}>{e}</li>)}</ul>
+      <ul style={{ margin: "var(--s-3) 0 0", paddingLeft: "var(--s-6)" }}>{errors.map((e) => <li key={e}>{e}</li>)}</ul>
     </div>
   );
 }
@@ -64,17 +64,17 @@ function ImageField({ label, max, value, onChange, onProblem }: {
     r.readAsDataURL(f);
   };
   return (
-    <div className="od-field" style={gap("6px")}>
+    <div className="od-field" style={gap("var(--s-3)")}>
       <b>{label}</b>
       <input ref={pick} type="file" accept="image/png,image/webp" aria-label={label} hidden
         onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ""; if (f) file(f); }} />
-      <span className="od-row" style={gap("8px")}>
+      <span className="od-row" style={gap("var(--s-3)")}>
         <button type="button" className="btn btn-ghost" aria-label={`${label}: ${t(value ? "tutorManage.changeImage" : "tutorManage.chooseImage")}`}
           onClick={() => pick.current?.click()}>
           {t(value ? "tutorManage.changeImage" : "tutorManage.chooseImage")}
         </button>
         {value && <>
-          <img src={value} alt="" style={{ width: 44, height: 44, objectFit: "cover", borderRadius: 10 }} />
+          <img src={value} alt="" style={{ width: 44, height: 44, objectFit: "cover", borderRadius: "var(--r-sm)" }} />
           <button type="button" className="btn btn-ghost" aria-label={t("tutorManage.clearImage", { label })} onClick={() => onChange(undefined)}>
             <Icon name="x" />
           </button>
@@ -148,33 +148,33 @@ function TutorForm({ initial }: { initial?: db.Tutor }) {
   };
 
   return (
-    <div className="od-stack" style={{ ...gap("14px"), textAlign: "left" }}>
-      <h3 style={{ textAlign: "center" }}>{t(initial ? "tutorManage.editTitle" : "tutorManage.newTitle")}</h3>
-      <div className="od-row" style={gap("12px")}>
+    <div className="od-stack" style={{ ...gap("var(--s-5)"), textAlign: "left" }}>
+      <h3 className="od-center">{t(initial ? "tutorManage.editTitle" : "tutorManage.newTitle")}</h3>
+      <div className="od-row" style={gap("var(--s-4)")}>
         <Face spec={initial?.face ?? TUTOR_FACE} color={color} size={56} label={name || t("tutorManage.title")} image={avatar} />
-        <label className="od-field od-fill" style={gap("6px")}>
+        <label className="od-field od-fill" style={gap("var(--s-3)")}>
           <b>{t("tutorManage.name")}</b>
           <input className="input" value={name} maxLength={TUTOR_NAME_MAX} required autoFocus onChange={(e) => setName(e.target.value)} />
         </label>
       </div>
-      <div className="od-row" style={gap("12px")}>
-        <label className="od-field od-fill" style={gap("6px")}>
+      <div className="od-row" style={gap("var(--s-4)")}>
+        <label className="od-field od-fill" style={gap("var(--s-3)")}>
           <b>{t("tutorManage.gender")}</b>
           <select className="select" value={gender} onChange={(e) => changeGender(e.target.value as "f" | "m")}>
             <option value="f">{t("tutorManage.genderF")}</option>
             <option value="m">{t("tutorManage.genderM")}</option>
           </select>
         </label>
-        <label className="od-field" style={gap("6px")}>
+        <label className="od-field" style={gap("var(--s-3)")}>
           <b>{t("tutorManage.color")}</b>
-          <input className="input" type="color" value={color} onChange={(e) => setColor(e.target.value)} style={{ width: 64, padding: 4 }} />
+          <input className="input" type="color" value={color} onChange={(e) => setColor(e.target.value)} style={{ width: 64, padding: "var(--s-2)" }} />
         </label>
       </div>
-      <div className="od-field" style={gap("6px")}>
+      <div className="od-field" style={gap("var(--s-3)")}>
         <b>{t("tutorManage.voice")}</b>
-        <div className="od-row" style={gap("8px")}>
+        <div className="od-row" style={gap("var(--s-3)")}>
           <select className="select od-fill" aria-label={t("tutorManage.voice")} value={voice} onChange={(e) => setVoice(e.target.value)}>
-            {voices.map((v) => <option key={v} value={v}>{v}</option>)}
+            {voices.map((v) => <option key={v} value={v}>{voiceLabel(v)}</option>)}
             {ownVoice && <option value={voice}>{voice}</option>}
           </select>
           {!db.isCompanion && ( // Kokoro runs out of memory in the phone's Safari, so Settings does not offer it there either
@@ -185,17 +185,17 @@ function TutorForm({ initial }: { initial?: db.Tutor }) {
         </div>
         {preview !== null && <span className="muted small" role="status">{t("voice.downloading", { pct: Math.round(preview * 100) })}</span>}
       </div>
-      <label className="od-field" style={gap("6px")}>
+      <label className="od-field" style={gap("var(--s-3)")}>
         <b>{t("tutorManage.persona")}</b>
         <textarea className="input" value={persona} maxLength={TUTOR_PERSONA_MAX} rows={5} style={{ minHeight: 110, resize: "vertical" }}
           placeholder={t("tutorManage.personaPlaceholder")} onChange={(e) => setPersona(e.target.value)} />
         <span className="muted small" style={{ textAlign: "right" }}>{t("tutorManage.personaCount", { chars: persona.length, max: TUTOR_PERSONA_MAX })}</span>
       </label>
-      <div className="od-field" style={gap("8px")}>
+      <div className="od-field" style={gap("var(--s-3)")}>
         <b>{t("tutorManage.topics")}</b>
         {rows.map((r, i) => (
-          <div className="od-row" key={i} style={gap("8px")}>
-            <label className="od-field od-fill" style={gap("4px")}>
+          <div className="od-row" key={i} style={gap("var(--s-3)")}>
+            <label className="od-field od-fill" style={gap("var(--s-2)")}>
               <span className="muted small">{t("tutorManage.topicLabel", { n: i + 1 })}</span>
               <input className="input" value={r.goal} maxLength={TUTOR_TOPIC_GOAL_MAX} onChange={(e) => setRow(i, e.target.value)} />
             </label>
@@ -237,8 +237,8 @@ function DeleteTutorSheet({ tutor }: { tutor: db.Tutor }) {
     }
   };
   return (
-    <div className="od-stack" style={{ ...gap("12px"), textAlign: "left" }}>
-      <h3 style={{ textAlign: "center" }}>{t("tutorManage.deleteTitle", { name: tutor.name })}</h3>
+    <div className="od-stack" style={{ ...gap("var(--s-4)"), textAlign: "left" }}>
+      <h3 className="od-center">{t("tutorManage.deleteTitle", { name: tutor.name })}</h3>
       <p>{t("tutorManage.deleteWarn")}</p>
       <button className="btn btn-danger btn-block" disabled={busy} onClick={remove}>{t("tutorManage.delete")}</button>
       <button className="btn btn-ghost btn-block" onClick={closeSheet}>{t("sheet.cancel")}</button>
@@ -269,16 +269,16 @@ function ImportTutorSheet({ pkg, file }: { pkg: TutorPackage; file: string }) {
   };
   const ch = toCharacter({ ...pkg, id: "custom:preview" });
   return (
-    <div className="od-stack" style={{ ...gap("12px"), textAlign: "left" }}>
-      <h3 style={{ textAlign: "center" }}>{t("tutorManage.importTitle")}</h3>
-      <div className="card od-row" style={gap("10px")}>
+    <div className="od-stack" style={{ ...gap("var(--s-4)"), textAlign: "left" }}>
+      <h3 className="od-center">{t("tutorManage.importTitle")}</h3>
+      <div className="card od-row" style={gap("var(--s-4)")}>
         <Face spec={ch.face} color={ch.color} size={48} label={pkg.name} image={pkg.avatar} sceneImage={pkg.scene} />
         <span className="od-field od-fill"><b>{pkg.name}</b><span className="muted small">{file}</span></span>
       </div>
       <p className="small" style={{ margin: 0 }}>{pkg.persona}</p>
-      <ul className="small" style={{ margin: 0, paddingLeft: 20 }}>{pkg.topics.map((x) => <li key={x.id}>{x.goal}</li>)}</ul>
-      <label className="od-row" style={{ ...gap("8px"), alignItems: "flex-start", fontWeight: 700 }}>
-        <input type="checkbox" checked={responsible} onChange={(e) => setResponsible(e.target.checked)} style={{ marginTop: 4 }} />
+      <ul className="small" style={{ margin: 0, paddingLeft: "var(--s-6)" }}>{pkg.topics.map((x) => <li key={x.id}>{x.goal}</li>)}</ul>
+      <label className="od-row" style={{ ...gap("var(--s-3)"), alignItems: "flex-start", fontWeight: 700 }}>
+        <input type="checkbox" checked={responsible} onChange={(e) => setResponsible(e.target.checked)} style={{ marginTop: "var(--s-2)" }} />
         <span>{t("tutorManage.importConfirm")}</span>
       </label>
       <Errors errors={errors} />
@@ -292,8 +292,8 @@ function ImportErrors({ errors }: { errors: string[] }) {
   const { t } = useTranslation();
   const { closeSheet } = useApp();
   return (
-    <div className="od-stack" style={{ ...gap("12px"), textAlign: "left" }}>
-      <h3 style={{ textAlign: "center" }}>{t("tutorManage.importInvalid")}</h3>
+    <div className="od-stack" style={{ ...gap("var(--s-4)"), textAlign: "left" }}>
+      <h3 className="od-center">{t("tutorManage.importInvalid")}</h3>
       <Errors errors={errors} />
       <button className="btn btn-ghost btn-block" onClick={closeSheet}>{t("sheet.close")}</button>
     </div>
@@ -362,12 +362,12 @@ export function TutorsSheet() {
     openSheet(parsed.ok ? <ImportTutorSheet pkg={parsed.tutor} file={f.name} /> : <ImportErrors errors={parsed.errors} />);
   };
   return (
-    <div className="od-stack" style={{ ...gap("12px"), textAlign: "left" }}>
-      <h3 style={{ textAlign: "center" }}>{t("tutorManage.title")}</h3>
+    <div className="od-stack" style={{ ...gap("var(--s-4)"), textAlign: "left" }}>
+      <h3 className="od-center">{t("tutorManage.title")}</h3>
       <p className="small" style={{ margin: 0 }}>{t("tutorManage.desc")}</p>
       {!tutors.length && <p className="muted small" style={{ margin: 0 }}>{t("tutorManage.empty")}</p>}
       {tutors.map((tutor) => (
-        <div key={tutor.id} className="card od-row" style={{ ...gap("10px"), padding: "8px 12px" }}>
+        <div key={tutor.id} className="card od-row" style={{ ...gap("var(--s-4)"), padding: "var(--s-3) var(--s-4)" }}>
           <Face spec={tutor.face ?? TUTOR_FACE} color={tutor.color} size={36} label={tutor.name} image={tutor.avatar} />
           <span className="od-fill" title={`${tutor.name}${tutor.topics[0] ? ` · ${tutor.topics[0].goal}` : ""}`}
             style={{ minWidth: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
@@ -386,3 +386,6 @@ export function TutorsSheet() {
     </div>
   );
 }
+
+/** "af_heart" → "Heart (af_heart)": Kokoro ids are lang+gender prefix, then the voice's name. */
+const voiceLabel = (id: string) => { const n = id.split("_").slice(1).join(" "); return n ? `${n[0].toUpperCase()}${n.slice(1)} (${id})` : id; };
