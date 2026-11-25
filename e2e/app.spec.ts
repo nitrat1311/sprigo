@@ -98,6 +98,23 @@ test("first lessons run every exercise type", async ({ page }) => {
   await runLesson(page, /Introduce Yourself/);
 });
 
+test("search finds a lesson or word and opens its unit", async ({ page }) => {
+  await onboard(page);
+  await page.getByRole("button", { name: "Learn" }).click();
+  const search = page.getByLabel("Search lessons and guidebooks");
+  // Learn opens on the current lesson, far down the path; the sticky search must still be on screen.
+  await expect(search).toBeInViewport();
+  await search.fill("How Old");
+  const results = page.locator(".search-results");
+  await expect(results.getByRole("button", { name: /How Old Are You\?/ })).toBeVisible();
+  await results.getByRole("button", { name: /How Old Are You\?/ }).click();
+  await expect(results).toBeHidden();
+  await expect(page.getByRole("heading", { name: "Numbers & Colors" })).toBeInViewport();
+
+  await search.fill("adios"); // the query folds accents
+  await expect(results.getByRole("button", { name: /^adiós/ })).toBeVisible();
+});
+
 test("a double-click checks a selected answer and a click advances after feedback", async ({ page }) => {
   await onboard(page);
   await page.getByRole("button", { name: "Learn" }).click();
@@ -314,6 +331,7 @@ test("a conjugation drill asks the cross-checked forms and queues a miss", async
   await page.getByRole("button", { name: "Practice" }).click();
   await page.getByRole("button", { name: /^Verb forms.*presente/ }).click();
   const drill = page.getByRole("dialog", { name: "Lesson" });
+  await expect(drill.locator(".ctx-cells span")).toHaveCount(3); // the loading panel is also a .result-wrap: wait for the cells first
   for (let i = 0; !(await drill.locator(".result-wrap").isVisible()); i++) {
     expect(i).toBeLessThan(20);
     const next = drill.getByRole("button", { name: /^(Continue|Finish)$/ });
@@ -351,7 +369,7 @@ test("the grammar reference searches every pattern and drills one", async ({ pag
 test("a custom tutor is created through the UI, listed and can hold a chat", async ({ page }) => {
   await onboard(page);
   await page.getByRole("button", { name: "Roleplay", exact: true }).click();
-  await page.getByRole("button", { name: /My tutors/ }).click();
+  await page.getByRole("button", { name: /Add a tutor/ }).click();
   const list = page.getByRole("dialog", { name: "My tutors" });
   await expect(list.getByText("No tutors of your own yet.")).toBeVisible();
   await list.getByRole("button", { name: "Create tutor" }).click();
@@ -388,7 +406,7 @@ test("a custom tutor is created through the UI, listed and can hold a chat", asy
 test("a tutor package is imported, edited and deleted from the tutor list", async ({ page }) => {
   await onboard(page);
   await page.getByRole("button", { name: "Roleplay", exact: true }).click();
-  await page.getByRole("button", { name: /My tutors/ }).click();
+  await page.getByRole("button", { name: /Add a tutor/ }).click();
   await page.getByRole("dialog", { name: "My tutors" }).getByRole("button", { name: "Import a tutor" }).click();
   await page.getByRole("dialog").locator('input[type="file"]').setInputFiles("e2e/fixtures/boris-tutor.json");
 
@@ -420,7 +438,7 @@ test("a tutor package is imported, edited and deleted from the tutor list", asyn
 test("a tutor exports as a package the import flow takes again", async ({ page }) => {
   await onboard(page);
   await page.getByRole("button", { name: "Roleplay", exact: true }).click();
-  await page.getByRole("button", { name: /My tutors/ }).click();
+  await page.getByRole("button", { name: /Add a tutor/ }).click();
   const list = page.getByRole("dialog", { name: "My tutors" });
   await list.getByRole("button", { name: "Import a tutor" }).click();
   await page.getByRole("dialog").locator('input[type="file"]').setInputFiles("e2e/fixtures/boris-tutor.json");

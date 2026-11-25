@@ -30,26 +30,26 @@ function GoalCard({ period, goal, goals, day, data, onChange }:
     if (next.metric !== goal.metric || next.target !== goal.target) onChange(period, next);
   };
   return (
-    <section className="card od-stack" style={{ "--od-gap": "10px" } as React.CSSProperties} aria-labelledby={`goal-${period}`}>
-      <div className="od-row" style={{ "--od-gap": "10px" } as React.CSSProperties}>
+    <section className="card od-stack" style={{ "--od-gap": "var(--s-3)" } as React.CSSProperties} aria-labelledby={`goal-${period}`}>
+      <div className="od-row" style={{ "--od-gap": "var(--s-3)" } as React.CSSProperties}>
         <span className="od-field od-fill"><b id={`goal-${period}`}>{t(`goals.${period}`)}</b>
           <span className="muted small">{dayLabel(start, i18n.language)} – {dayLabel(periodEnd(period, start), i18n.language)}</span></span>
         <button className="btn btn-ghost" onClick={() => openSheet(<ReportSheet period={period} start={start} goals={goals} data={data} />)}>{t("goals.report")}</button>
       </div>
       <div className="progress-track"><i className={`progress-fill${pct >= 100 ? " green" : ""}`} style={{ display: "block", width: `${pct}%` }} /></div>
-      <div className="od-row" style={{ "--od-gap": "10px" } as React.CSSProperties}>
+      <div className="od-row" style={{ "--od-gap": "var(--s-3)" } as React.CSSProperties}>
         <span className="small">{t("goals.progress", { n: total.cur, goal: goal.target, unit: unit(goal.target) })}</span>
         <span className="muted small" style={{ marginLeft: "auto" }}>{t(period === "week" ? "goals.lastWeek" : "goals.lastMonth", { n: total.prev, unit: unit(total.prev) })}</span>
       </div>
-      <div className="od-row" style={{ "--od-gap": "10px" } as React.CSSProperties}>
-        <label className="od-row od-fill" style={{ "--od-gap": "8px" } as React.CSSProperties}>
+      <div className="od-row" style={{ "--od-gap": "var(--s-3)" } as React.CSSProperties}>
+        <label className="od-row od-fill" style={{ "--od-gap": "var(--s-3)" } as React.CSSProperties}>
           <span className="muted small">{t("goals.measure")}</span>
           <select className="select" value={goal.metric}
             onChange={(e) => commit({ metric: e.target.value as GoalMetric })}>
             {(["xp", "words", "speak"] as GoalMetric[]).map((m) => <option key={m} value={m}>{t(`goals.metrics.${m}`)}</option>)}
           </select>
         </label>
-        <label className="od-row od-fill" style={{ "--od-gap": "8px" } as React.CSSProperties}>
+        <label className="od-row od-fill" style={{ "--od-gap": "var(--s-3)" } as React.CSSProperties}>
           <span className="muted small">{t("goals.target")}</span>
           <input className="input" type="number" min={1} max={10_000} step={1} value={target}
             aria-label={t("goals.targetAria", { period: t(`goals.${period}Short`) })}
@@ -77,16 +77,16 @@ export function ReportSheet({ period, start, goals, data }: { period: GoalPeriod
   // A finished period cannot be "to go": say what was reached, or by how much it fell short.
   const finished = periodEnd(period, start) < today();
   return (
-    <div className="od-stack" style={{ "--od-gap": "12px" } as React.CSSProperties}>
+    <div className="od-stack" style={{ "--od-gap": "var(--s-4)" } as React.CSSProperties}>
       <h3 style={{ textAlign: "center" }}>{t(`goals.${period}Report`)}</h3>
       <p className="muted small" style={{ textAlign: "center" }}>
         {t("goals.range", { from: dayLabel(start, i18n.language), to: dayLabel(periodEnd(period, start), i18n.language) })}
       </p>
       {rows.map((r) => (
-        <div className="card od-row" key={r.m} style={{ "--od-gap": "10px" } as React.CSSProperties}>
+        <div className="card od-row" key={r.m} style={{ "--od-gap": "var(--s-3)" } as React.CSSProperties}>
           <span className="od-field od-fill"><b>{t(`goals.metrics.${r.m}`)}</b>
             <span className="muted small">{t(period === "week" ? "goals.lastWeek" : "goals.lastMonth", { n: r.prev, unit: unit(r.m, r.prev) })}</span></span>
-          <b style={{ fontSize: 18 }}>{r.cur} <span className="muted small">{unit(r.m, r.cur)}</span></b>
+          <b style={{ fontSize: "var(--fs-17)" }}>{r.cur} <span className="muted small">{unit(r.m, r.cur)}</span></b>
         </div>
       ))}
       <p role="status" className="small" style={{ fontWeight: 800, color: left ? "var(--text-muted)" : "var(--green-dark)" }}>
@@ -103,7 +103,7 @@ export function GoalsCard({ goals, day, xpDays, wordDays, speechMs, onChange }:
     onChange: (p: GoalPeriod, g: Goal) => void }) {
   const data = { xp: xpDays, words: wordDays, speakMs: speechMs };
   return (
-    <div className="od-grid profile-cards" style={{ "--od-cols": 2, "--od-gap": "12px" } as React.CSSProperties}>
+    <div className="od-grid profile-cards" style={{ "--od-cols": 2, "--od-gap": "var(--s-4)" } as React.CSSProperties}>
       {(["week", "month"] as GoalPeriod[]).map((p) => (
         <GoalCard key={p} period={p} goal={goals[p]} goals={goals} day={day} data={data} onChange={onChange} />
       ))}

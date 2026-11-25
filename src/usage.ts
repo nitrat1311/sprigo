@@ -2,7 +2,7 @@
 // Pure, so node tests can cover the cost estimate without opening a database (src/db.ts runs the SQL).
 import { costOf } from "./prices.ts";
 
-export const FEATURES = ["lesson", "check", "guide", "story", "writing", "practice", "tutor", "lookup", "memory", "garden"] as const;
+export const FEATURES = ["lesson", "check", "guide", "story", "writing", "practice", "tutor", "lookup", "memory", "garden", "title"] as const;
 export type AiFeature = (typeof FEATURES)[number];
 
 /** One (month, feature, provider, model) group from ai_usage. Months are local YYYY-MM. */

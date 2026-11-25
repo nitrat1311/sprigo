@@ -23,8 +23,8 @@ export function WriteSheet() {
   const start = useStartLesson();
   const units = (enrollment && course?.levels[enrollment.level]?.units) || [];
   return (
-    <div className="od-stack" style={{ ...gap("10px"), textAlign: "left" }}>
-      <h3 style={{ textAlign: "center" }}>{t("write.pick")}</h3>
+    <div className="od-stack" style={{ ...gap("var(--s-4)"), textAlign: "left" }}>
+      <h3 className="od-center">{t("write.pick")}</h3>
       {units.map((u, ui) => {
         const open = ui === 0 || u.steps.some((st) => done.has(st.id));
         const id = writeId(enrollment!.level, u.id);
@@ -91,31 +91,31 @@ export function Writing({ level, unit: unitId }: { level: Cefr; unit: string }) 
     footer = <><span /><button className="btn btn-primary" onClick={quit}>{t("lesson.end")}</button></>;
   } else if (fb) {
     const segs = segments(text.trim(), fb.corrections);
-    body = <div className="od-stack" style={gap("14px")}>
+    body = <div className="od-stack" style={gap("var(--s-5)")}>
       <h2 className="ex-title">{t("write.feedback")}</h2>
-      <div className="card" lang={lang} style={{ whiteSpace: "pre-wrap", fontSize: 18, lineHeight: 1.6 }}>
+      <div className="card" lang={lang} style={{ whiteSpace: "pre-wrap", fontSize: "var(--fs-20)", lineHeight: 1.6 }}>
         {segs.map((g, i) => g.fix
           ? <span key={i} className="fix"><del>{g.text}</del> <ins>{g.fix.corrected}</ins><sup>{g.fix.n}</sup></span>
           : g.text)}
       </div>
       {fb.corrections.length
-        ? <ol className="od-stack" style={{ ...gap("8px"), paddingInlineStart: 22 }}>
+        ? <ol className="od-stack" style={{ ...gap("var(--s-3)"), paddingInlineStart: "var(--s-6)" }}>
           {fb.corrections.map((c, i) => <li key={i}><b lang={lang}>{c.original} → {c.corrected}</b><br /><span className="muted small">{c.why}</span></li>)}
         </ol>
         : <p style={{ color: "var(--green)", fontWeight: 800 }}>{t("write.noCorrections")}</p>}
       <h3 style={{ fontWeight: 900 }}>{t("write.rewritten")}</h3>
-      <div className="card" lang={lang} style={{ fontSize: 18 }}><Words text={fb.rewritten} lang={lang} /></div>
+      <div className="card" lang={lang} style={{ fontSize: "var(--fs-20)" }}><Words text={fb.rewritten} lang={lang} /></div>
       {fb.comment && <p className="muted">{fb.comment}</p>}
     </div>;
     footer = <><span /><button className="btn btn-primary" onClick={finish}>{t("lesson.finish")}</button></>;
   } else {
-    body = <div className="od-stack" style={gap("14px")}>
+    body = <div className="od-stack" style={gap("var(--s-5)")}>
       <h2 className="ex-title">{task.task}</h2>
-      {task.hints.length > 0 && <div className="od-cluster" style={gap("8px")} aria-label={t("write.hints")}>
+      {task.hints.length > 0 && <div className="od-cluster" style={gap("var(--s-3)")} aria-label={t("write.hints")}>
         {task.hints.map((h) => <span key={h} className="word-chip" lang={lang}><Words text={h} lang={lang} /></span>)}
       </div>}
       <textarea className="input" rows={7} value={text} disabled={checking} autoFocus aria-label={t("lesson.yourAnswer")} placeholder={t("write.placeholder")}
-        lang={lang} style={{ width: "100%", resize: "vertical", fontSize: 18 }} onChange={(e) => setText(e.target.value)} />
+        lang={lang} style={{ width: "100%", resize: "vertical", fontSize: "var(--fs-20)" }} onChange={(e) => setText(e.target.value)} />
       {stt && s.speakOn && <MicButton lang={lang} disabled={checking}
         onText={(said) => { if (said.trim()) setText((x) => [x.trim(), said.trim()].filter(Boolean).join(" ")); }} />}
     </div>;

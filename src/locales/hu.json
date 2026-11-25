@@ -35,7 +35,8 @@
     "friends": "Barátok",
     "notifications": "Értesítések",
     "settings": "Beállítások",
-    "grammar": "Nyelvtan"
+    "grammar": "Nyelvtan",
+    "account": "Fiókmenü"
   },
   "common": {
     "soon": "Hamarosan",
@@ -50,6 +51,19 @@
     "unit": "Egység",
     "guide": "Útmutató",
     "story": "Történet"
+  },
+  "search": {
+    "label": "Keresés a leckékben és útmutatókban",
+    "placeholder": "Egységek, szavak, nyelvtan keresése…",
+    "none": "Nincs találat erre: „{{query}}”.",
+    "more": "Csak az első {{count}} találat látható. Folytasd a gépelést a szűkítéshez.",
+    "count_one": "{{count}} találat",
+    "count_other": "{{count}} találat",
+    "unit": "Egység",
+    "step": "Lecke",
+    "vocabulary": "Szókincs",
+    "grammar": "Nyelvtan",
+    "guide": "Útmutató"
   },
   "learn": {
     "kicker": "{{level}} · {{unit}}. egység",
@@ -83,8 +97,18 @@
     "legendTicket_one": "{{count}} jegy",
     "legendTicket_other": "{{count}} jegy",
     "skipUnit": "Egység teljesítése teszttel ({{score}}%)",
-    "toTop": "Az elejére",
+    "summit": "Csúcs: {{level}}",
+    "summitEnd": "Csúcs",
+    "lockedDesc": "Az előző leckék teljesítésével nyílik meg.",
     "toHere": "Vissza a leckémhez"
+  },
+  "levels": {
+    "A1": "Kezdő",
+    "A2": "Alapszint",
+    "B1": "Középszint",
+    "B2": "Középszint felett",
+    "C1": "Haladó",
+    "C2": "Mesterszint"
   },
   "practice": {
     "planning": "Tervezési idő",
@@ -163,7 +187,25 @@
     "wordsError_translation": "nincs fordítás",
     "wordsError_schedule": "az ismétlési adatok érvénytelenek",
     "saved": "Mentett elemek",
-    "savedEmpty": "Koppints egy egység, egy útmutató vagy egy történet könyvjelzőjére, hogy itt tartsd."
+    "savedEmpty": "Koppints egy egység, egy útmutató vagy egy történet könyvjelzőjére, hogy itt tartsd.",
+    "tabs": {
+      "activities": "Gyakorlatok"
+    },
+    "groups": {
+      "speak": "Beszéd",
+      "review": "Ismétlés",
+      "skills": "Készségek",
+      "challenge": "Kihívások"
+    },
+    "wordsHint": "Mentsd a listádat CSV-be, vagy importálj egyet.",
+    "wordsExportShort": "Exportálás",
+    "wordsImportShort": "Importálás",
+    "wordExample": "Példa",
+    "wordStrength": "Erősség: {{n}}/5",
+    "wordStrengthHint": "Az erősség nő, ahogy gyakorlod a szót (Napi ismétlés, Kártyák, Hallás).",
+    "dueAbout": "Ismételd a szavakat, amiket mindjárt elfelejtesz",
+    "cardsAbout": "Tanuld a szavaidat kártyákkal",
+    "listenAbout": "Válaszd ki, amit hallasz"
   },
   "league": {
     "title": "{{name}} liga",
@@ -602,7 +644,8 @@
         "tutor": "Tutor és szerepjáték",
         "lookup": "Szókeresés",
         "memory": "Memória",
-        "garden": "Kertjegyzetek"
+        "garden": "Kertjegyzetek",
+        "title": "Címek"
       }
     }
   },
@@ -614,6 +657,10 @@
     "qLessons_other": "Fejezz be {{count}} leckét",
     "chestTitle": "Van egy bontatlan szüreti kosarad",
     "chestTap": "Koppints a kinyitáshoz",
+    "gems_one": "{{count}} érme",
+    "gems_other": "{{count}} érme",
+    "hearts_one": "{{count}} csepp",
+    "hearts_other": "{{count}} csepp",
     "qPractice_one": "Fejezz be {{count}} gyakorlást",
     "qPractice_other": "Fejezz be {{count}} gyakorlást"
   },
@@ -1041,7 +1088,8 @@
     "invalidJson": "Ez a fájl nem érvényes JSON.",
     "fileTooLarge": "Ez a fájl nagyobb, mint {{size}}.",
     "imageFailed": "A képet nem sikerült beolvasni.",
-    "errors": "Előbb javítsd ezeket:"
+    "errors": "Előbb javítsd ezeket:",
+    "add": "Tutor hozzáadása"
   },
   "biome": {
     "meadow": "Rét",

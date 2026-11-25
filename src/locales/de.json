@@ -35,7 +35,8 @@
     "friends": "Freunde",
     "notifications": "Mitteilungen",
     "settings": "Einstellungen",
-    "grammar": "Grammatik"
+    "grammar": "Grammatik",
+    "account": "Kontomenü"
   },
   "common": {
     "soon": "Bald verfügbar",
@@ -50,6 +51,19 @@
     "unit": "Einheit",
     "guide": "Lernführer",
     "story": "Geschichte"
+  },
+  "search": {
+    "label": "Lektionen und Lernführer durchsuchen",
+    "placeholder": "Einheiten, Wörter, Grammatik durchsuchen…",
+    "none": "Kein Treffer für „{{query}}“.",
+    "more": "Es werden nur die ersten {{count}} Treffer angezeigt. Tippe weiter, um die Suche einzugrenzen.",
+    "count_one": "{{count}} Treffer",
+    "count_other": "{{count}} Treffer",
+    "unit": "Einheit",
+    "step": "Lektion",
+    "vocabulary": "Vokabeln",
+    "grammar": "Grammatik",
+    "guide": "Lernführer"
   },
   "learn": {
     "kicker": "{{level}} · Einheit {{unit}}",
@@ -83,8 +97,18 @@
     "legendTicket_one": "{{count}} Ticket",
     "legendTicket_other": "{{count}} Tickets",
     "skipUnit": "Einheit per Test überspringen ({{score}} %)",
-    "toTop": "Nach oben",
+    "summit": "Gipfel: {{level}}",
+    "summitEnd": "Gipfel",
+    "lockedDesc": "Schließe die vorigen Lektionen ab, um diese freizuschalten.",
     "toHere": "Zu meiner Lektion"
+  },
+  "levels": {
+    "A1": "Anfänger",
+    "A2": "Grundlagen",
+    "B1": "Mittelstufe",
+    "B2": "Obere Mittelstufe",
+    "C1": "Fortgeschritten",
+    "C2": "Meisterschaft"
   },
   "practice": {
     "planning": "Planungszeit",
@@ -163,7 +187,25 @@
     "wordsError_translation": "keine Übersetzung",
     "wordsError_schedule": "Wiederholungsdaten ungültig",
     "saved": "Gespeichert",
-    "savedEmpty": "Tippe auf das Lesezeichen bei einer Einheit, einem Lernführer oder einer Geschichte, um sie hier zu behalten."
+    "savedEmpty": "Tippe auf das Lesezeichen bei einer Einheit, einem Lernführer oder einer Geschichte, um sie hier zu behalten.",
+    "tabs": {
+      "activities": "Übungen"
+    },
+    "groups": {
+      "speak": "Sprechen",
+      "review": "Wiederholen",
+      "skills": "Fähigkeiten",
+      "challenge": "Herausforderungen"
+    },
+    "wordsHint": "Sichere deine Liste als CSV oder importiere eine.",
+    "wordsExportShort": "Exportieren",
+    "wordsImportShort": "Importieren",
+    "wordExample": "Beispiel",
+    "wordStrength": "Stärke: {{n}}/5",
+    "wordStrengthHint": "Die Stärke wächst, wenn du das Wort übst (Tageswiederholung, Karten, Hören).",
+    "dueAbout": "Wiederhole Wörter, die du bald vergisst",
+    "cardsAbout": "Lerne deine Wörter mit Karteikarten",
+    "listenAbout": "Wähle, was du hörst"
   },
   "league": {
     "title": "{{name}}-Liga",
@@ -602,7 +644,8 @@
         "tutor": "Tutor & Rollenspiel",
         "lookup": "Wortsuche",
         "memory": "Gedächtnis",
-        "garden": "Garten-Notizen"
+        "garden": "Garten-Notizen",
+        "title": "Titel"
       }
     }
   },
@@ -614,6 +657,10 @@
     "qLessons_other": "Schließe {{count}} Lektionen ab",
     "chestTitle": "Du hast einen ungeöffneten Erntekorb",
     "chestTap": "Zum Öffnen tippen",
+    "gems_one": "{{count}} Münze",
+    "gems_other": "{{count}} Münzen",
+    "hearts_one": "{{count}} Tropfen",
+    "hearts_other": "{{count}} Tropfen",
     "qPractice_one": "Beende {{count}} Übungseinheit",
     "qPractice_other": "Beende {{count}} Übungseinheiten"
   },
@@ -1041,7 +1088,8 @@
     "invalidJson": "Diese Datei ist kein gültiges JSON.",
     "fileTooLarge": "Diese Datei ist größer als {{size}}.",
     "imageFailed": "Das Bild konnte nicht gelesen werden.",
-    "errors": "Bitte zuerst das hier beheben:"
+    "errors": "Bitte zuerst das hier beheben:",
+    "add": "Tutor hinzufügen"
   },
   "biome": {
     "meadow": "Wiese",

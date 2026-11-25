@@ -5,7 +5,7 @@ import type { Cefr } from "./course.ts";
 export type Biome = { id: string; head: string; headDark: string; tint: string; tintDark: string; sky: string; far: string; near: string };
 
 export const BIOMES: Record<Cefr, Biome> = {
-  A1: { id: "meadow", head: "#5b8f3a", headDark: "#44702a", tint: "#f1f6e6", tintDark: "#1d2418", sky: "#e9f3e1", far: "#bcd99a", near: "#8fc06a" },
+  A1: { id: "meadow", head: "#527f33", headDark: "#44702a", tint: "#f1f6e6", tintDark: "#1d2418", sky: "#e9f3e1", far: "#bcd99a", near: "#8fc06a" },
   A2: { id: "grove", head: "#4f7f3a", headDark: "#3a632a", tint: "#ecf3e2", tintDark: "#1b2317", sky: "#e4efdc", far: "#a9cc8a", near: "#7cae5a" },
   B1: { id: "forest", head: "#2f5e35", headDark: "#214628", tint: "#e5efe0", tintDark: "#172118", sky: "#dce9d6", far: "#6f9d5a", near: "#4f7f3f" },
   B2: { id: "foothills", head: "#5f7f4f", headDark: "#48633b", tint: "#ecf0e6", tintDark: "#1c211a", sky: "#e3ebe6", far: "#b7c4c0", near: "#6f9858" },

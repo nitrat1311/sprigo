@@ -234,8 +234,20 @@ export async function putCached(enrollmentId: number, stepId: string, content: u
 
 /** Every cached unit guidebook (`guide:<unit>`), for word lookups (#28). */
 export async function cachedGuides<T>(enrollmentId: number) {
-  const r = await (await db()).select<{ content: string }>("SELECT content FROM content_cache WHERE enrollment_id = $1 AND step_id LIKE 'guide:%'", [enrollmentId]);
-  return r.map((x) => JSON.parse(x.content) as T);
+  return (await cachedGuidebooks<T>(enrollmentId)).map((x) => x.guide);
+}
+
+/** Cached guidebooks with their unit (#44 search), which the plain list doesn't keep. */
+export async function cachedGuidebooks<T>(enrollmentId: number) {
+  const r = await (await db()).select<{ step_id: string; content: string }>("SELECT step_id, content FROM content_cache WHERE enrollment_id = $1 AND step_id LIKE 'guide:%'", [enrollmentId]);
+  return r.flatMap((x) => {
+    try {
+      return [{ unit: x.step_id.slice("guide:".length), guide: JSON.parse(x.content) as T }];
+    } catch (e) {
+      console.warn("guidebook parse", x.step_id, e); // one corrupt cache row must not hide the rest
+      return [];
+    }
+  });
 }
 
 /** Levels passed via checkpoint or level test: marks every node of the level done and moves the enrollment on. */

@@ -2,7 +2,7 @@
 import { rollLeague, type LeagueState, type Who } from "./league.ts"; // .ts: node --test runs this file directly
 import type { Goals } from "./goals.ts"; // type-only: goals.ts reads this module, so a value import here would be a cycle
 
-export type Quest = { id: "q1" | "q2" | "q3"; icon: "bolt" | "book" | "dumbbell"; cur: number; goal: number };
+export type Quest = { id: "q1" | "q2" | "q3"; icon: "bolt" | "book" | "dumbbell" | "list-check"; cur: number; goal: number };
 export type Stats = {
   hearts: number; maxHearts: number; heartsOn: boolean; soundOn: boolean; reduceMotion: boolean;
   readableFont: boolean; textSize: number; highContrast: boolean; // #34: Atkinson Hyperlegible, zoom factor (1 = 100%), high-contrast colours
@@ -32,7 +32,7 @@ export const DEFAULT_GOALS: Goals = {
 };
 const QUESTS: Quest[] = [
   { id: "q1", icon: "bolt", cur: 0, goal: DAILY_XP_GOAL },
-  { id: "q2", icon: "book", cur: 0, goal: 3 },
+  { id: "q2", icon: "list-check", cur: 0, goal: 3 },
   { id: "q3", icon: "dumbbell", cur: 0, goal: 1 },
 ];
 export const NEW_STATS: Stats = {

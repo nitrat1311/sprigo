@@ -2,7 +2,7 @@ import { tensesFor } from "../conjugation";
 import { ProgressCharts } from "../ProgressCharts";
 import { GoalsCard } from "../GoalsCard";
 import { goalsOf } from "../goals";
-import { useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Icon, type IconName } from "../icons";
 import { useApp } from "../store";
@@ -10,6 +10,8 @@ import { useStartLesson } from "../Lesson";
 import { CardsSheet } from "../Flashcards";
 import { WriteSheet } from "../Write";
 import { useSpeakBlock } from "../Mic";
+import { SpeakButton } from "../SpeakButton";
+import type { Item } from "../activities";
 import { msLeft, rivalXp, zones, PROMOTE, DEMOTE, TIERS } from "../league";
 import * as db from "../db";
 import { dueToday } from "../srs";
@@ -31,7 +33,7 @@ import { BOOKMARKS_CHANGED, BookmarkButton } from "../BookmarkButton";
 import { GuideSheet, jumpTo } from "./Learn";
 import { TutorsSheet } from "./Tutors";
 
-const iconBox = (bg: string, fg: string, size = 48, radius: number | string = 12): React.CSSProperties => ({
+const iconBox = (bg: string, fg: string, size = 48, radius: number | string = "var(--r)"): React.CSSProperties => ({
   width: size, height: size, flex: "none", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: radius, background: bg, color: fg,
 });
 
@@ -47,7 +49,7 @@ export function LiveButton({ className = "" }: { className?: string }) {
   const { openSheet } = useApp();
   return (
     <button className={`nav-live ${className}`} onClick={() => openSheet(<TutorSheet />)}>
-      <Icon name="video" /><span>{t("nav.live")}</span><i className="live-dot" aria-hidden="true" />
+      <Icon name="video" /><span>{t("nav.live")}</span>
     </button>
   );
 }
@@ -58,7 +60,7 @@ export function TutorSheet() {
   const { closeSheet, tutors } = useApp();
   const start = useStartLesson();
   return (
-    <div className="od-stack" style={{ "--od-gap": "10px" } as React.CSSProperties}>
+    <div className="od-stack" style={{ "--od-gap": "var(--s-4)" } as React.CSSProperties}>
       <h3 style={{ textAlign: "center" }}>{t("tutor.pick")}</h3>
       {castOf(tutors).map(({ id, ch }) => (
         <button key={id} className="tutor-pick" onClick={() => { closeSheet(); start(`tutor:${id}`); }}>
@@ -103,16 +105,17 @@ export function Practice() {
   const { t } = useTranslation();
   const { toast, enrollment, lessonId, openSheet, course, go, setViewLevel } = useApp();
   const start = useStartLesson();
-  const [data, setData] = useState<{ mistakes: number; words: db.Word[]; timed: number; saved: db.Bookmark[] }>({ mistakes: 0, words: [], timed: 0, saved: [] });
+  const [data, setData] = useState<{ mistakes: number; words: db.Word[]; timed: number; saved: db.Bookmark[]; cached: Item[] }>({ mistakes: 0, words: [], timed: 0, saved: [], cached: [] });
   const [loaded, reload] = useState(0);
+  const [tab, setTab] = useState<"activities" | "saved" | "words">("activities");
   // Reloads when a practice session closes (lessonId → null) or words were imported.
   useEffect(() => {
     if (!enrollment || lessonId) return;
-    Promise.all([db.listMistakes(enrollment.id), db.listWords(enrollment.id), db.cachedLessonItems(enrollment.id), db.listBookmarks(enrollment.id)])
-      .then(([m, words, cached, saved]) => setData({ mistakes: m.length, words, timed: cached.length, saved }));
+    Promise.all([db.listMistakes(enrollment.id), db.listWords(enrollment.id), db.cachedLessonItems<Item>(enrollment.id), db.listBookmarks(enrollment.id)])
+      .then(([m, words, cached, saved]) => setData({ mistakes: m.length, words, timed: cached.length, saved, cached }));
   }, [enrollment?.id, lessonId, loaded]);
   useEffect(() => { const r = () => reload((n) => n + 1); addEventListener(BOOKMARKS_CHANGED, r); return () => removeEventListener(BOOKMARKS_CHANGED, r); }, []);
-  const { mistakes, words, timed, saved } = data;
+  const { mistakes, words, timed, saved, cached } = data;
   // Bookmarked targets are ids only; one whose unit no longer exists is not shown.
   const savedItems = saved.flatMap((b) => {
     const at = b.kind === "story" ? parseStoryId(b.ref) : parseUnitRef(b.ref);
@@ -122,72 +125,145 @@ export function Practice() {
   const due = dueToday(words, new Date()).length;
   const speakBlock = useSpeakBlock();
   const conjTenses = course && enrollment ? tensesFor(course.iso, enrollment.level) : [];
-  const card = (onClick: () => void, icon: IconName, bg: string, fg: string, title: string, desc: string) => (
-    <button className="card row-item" onClick={onClick}>
-      <span style={iconBox(bg, fg)}><Icon name={icon} /></span>
-      <span className="od-field od-fill"><b>{title}</b><span className="muted small">{desc}</span></span>
-      <span className="btn btn-ghost" style={{ pointerEvents: "none" }}>{t("practice.start")}</span>
+  // A tile per activity; `locked` = its prerequisite is missing. Tiles always describe the activity; the click toasts why it's locked.
+  const card = (onClick: () => void, icon: IconName, bg: string, fg: string, title: string, desc: string, locked = false) => (
+    <button className="card practice-tile" data-locked={locked || undefined} onClick={onClick} title={`${title}\n${desc}`}>
+      <span style={iconBox(bg, fg, 40, "var(--r-sm)")}><Icon name={icon} /></span>
+      <b>{title}</b>
+      <span className="muted small">{desc}</span>
+      {locked && <span className="practice-lock" aria-hidden="true"><Icon name="lock" /></span>}
     </button>
   );
+  const group = (title: string, tiles: React.ReactNode[]) => (
+    <section className="practice-group">
+      <h2 className="practice-group-title">{title}</h2>
+      <div className="practice-tiles">{tiles}</div>
+    </section>
+  );
+  const needWords = (n: number) => t("practice.needWords", { count: n });
+  const tabs = [
+    { k: "activities" as const, label: t("practice.tabs.activities") },
+    { k: "saved" as const, label: t("practice.saved"), n: savedItems.length },
+    { k: "words" as const, label: t("practice.myWords"), n: words.length },
+  ];
   return (
     <>
-      <h1 className="section-title" style={{ marginTop: 24 }}>{t("practice.title")}</h1>
-      <p className="muted" style={{ marginBottom: 20 }}>{t("practice.subtitle")}</p>
-      <div className="od-grid" style={{ "--od-cols": 1, "--od-gap": "14px" } as React.CSSProperties}>
-        {card(() => openSheet(<TutorSheet />), "video", "var(--green-tint)", "var(--green)", t("tutor.card"), t("tutor.cardDesc"))}
-        {card(() => mistakes ? start("practice-mistakes") : toast(t("practice.noMistakes")), "refresh", "var(--red-tint)", "var(--red)", t("practice.mistakes"),
-          mistakes ? t("practice.mistakesCount", { count: mistakes }) : t("practice.noMistakes"))}
-        {/* Speaking: bundled Whisper (DECISIONS D2). */}
-        {card(() => speakBlock ? toast(t(speakBlock)) : words.length ? start("practice-speak") : toast(t("practice.needWords", { count: 1 })),
-          "mic", "var(--sky)", "var(--blue)", t("practice.speak"), speakBlock ? t(speakBlock) : words.length ? t("practice.speakDesc") : t("practice.needWords", { count: 1 }))}
-        {card(() => openSheet(<WriteSheet />), "pen", "var(--purple-tint)", "var(--purple-dark)", t("write.title"), t("write.cardDesc"))}
-        {conjTenses.length > 0 && card(() => start("practice-conjugate"), "dumbbell", "var(--gold-tint)", "var(--gold-dark)", t("conjugate.title"),
-          t("conjugate.desc", { tenses: conjTenses.join(", ") }))}
-        {card(() => speakBlock ? toast(t(speakBlock)) : openSheet(<DrillsSheet />), "clock", "var(--sky)", "var(--blue)", t("practice.drills"), speakBlock ? t(speakBlock) : t("practice.drillsDesc"))}
-        {card(() => words.length < LISTEN_MIN_WORDS ? toast(t("practice.needWords", { count: LISTEN_MIN_WORDS })) : due ? start("practice-due") : toast(t("practice.noDue")),
-          "refresh", "var(--green-tint)", "var(--green)", t("practice.due"),
-          words.length < LISTEN_MIN_WORDS ? t("practice.needWords", { count: LISTEN_MIN_WORDS }) : due ? t("practice.dueDesc", { count: due }) : t("practice.noDue"))}
-        {card(() => words.length ? openSheet(<CardsSheet onAdded={() => reload((n) => n + 1)} />) : toast(t("practice.needWords", { count: 1 })),
-          "story", "var(--gold-tint)", "var(--gold-dark)", t("cards.title"), words.length ? t("cards.desc", { count: due }) : t("practice.needWords", { count: 1 }))}
-        {card(() => words.length >= LISTEN_MIN_WORDS ? start("practice-listen") : toast(t("practice.needWords", { count: LISTEN_MIN_WORDS })),
-          "headphones", "var(--purple-tint)", "var(--purple-dark)", t("practice.listen"), words.length >= LISTEN_MIN_WORDS ? t("practice.listenDesc", { count: Math.min(6, words.length) }) : t("practice.needWords", { count: LISTEN_MIN_WORDS }))}
-        {card(() => words.length >= MADNESS_MIN_WORDS ? start("practice-madness") : toast(t("practice.needWords", { count: MADNESS_MIN_WORDS })),
-          "bolt", "var(--gold-tint)", "var(--gold-dark)", t("league.matchName"), words.length >= MADNESS_MIN_WORDS ? t("practice.madnessDesc") : t("practice.needWords", { count: MADNESS_MIN_WORDS }))}
-        {card(() => timed ? start("practice-timed") : toast(t("practice.needLesson")),
-          "clock", "var(--red-tint)", "var(--orange)", t("practice.timed"), timed ? t("practice.timedDesc") : t("practice.needLesson"))}
-      </div>
-      <h2 className="section-title">{t("practice.saved")} <span className="muted small" style={{ fontWeight: 700 }}>({savedItems.length})</span></h2>
-      {!savedItems.length && <p className="muted small">{t("practice.savedEmpty")}</p>}
-      <div className="od-stack" style={{ "--od-gap": "10px" } as React.CSSProperties}>
-        {savedItems.map((x) => (
-          <div className="card row-item" key={x.key}>
-            <button className="od-row od-fill" style={{ "--od-gap": "12px", textAlign: "left" } as React.CSSProperties} onClick={() => {
-              if (x.kind === "story") return start(x.ref);
-              if (x.kind === "guide") return openSheet(<GuideSheet unitId={x.unitId} level={x.level} />);
-              Object.assign(jumpTo, { unit: x.unitId, until: Date.now() + 1000 }); setViewLevel(x.level); go("learn");
-            }}>
-              <span style={iconBox("var(--gold-tint)", "var(--gold-dark)", 40, 10)}><Icon name={x.kind === "story" ? "story" : x.kind === "guide" ? "book" : "star"} /></span>
-              <span className="od-field od-fill"><b>{x.title}</b><span className="muted small">{x.level} · {t(`bookmark.${x.kind}`)}</span></span>
-            </button>
-            <BookmarkButton kind={x.kind} target={x.ref} title={x.title} />
-          </div>
+      <h1 className="section-title" style={{ marginTop: "var(--s-6)" }}>{t("practice.title")}</h1>
+      <p className="muted" style={{ marginBottom: "var(--s-5)" }}>{t("practice.subtitle")}</p>
+      <div className="tabs" role="tablist" aria-label={t("practice.title")}>
+        {tabs.map(({ k, label, n }) => (
+          <button key={k} role="tab" id={`prac-tab-${k}`} aria-selected={tab === k} aria-controls="prac-panel" onClick={() => setTab(k)}>
+            {label}{n !== undefined && <span className="tab-count">{n}</span>}
+          </button>
         ))}
       </div>
-      <h2 className="section-title">{t("practice.myWords")} <span className="muted small" style={{ fontWeight: 700 }}>({words.length})</span></h2>
-      {enrollment && <WordsFile enrollment={enrollment} words={words} onImported={() => reload((n) => n + 1)} />}
-      {!words.length && <p className="muted small">{t("practice.noWords")}</p>}
-      <div className="od-cluster" style={{ "--od-gap": "10px" } as React.CSSProperties}>
-        {words.map((w) => {
-          const col = w.strength >= 4 ? "var(--green)" : w.strength >= 2 ? "var(--gold)" : "var(--red)";
-          return (
-            <button className="word-chip" key={w.word} onClick={() => toast(`'${w.word}' = ${w.translation}`)} aria-label={t("practice.wordAria", { word: w.word, meaning: w.translation, strength: w.strength })}>
-              <span>{w.word}</span>
-              <span className="strength" aria-hidden="true"><i style={{ width: `${(w.strength / 5) * 100}%`, background: col }} /></span>
-            </button>
-          );
-        })}
+      <div id="prac-panel" role="tabpanel" aria-labelledby={`prac-tab-${tab}`}>
+        {tab === "activities" && <>
+          {group(t("practice.groups.speak"), [
+            <Fragment key="tutor">{card(() => openSheet(<TutorSheet />), "video", "var(--green-tint)", "var(--green)", t("tutor.card"), t("tutor.cardDesc"))}</Fragment>,
+            /* Speaking: bundled Whisper (DECISIONS D2). */
+            <Fragment key="speak">{card(() => speakBlock ? toast(t(speakBlock)) : words.length ? start("practice-speak") : toast(needWords(1)),
+              "mic", "var(--sky)", "var(--blue)", t("practice.speak"), t("practice.speakDesc"), !!speakBlock || !words.length)}</Fragment>,
+            <Fragment key="rehearse">{card(() => openSheet(<RehearseSheet />), "users", "var(--sky)", "var(--blue)", t("roleplay.rehearse"), t("roleplay.rehearseDesc"))}</Fragment>,
+            <Fragment key="drills">{card(() => speakBlock ? toast(t(speakBlock)) : openSheet(<DrillsSheet />), "clock", "var(--sky)", "var(--blue)", t("practice.drills"), t("practice.drillsDesc"), !!speakBlock)}</Fragment>,
+          ])}
+          {group(t("practice.groups.review"), [
+            <Fragment key="mistakes">{card(() => mistakes ? start("practice-mistakes") : toast(t("practice.noMistakes")), "refresh", "var(--red-tint)", "var(--red)", t("practice.mistakes"),
+              mistakes ? t("practice.mistakesCount", { count: mistakes }) : t("practice.noMistakes"), !mistakes)}</Fragment>,
+            <Fragment key="due">{card(() => words.length < LISTEN_MIN_WORDS ? toast(needWords(LISTEN_MIN_WORDS)) : due ? start("practice-due") : toast(t("practice.noDue")),
+              "refresh", "var(--green-tint)", "var(--green)", t("practice.due"),
+              words.length < LISTEN_MIN_WORDS ? t("practice.dueAbout") : due ? t("practice.dueDesc", { count: due }) : t("practice.noDue"), words.length < LISTEN_MIN_WORDS || !due)}</Fragment>,
+            <Fragment key="cards">{card(() => words.length ? openSheet(<CardsSheet onAdded={() => reload((n) => n + 1)} />) : toast(needWords(1)),
+              "story", "var(--gold-tint)", "var(--gold-dark)", t("cards.title"), words.length ? t("cards.desc", { count: due }) : t("practice.cardsAbout"), !words.length)}</Fragment>,
+          ])}
+          {group(t("practice.groups.skills"), [
+            <Fragment key="write">{card(() => openSheet(<WriteSheet />), "pen", "var(--purple-tint)", "var(--purple-dark)", t("write.title"), t("write.cardDesc"))}</Fragment>,
+            ...(conjTenses.length > 0 ? [<Fragment key="conj">{card(() => start("practice-conjugate"), "dumbbell", "var(--gold-tint)", "var(--gold-dark)", t("conjugate.title"),
+              t("conjugate.desc", { tenses: conjTenses.join(", ") }))}</Fragment>] : []),
+            <Fragment key="listen">{card(() => words.length >= LISTEN_MIN_WORDS ? start("practice-listen") : toast(needWords(LISTEN_MIN_WORDS)),
+              "headphones", "var(--purple-tint)", "var(--purple-dark)", t("practice.listen"),
+              words.length >= LISTEN_MIN_WORDS ? t("practice.listenDesc", { count: Math.min(6, words.length) }) : t("practice.listenAbout"), words.length < LISTEN_MIN_WORDS)}</Fragment>,
+          ])}
+          {group(t("practice.groups.challenge"), [
+            <Fragment key="madness">{card(() => words.length >= MADNESS_MIN_WORDS ? start("practice-madness") : toast(needWords(MADNESS_MIN_WORDS)),
+              "bolt", "var(--gold-tint)", "var(--gold-dark)", t("league.matchName"), t("practice.madnessDesc"), words.length < MADNESS_MIN_WORDS)}</Fragment>,
+            <Fragment key="timed">{card(() => timed ? start("practice-timed") : toast(t("practice.needLesson")),
+              "clock", "var(--red-tint)", "var(--orange)", t("practice.timed"), t("practice.timedDesc"), !timed)}</Fragment>,
+          ])}
+        </>}
+        {tab === "saved" && <>
+          {!savedItems.length && <p className="muted small">{t("practice.savedEmpty")}</p>}
+          <div className="od-stack" style={{ "--od-gap": "var(--s-4)" } as React.CSSProperties}>
+            {savedItems.map((x) => (
+              <div className="card row-item" key={x.key}>
+                <button className="od-row od-fill" style={{ "--od-gap": "var(--s-4)", textAlign: "left" } as React.CSSProperties} onClick={() => {
+                  if (x.kind === "story") return start(x.ref);
+                  if (x.kind === "guide") return openSheet(<GuideSheet unitId={x.unitId} level={x.level} />);
+                  Object.assign(jumpTo, { unit: x.unitId, until: Date.now() + 1000 }); setViewLevel(x.level); go("learn");
+                }}>
+                  <span style={iconBox("var(--gold-tint)", "var(--gold-dark)", 40, "var(--r-sm)")}><Icon name={x.kind === "story" ? "story" : x.kind === "guide" ? "book" : "star"} /></span>
+                  <span className="od-field od-fill"><b>{x.title}</b><span className="muted small">{x.level} · {t(`bookmark.${x.kind}`)}</span></span>
+                </button>
+                <BookmarkButton kind={x.kind} target={x.ref} title={x.title} />
+              </div>
+            ))}
+          </div>
+        </>}
+        {tab === "words" && <>
+          {enrollment && <WordsFile enrollment={enrollment} words={words} onImported={() => reload((n) => n + 1)} />}
+          {!words.length && <p className="muted small">{t("practice.noWords")}</p>}
+          <div className="od-cluster" style={{ "--od-gap": "var(--s-3)" } as React.CSSProperties}>
+            {words.map((w) => {
+              const col = w.strength >= 4 ? "var(--green)" : w.strength >= 2 ? "var(--gold)" : "var(--red)";
+              return (
+                <button className="word-chip" key={w.word} onClick={() => openSheet(<WordSheet word={w} example={exampleFor(w.word, cached)} lang={course?.iso ?? "en"} />)} aria-label={t("practice.wordAria", { word: w.word, meaning: w.translation, strength: w.strength })}>
+                  <span>{w.word}</span>
+                  <span className="strength" aria-hidden="true"><i style={{ width: `${(w.strength / 5) * 100}%`, background: col }} /></span>
+                </button>
+              );
+            })}
+          </div>
+        </>}
       </div>
     </>
+  );
+}
+
+/** A sentence from the learner's cached lessons that uses `word` (whole word, case-insensitive); the shortest wins. */
+export function exampleFor(word: string, items: Item[]): { text: string; translation?: string } | undefined {
+  const re = new RegExp(`(^|[^\\p{L}])${word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}($|[^\\p{L}])`, "iu");
+  const all: { text: string; translation?: string }[] = items.flatMap((it) => it.kind === "speak" ? [{ text: it.phrase, translation: it.translation }]
+    : it.kind === "bank" ? [{ text: it.answer.join(" ") }] : it.kind === "input" && !it.cells ? [{ text: it.answer }] : []);
+  // ponytail: a sentence, not the bare word; prefer ones with a translation, then the shortest.
+  return all.filter((x) => x.text.trim().includes(" ") && re.test(x.text))
+    .sort((a, b) => Number(!a.translation) - Number(!b.translation) || a.text.length - b.text.length)[0];
+}
+
+function WordSheet({ word: w, example, lang }: { word: db.Word; example?: { text: string; translation?: string }; lang: string }) {
+  const { t } = useTranslation();
+  const [hint, setHint] = useState(false);
+  const { closeSheet } = useApp();
+  return (
+    <div className="od-stack" style={{ "--od-gap": "var(--s-4)" } as React.CSSProperties}>
+      <h3 style={{ margin: 0 }}>{w.word}</h3>
+      <div className="od-row" style={{ "--od-gap": "var(--s-3)", justifyContent: "center" } as React.CSSProperties}>
+        <span>{w.translation}</span>
+        <SpeakButton className="icon-btn" text={w.word} lang={lang} aria-label={t("lesson.listen")} title={t("lesson.listen")}><Icon name="headphones" /></SpeakButton>
+      </div>
+      {example && <section className="od-stack" style={{ "--od-gap": "var(--s-2)" } as React.CSSProperties}>
+        <span className="practice-group-title" style={{ margin: 0 }}>{t("practice.wordExample")}</span>
+        <div className="card od-row" style={{ "--od-gap": "var(--s-3)", padding: "var(--s-4)" } as React.CSSProperties}>
+            <span className="od-field od-fill"><span>{example.text}</span>{example.translation && <span className="muted small">{example.translation}</span>}</span>
+            <SpeakButton className="icon-btn" text={example.text} lang={lang} aria-label={t("lesson.listen")} title={t("lesson.listen")}><Icon name="headphones" /></SpeakButton>
+          </div>
+      </section>}
+      <div className="od-row muted small" style={{ "--od-gap": "var(--s-2)", justifyContent: "center" } as React.CSSProperties}>
+        <span>{t("practice.wordStrength", { n: w.strength })}</span>
+        <button className="link-btn" style={{ display: "flex" }} aria-expanded={hint} aria-label={t("practice.wordStrengthHint")} title={t("practice.wordStrengthHint")} onClick={() => setHint((h) => !h)}><Icon name="info" /></button>
+      </div>
+      {hint && <p className="muted small" style={{ margin: 0 }}>{t("practice.wordStrengthHint")}</p>}
+      <button className="btn btn-ghost btn-block" onClick={closeSheet}>{t("sheet.close")}</button>
+    </div>
   );
 }
 
@@ -220,9 +296,10 @@ function WordsFile({ enrollment, words, onImported }: { enrollment: db.Enrollmen
     else toast(done);
   };
   return (
-    <div className="od-cluster" style={{ "--od-gap": "8px", marginBottom: 12 } as React.CSSProperties}>
-      <button className="btn btn-ghost" disabled={!words.length} onClick={() => exportCsv().catch((e) => { console.error("export words", e); toast(t("practice.wordsFileFailed")); })}>{t("practice.wordsExport")}</button>
-      <button className="btn btn-ghost" onClick={() => pick.current?.click()}>{t("practice.wordsImport")}</button>
+    <div className="words-toolbar">
+      <span className="muted small od-fill">{t("practice.wordsHint")}</span>
+      <button className="link-btn small" disabled={!words.length} title={t("practice.wordsExport")} onClick={() => exportCsv().catch((e) => { console.error("export words", e); toast(t("practice.wordsFileFailed")); })}>{t("practice.wordsExportShort")}</button>
+      <button className="link-btn small" title={t("practice.wordsImport")} onClick={() => pick.current?.click()}>{t("practice.wordsImportShort")}</button>
       <input ref={pick} type="file" accept=".csv,.tsv,.txt,text/csv,text/tab-separated-values,text/plain" hidden
         onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ""; if (f) importFile(f).catch((err) => { console.error("import words", err); toast(t("practice.wordsFileFailed")); }); }} />
     </div>
@@ -234,7 +311,7 @@ function ImportErrors({ done, errors }: { done: string; errors: CsvError[] }) {
   const { t } = useTranslation();
   const { closeSheet } = useApp();
   return (
-    <div className="od-stack" style={{ "--od-gap": "10px" } as React.CSSProperties}>
+    <div className="od-stack" style={{ "--od-gap": "var(--s-4)" } as React.CSSProperties}>
       <h3 style={{ textAlign: "center" }}>{done}</h3>
       <p className="small">{t("practice.wordsSkipped", { count: errors.length })}</p>
       <ul className="small" style={{ maxHeight: 240, overflow: "auto", margin: 0, textAlign: "left" }}>
@@ -278,17 +355,17 @@ export function League() {
   const days = Math.floor(left / 86_400_000), hours = Math.floor((left % 86_400_000) / 3_600_000);
   return (
     <>
-      {last && last !== "stay" && <div className={`guide-status ${last === "down" ? "bad" : ""}`} role="status" style={{ marginTop: 14 }}>
+      {last && last !== "stay" && <div className={`guide-status ${last === "down" ? "bad" : ""}`} role="status" style={{ marginTop: "var(--s-4)" }}>
         <span className="guide-status-ico"><Icon name={last === "up" ? "trophy" : "x"} /></span>
         <span><b>{t(last === "up" ? "league.promoted" : "league.demoted", { name })}</b></span>
       </div>}
-      <div className="card" style={{ marginTop: 14, textAlign: "center", padding: 28 }}>
+      <div className="card" style={{ marginTop: "var(--s-4)", textAlign: "center", padding: "var(--s-6)" }}>
         <TierRail tier={s.league?.tier ?? 0} />
-        <h1 style={{ fontSize: 22, fontWeight: 900, marginTop: 8 }}>{t("league.title", { name })}</h1>
+        <h1 style={{ fontSize: "var(--fs-24)", fontWeight: 900, marginTop: "var(--s-3)" }}>{t("league.title", { name })}</h1>
         <p className="muted small">{t(!down ? "league.rulesSeed" : !up ? "league.rulesTop" : "league.rules", { up, down })}</p>
-        <p style={{ marginTop: 8, fontWeight: 800, color: "var(--orange)" }}><Icon name="clock" /> {t("league.timeLeft", { days, hours })}</p>
+        <p style={{ marginTop: "var(--s-3)", fontWeight: 800, color: "var(--orange)" }}><Icon name="clock" /> {t("league.timeLeft", { days, hours })}</p>
       </div>
-      <div className="card" style={{ marginTop: 14, padding: 8 }}>
+      <div className="card" style={{ marginTop: "var(--s-4)", padding: "var(--s-3)" }}>
         {rows.map((p, i) => (
           <div className={`league-row ${p.me ? "me" : ""} ${up && i === up - 1 ? "cut-up" : down && i === rows.length - down - 1 ? "cut-down" : ""}`} key={p.n}>
             <span className={`league-rank ${i < 3 ? "top" : ""}`}>{i + 1}</span>
@@ -299,7 +376,7 @@ export function League() {
         ))}
       </div>
       <h2 className="section-title">{t("league.matchSection")}</h2>
-      <div className="card od-row" style={{ "--od-gap": "14px" } as React.CSSProperties}>
+      <div className="card od-row" style={{ "--od-gap": "var(--s-4)" } as React.CSSProperties}>
         <span style={iconBox("var(--gold-tint)", "var(--gold-dark)")}><Icon name="bolt" /></span>
         <span className="od-field od-fill"><b>{t("league.matchName")}</b><span className="muted small">{t("league.matchBest", { count: s.madnessBest })}</span></span>
         <button className="btn btn-primary" onClick={playMadness}>{t("league.play")}</button>
@@ -313,12 +390,12 @@ export function Shop() {
   const { s } = useApp();
   const buy = useBuy();
   const item = (id: "freeze" | "refill" | "doubleXp" | "legendary", ic: IconName, bg: string, fg: string, price: number, owned?: number) => (
-    <div className="shop-item">
+    <div className="card shop-item">
       <span className="s-icon" style={{ background: bg, color: fg }}><Icon name={ic} /></span>
       <span className="s-body"><h4>{t(`shop.${id}`)}</h4><p className="muted small">{t(`shop.${id}Desc`)}</p></span>
       {owned ? <span className="price-tag owned">{t("shop.owned", { count: owned })}</span> : (
         <button className="btn btn-blue" onClick={() => buy(id, price)}>
-          <span style={{ width: 18, height: 18, display: "inline-flex" }}><Icon name="gem" size={18} /></span>{price}
+          <span style={{ width: 20, height: 20, display: "inline-flex" }}><Icon name="gem" size={20} /></span>{price}
         </button>
       )}
     </div>
@@ -326,10 +403,10 @@ export function Shop() {
   const boostMin = Math.ceil((s.doubleXpUntil - Date.now()) / 60_000);
   return (
     <>
-      <h1 className="section-title" style={{ marginTop: 24 }}>{t("shop.title")}</h1>
-      <div className="card od-row" style={{ marginBottom: 18, "--od-gap": "10px" } as React.CSSProperties}>
-        <span style={{ width: 26, height: 26, display: "inline-flex" }}><Icon name="gem" size={26} /></span>
-        <b style={{ fontSize: 18 }}>{s.gems}</b><span className="muted">{t("shop.gemsHave")}</span>
+      <h1 className="section-title" style={{ marginTop: "var(--s-6)" }}>{t("shop.title")}</h1>
+      <div className="card od-row" style={{ marginBottom: "var(--s-5)", "--od-gap": "var(--s-4)" } as React.CSSProperties}>
+        <span style={{ width: 24, height: 24, display: "inline-flex" }}><Icon name="gem" size={24} /></span>
+        <b style={{ fontSize: "var(--fs-20)" }}>{s.gems}</b><span className="muted">{t("shop.gemsHave")}</span>
         {boostMin > 0 && <span className="price-tag owned" style={{ marginLeft: "auto" }}>{t("shop.doubleXpActive", { count: boostMin })}</span>}
       </div>
       {item("freeze", "greenhouse", "var(--green-tint)", "var(--green-dark)", 200, s.streakFreeze)}
@@ -356,10 +433,10 @@ function AchRow({ a }: { a: Achievement }) {
   const { t } = useTranslation();
   const done = Math.min(a.cur, a.goal);
   return (
-    <div className="card od-row" style={{ "--od-gap": "14px", textAlign: "left" } as React.CSSProperties}>
+    <div className="card od-row" style={{ "--od-gap": "var(--s-4)", textAlign: "left" } as React.CSSProperties}>
       <AchBadge a={a} size={44} />
       <span className="od-field od-fill"><b>{t(`profile.ach.${a.family}.title`)} {roman(a.tier)}</b><span className="muted small">{t(`profile.ach.${a.family}.desc`, { count: a.goal })}</span>
-        {!a.earned && <span className="progress-track" style={{ display: "block", height: 10, marginTop: 6 }}><i className="progress-fill" style={{ display: "block", width: `${(done / a.goal) * 100}%` }} /></span>}
+        {!a.earned && <span className="progress-track" style={{ display: "block", height: 10, marginTop: "var(--s-3)" }}><i className="progress-fill" style={{ display: "block", width: `${(done / a.goal) * 100}%` }} /></span>}
       </span>
       {a.earned ? <span style={{ color: "var(--gold-dark)" }} role="img" aria-label={t("profile.achDone")}><Icon name="check" /></span> : <span className="od-nowrap muted small" style={{ fontWeight: 800 }}>{done}/{a.goal}</span>}
     </div>
@@ -370,7 +447,7 @@ function AchievementsSheet({ list }: { list: Achievement[] }) {
   const { t } = useTranslation();
   const { closeSheet } = useApp();
   return (
-    <div className="od-stack" style={{ "--od-gap": "10px" } as React.CSSProperties}>
+    <div className="od-stack" style={{ "--od-gap": "var(--s-4)" } as React.CSSProperties}>
       <h3>{t("profile.achAllTitle")}</h3>
       <span className="muted small">{t("profile.achEarned", { count: list.filter((a) => a.earned).length, total: list.length })}</span>
       {list.map((a) => <AchRow key={a.id} a={a} />)}
@@ -402,8 +479,8 @@ export function Profile() {
   const stat = (v: React.ReactNode, k: string, c: string, onClick?: () => void) => {
     const Tag = onClick ? "button" : "div";
     return (
-      <Tag className="card od-stat" onClick={onClick} title={onClick && t("garden.open")} style={{ "--od-gap": "2px", textAlign: "center", padding: 14 } as React.CSSProperties}>
-        <span style={{ fontSize: 22, fontWeight: 900, color: c }} className="od-nowrap">{v}</span>
+      <Tag className="card od-stat" onClick={onClick} title={onClick && t("garden.open")} style={{ "--od-gap": "var(--s-1)", textAlign: "center", padding: "var(--s-5)" } as React.CSSProperties}>
+        <span style={{ fontSize: "var(--fs-24)", fontWeight: 900, color: c }} className="od-nowrap">{v}</span>
         <span className="muted small" style={{ fontWeight: 700 }}>{k}</span>
       </Tag>
     );
@@ -416,13 +493,13 @@ export function Profile() {
   const earned = ach.filter((a) => a.earned);
   return (
     <>
-      <div className="od-row profile-head" style={{ "--od-gap": "16px", marginTop: 24 } as React.CSSProperties}>
-        <span className="avatar" style={{ width: 72, height: 72, fontSize: 28, background: profile!.color }}>{profile!.name[0]}</span>
-        <span className="od-field od-fill"><b style={{ fontSize: 22 }}>{profile!.name}</b><span className="muted small">{t("profile.since", { date: since })}</span></span>
+      <div className="od-row profile-head" style={{ "--od-gap": "var(--s-5)", marginTop: "var(--s-6)" } as React.CSSProperties}>
+        <span className="avatar" style={{ width: 72, height: 72, fontSize: "var(--fs-24)", background: profile!.color }}>{profile!.name[0]}</span>
+        <span className="od-field od-fill"><b style={{ fontSize: "var(--fs-24)" }}>{profile!.name}</b><span className="muted small">{t("profile.since", { date: since })}</span></span>
         {/* The top bar's garden button is easy to miss and isn't there on phones. */}
-        <button className="btn btn-ghost od-row od-nowrap profile-garden" style={{ "--od-gap": "8px" } as React.CSSProperties} onClick={() => go("garden")}><Icon name="roots" />{t("profile.garden")}</button>
+        <button className="btn btn-ghost od-row od-nowrap profile-garden" style={{ "--od-gap": "var(--s-3)" } as React.CSSProperties} onClick={() => go("garden")}><Icon name="roots" />{t("profile.garden")}</button>
       </div>
-      <div className="od-grid" style={{ "--od-cols": 2, "--od-gap": "12px", marginTop: 18 } as React.CSSProperties}>
+      <div className="od-grid" style={{ "--od-cols": 2, "--od-gap": "var(--s-4)", marginTop: "var(--s-5)" } as React.CSSProperties}>
         {stat(t("profile.streakDays", { count: s.streak }), t("profile.streak"), "var(--green)", () => go("garden"))}
         {stat(xp, t("profile.totalXp"), "var(--gold-dark)")}
         {stat(league.name, t("profile.currentLeague"), "var(--blue)")}
@@ -435,18 +512,18 @@ export function Profile() {
       <GoalsCard goals={goalsOf(s)} day={today()} xpDays={{ [s.day]: s.todayXp, ...s.xpDays }} wordDays={profileWords} speechMs={speechMs}
         onChange={(period, goal) => setS((x) => ({ ...x, goals: { ...goalsOf(x), [period]: goal } }))} />
       <h2 className="section-title">{t("profile.forYou")}</h2>
-      <div className="od-grid profile-cards" style={{ "--od-cols": 2, "--od-gap": "12px" } as React.CSSProperties}>
+      <div className="od-grid profile-cards" style={{ "--od-cols": 2, "--od-gap": "var(--s-4)" } as React.CSSProperties}>
         <CoachCard />
         <MemoryCard />
       </div>
-      <div className="od-row section-title" style={{ "--od-gap": "12px" } as React.CSSProperties}>
+      <div className="od-row section-title" style={{ "--od-gap": "var(--s-4)" } as React.CSSProperties}>
         <h2 className="od-fill" style={{ font: "inherit" }}>{t("profile.achievements")}</h2>
-        <button className="small" style={{ fontWeight: 800, color: "var(--blue)" }} onClick={() => openSheet(<AchievementsSheet list={ach} />)}>{t("profile.achAll")}</button>
+        <button className="small link-btn" onClick={() => openSheet(<AchievementsSheet list={ach} />)}>{t("profile.achAll")}</button>
       </div>
       {earned.length > 0 && <div className="ach-badges" aria-label={t("profile.achEarned", { count: earned.length, total: ach.length })}>
         {earned.map((a) => <AchBadge key={a.id} a={a} />)}
       </div>}
-      <div className="od-stack" style={{ "--od-gap": "12px" } as React.CSSProperties}>
+      <div className="od-stack" style={{ "--od-gap": "var(--s-4)" } as React.CSSProperties}>
         {nearest(ach).map((a) => <AchRow key={a.id} a={a} />)}
       </div>
     </>
@@ -465,15 +542,15 @@ export function Stories() {
   return (
     <>
       <h1 className="section-title">{t("stories.title")}</h1>
-      <p className="muted" style={{ marginBottom: 18 }}>{t("stories.subtitle")}</p>
+      <p className="muted" style={{ marginBottom: "var(--s-5)" }}>{t("stories.subtitle")}</p>
       {levels.length > 1 && (
-        <label className="od-field" style={{ marginBottom: 14, maxWidth: 200 }}><b>{t("learn.levels")}</b>
+        <label className="od-field" style={{ marginBottom: "var(--s-4)", maxWidth: 200 }}><b>{t("learn.levels")}</b>
           <select className="select" value={lv} onChange={(e) => setLevel(e.target.value as Cefr)}>
-            {levels.map((l) => <option key={l} value={l}>{l} · {course!.levels[l]!.title}</option>)}
+            {levels.map((l) => <option key={l} value={l}>{l} · {t(`levels.${l}`, { defaultValue: course!.levels[l]!.title })}</option>)}
           </select>
         </label>
       )}
-      <div className="od-stack" style={{ "--od-gap": "12px" } as React.CSSProperties}>
+      <div className="od-stack" style={{ "--od-gap": "var(--s-4)" } as React.CSSProperties}>
         {units.map((u, ui) => {
           // A unit's story opens once the unit is started (the first one is always open); earlier levels are all open.
           const open = lv !== enrollment!.level || ui === 0 || u.steps.some((st) => done.has(st.id));
@@ -481,10 +558,10 @@ export function Stories() {
           const read = done.has(id) || (lv === enrollment!.level && done.has(`story:${u.id}`)); // pre-1.9 id
           return (
             <div className="card row-item" key={u.id}>
-              <button className="od-row od-fill" style={{ "--od-gap": "12px", textAlign: "left" } as React.CSSProperties} onClick={() => open ? start(id) : toast(t("stories.lockedToast", { unit: ui }))}>
+              <button className="od-row od-fill" style={{ "--od-gap": "var(--s-4)", textAlign: "left" } as React.CSSProperties} onClick={() => open ? start(id) : toast(t("stories.lockedToast", { unit: ui }))}>
                 <span style={iconBox(open ? "var(--sky)" : "var(--surface)", open ? "var(--blue)" : "var(--text-faint)")}><Icon name={read ? "check" : open ? "story" : "lock"} /></span>
                 <span className="od-field od-fill"><b>{u.title}</b><span className="muted small">{t("learn.kicker", { level: lv, unit: ui + 1 })}{u.description ? ` · ${u.description}` : ""}</span></span>
-                {open && <span className="btn btn-ghost" style={{ pointerEvents: "none" }}>{t(read ? "stories.again" : "stories.read")}</span>}
+                {open && <span className="btn btn-ghost pe-none">{t(read ? "stories.again" : "stories.read")}</span>}
               </button>
               {open && <BookmarkButton kind="story" target={id} title={u.title} />}
             </div>
@@ -505,12 +582,12 @@ function TopicSheet({ who, voice }: { who: CharacterId; voice: boolean }) {
   const custom = isTutorId(who);
   const go = (topic: string | { free: string }) => { closeSheet(); start(talkId(voice, who, topic)); };
   return (
-    <div className="od-stack" style={{ "--od-gap": "14px", textAlign: "left" } as React.CSSProperties}>
+    <div className="od-stack" style={{ "--od-gap": "var(--s-4)", textAlign: "left" } as React.CSSProperties}>
       <h3 style={{ textAlign: "center" }}>{t("roleplay.pickTopic", { name: ch.name })}</h3>
       {ch.topics.map((x) => (
         <button key={x.id} className="btn btn-ghost btn-block" onClick={() => go(x.id)}>{custom ? x.goal : t(`roleplay.topics.${who}.${x.id}`)}</button>
       ))}
-      <label className="od-field" style={{ "--od-gap": "6px" } as React.CSSProperties}>
+      <label className="od-field" style={{ "--od-gap": "var(--s-3)" } as React.CSSProperties}>
         <b>{t("roleplay.ownTopic")}</b>
         <input className="input" value={own} maxLength={120} placeholder={t("roleplay.ownTopicPlaceholder")}
           onChange={(e) => setOwn(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter" && own.trim()) go({ free: own.trim() }); }} />
@@ -526,12 +603,12 @@ function CastPicker({ value, onChange }: { value: CharacterId; onChange: (c: Cha
   const { t } = useTranslation();
   const { tutors } = useApp();
   return (
-    <div className="od-field" style={{ "--od-gap": "6px" } as React.CSSProperties}>
+    <div className="od-field" style={{ "--od-gap": "var(--s-3)" } as React.CSSProperties}>
       <b id="cast-pick">{t("roleplay.briefCast")}</b>
       <div className="seg" role="radiogroup" aria-labelledby="cast-pick">
         {castOf(tutors).map(({ id, ch }) => (
           <button key={id} role="radio" aria-checked={value === id} aria-label={ch.name} title={ch.name} className={`btn ${value === id ? "btn-blue" : "btn-ghost"}`}
-            style={{ padding: 4 }} onClick={() => onChange(id)}>
+            style={{ padding: "var(--s-2)" }} onClick={() => onChange(id)}>
             <Face spec={ch.face} color={ch.color} size={44} label={ch.name} image={ch.avatar} />
           </button>
         ))}
@@ -556,9 +633,9 @@ function RehearseSheet() {
     closeSheet();
     start(rehearseId(voice, cast, { who: who.trim(), about: about.trim() || undefined, formality }));
   };
-  const field = { "--od-gap": "6px" } as React.CSSProperties;
+  const field = { "--od-gap": "var(--s-3)" } as React.CSSProperties;
   return (
-    <div className="od-stack" style={{ "--od-gap": "14px", textAlign: "left" } as React.CSSProperties}>
+    <div className="od-stack" style={{ "--od-gap": "var(--s-4)", textAlign: "left" } as React.CSSProperties}>
       <h3 style={{ textAlign: "center" }}>{t("roleplay.rehearse")}</h3>
       <label className="od-field" style={field}>
         <b>{t("roleplay.briefWho")}</b>
@@ -622,11 +699,11 @@ function DrillsSheet() {
       : { kind: "planning", topic: topic.trim(), planningSec: planSec, minutes: DRILL_MINUTES }));
   };
   if (!pick) return (
-    <div className="od-stack" style={{ "--od-gap": "12px", textAlign: "left" } as React.CSSProperties}>
+    <div className="od-stack" style={{ "--od-gap": "var(--s-4)", textAlign: "left" } as React.CSSProperties}>
       <h3 style={{ textAlign: "center" }}>{t("practice.drills")}</h3>
       {list.map((d) => (
         <button key={d.id} className="card row-item" onClick={() => setPick(d.id)}>
-          <span style={iconBox("var(--sky)", "var(--blue)", 40, 10)}><Icon name={d.icon} /></span>
+          <span style={iconBox("var(--sky)", "var(--blue)", 40, "var(--r-sm)")}><Icon name={d.icon} /></span>
           <span className="od-field od-fill"><b>{d.title}</b><span className="muted small">{d.desc}</span></span>
         </button>
       ))}
@@ -634,9 +711,9 @@ function DrillsSheet() {
     </div>
   );
   return (
-    <div className="od-stack" style={{ "--od-gap": "14px", textAlign: "left" } as React.CSSProperties}>
+    <div className="od-stack" style={{ "--od-gap": "var(--s-4)", textAlign: "left" } as React.CSSProperties}>
       <h3 style={{ textAlign: "center" }}>{list.find((d) => d.id === pick)!.title}</h3>
-      {pick === "ladder" && <div className="od-field" style={{ "--od-gap": "6px" } as React.CSSProperties}>
+      {pick === "ladder" && <div className="od-field" style={{ "--od-gap": "var(--s-3)" } as React.CSSProperties}>
         <b id="rung-pick">{t("practice.ladderRung")}</b>
         <div className="seg" role="radiogroup" aria-labelledby="rung-pick">
           {[1, 2, 3].map((r) => (
@@ -645,7 +722,7 @@ function DrillsSheet() {
         </div>
         <span className="muted small">{t(`practice.rung${rung}`)}</span>
       </div>}
-      {!(pick === "ladder" && rung === 3) && <label className="od-field" style={{ "--od-gap": "6px" } as React.CSSProperties}>
+      {!(pick === "ladder" && rung === 3) && <label className="od-field" style={{ "--od-gap": "var(--s-3)" } as React.CSSProperties}>
         <b>{t("practice.drillTopic")}</b>
         <input className="input" value={topic} maxLength={120} placeholder={t("practice.drillTopicPlaceholder")}
           onChange={(e) => setTopic(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") go(); }} />
@@ -670,16 +747,11 @@ export function Roleplay() {
   return (
     <>
       <h1 className="section-title">{t("roleplay.title")}</h1>
-      <p className="muted" style={{ marginBottom: 18 }}>{t("roleplay.subtitle")}</p>
-      <button className="card row-item" style={{ marginBottom: 18, width: "100%" }} onClick={() => openSheet(<RehearseSheet />)}>
+      <p className="muted" style={{ marginBottom: "var(--s-5)" }}>{t("roleplay.subtitle")}</p>
+      <button className="card row-item" style={{ marginBottom: "var(--s-5)", width: "100%" }} onClick={() => openSheet(<RehearseSheet />)}>
         <span style={iconBox("var(--sky)", "var(--blue)")}><Icon name="users" /></span>
         <span className="od-field od-fill"><b>{t("roleplay.rehearse")}</b><span className="muted small">{t("roleplay.rehearseDesc")}</span></span>
-        <span className="btn btn-blue" style={{ pointerEvents: "none" }}>{t("roleplay.start")}</span>
-      </button>
-      <button className="card row-item" style={{ marginBottom: 18, width: "100%" }} onClick={() => openSheet(<TutorsSheet />)}>
-        <span style={iconBox("var(--purple-tint)", "var(--purple-dark)")}><Icon name="user" /></span>
-        <span className="od-field od-fill"><b>{t("tutorManage.title")}</b><span className="muted small">{t("tutorManage.cardDesc")}</span></span>
-        <span className="btn btn-ghost" style={{ pointerEvents: "none" }}>{t("tutorManage.manage")}</span>
+        <span className="btn btn-blue pe-none">{t("roleplay.start")}</span>
       </button>
       <div className="rp-grid">
         {castOf(tutors).map(({ id, ch, tutor }) => (
@@ -692,6 +764,11 @@ export function Roleplay() {
             </span>
           </div>
         ))}
+        {/* Add / manage tutors lives at the end of the cast, opening the same sheet the old "Manage" card did. */}
+        <button className="card rp-card rp-add" onClick={() => openSheet(<TutorsSheet />)}>
+          <span className="rp-face rp-add-face"><Icon name="user" /><b>+</b></span>
+          <span className="od-field"><b>{t("tutorManage.add")}</b><span className="muted">{t("tutorManage.cardDesc")}</span></span>
+        </button>
       </div>
     </>
   );
@@ -713,19 +790,19 @@ export function Friends() {
   const friends = useOtherProfiles();
   return (
     <>
-      <h1 className="section-title" style={{ marginTop: 24 }}>{t("friends.title")}</h1>
-      <p className="muted" style={{ marginBottom: 14 }}>{t("friends.subtitle")}</p>
+      <h1 className="section-title" style={{ marginTop: "var(--s-6)" }}>{t("friends.title")}</h1>
+      <p className="muted" style={{ marginBottom: "var(--s-4)" }}>{t("friends.subtitle")}</p>
       {!friends.length && <p className="muted small">{t("friends.empty")}</p>}
-      <div className="od-stack" style={{ "--od-gap": "12px" } as React.CSSProperties}>
+      <div className="od-stack" style={{ "--od-gap": "var(--s-4)" } as React.CSSProperties}>
         {friends.map((f) => (
-          <div className="card od-row" style={{ "--od-gap": "14px" } as React.CSSProperties} key={f.id}>
+          <div className="card od-row" style={{ "--od-gap": "var(--s-4)" } as React.CSSProperties} key={f.id}>
             <span className="avatar" style={{ background: f.color }}>{f.name[0]}</span>
             <span className="od-field od-fill"><b>{f.name}</b><span className="muted small">{t("friends.weekXp", { count: f.weekXp })}</span></span>
-            <span className="od-row" style={{ "--od-gap": "4px", color: "var(--green)", fontWeight: 900 } as React.CSSProperties} aria-label={t("friends.streak", { count: f.stats.streak })}><Icon name="roots" />{f.stats.streak}</span>
+            <span className="od-row" style={{ "--od-gap": "var(--s-2)", color: "var(--green)", fontWeight: 900 } as React.CSSProperties} aria-label={t("friends.streak", { count: f.stats.streak })}><Icon name="roots" />{f.stats.streak}</span>
           </div>
         ))}
       </div>
-      <button className="btn btn-primary btn-block" style={{ marginTop: 18 }} onClick={logout}>{t("friends.add")}</button>
+      <button className="btn btn-primary btn-block" style={{ marginTop: "var(--s-5)" }} onClick={logout}>{t("friends.add")}</button>
     </>
   );
 }
@@ -748,11 +825,11 @@ export function Notifications() {
   if (s.chests) items.push({ icon: "basket", title: t("notifications.chest"), desc: t("notifications.chestDesc") });
   return (
     <>
-      <h1 className="section-title" style={{ marginTop: 24 }}>{t("notifications.title")}</h1>
-      <div className="od-stack" style={{ "--od-gap": "10px", marginTop: 14 } as React.CSSProperties}>
+      <h1 className="section-title" style={{ marginTop: "var(--s-6)" }}>{t("notifications.title")}</h1>
+      <div className="od-stack" style={{ "--od-gap": "var(--s-4)", marginTop: "var(--s-4)" } as React.CSSProperties}>
         {items.map((n) => (
-          <div className="card od-row-top" style={{ "--od-gap": "12px" } as React.CSSProperties} key={n.title}>
-            <span style={iconBox("var(--surface)", "inherit", 40, 10)}><Icon name={n.icon} /></span>
+          <div className="card od-row-top" style={{ "--od-gap": "var(--s-4)" } as React.CSSProperties} key={n.title}>
+            <span style={iconBox("var(--surface)", "inherit", 40, "var(--r-sm)")}><Icon name={n.icon} /></span>
             <span className="od-field od-fill"><b>{n.title}</b>{n.desc && <span className="muted small">{n.desc}</span>}</span>
           </div>
         ))}
