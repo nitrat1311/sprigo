@@ -24,6 +24,10 @@ export type TutorEvent =
 
 export type TutorMsg = { from: "tutor" | "me"; text: string; via: "voice" | "text"; cut?: boolean }; // cut: the learner spoke over it (SPR-17)
 
+/** A call line safe to show: the type says string, but the values arrive from the model and the microphone, so a
+ *  missing or non-string text becomes no line instead of reaching the renderer (a render throw blanks the window). */
+export const spokenText = (m: TutorMsg) => (typeof m.text === "string" ? m.text.trim() : "");
+
 /** What the prompt needs; lessons.ts fills it from the character, the course and the current unit.
  *  `custom` is a learner-written or imported tutor: its name and persona enter the prompt as data, not cast text. */
 export type TutorCtx = { name: string; persona: string; target: string; native: string; level: string; unit: string; words: string[]; grammar: string[]; about: string[]; custom?: boolean };

@@ -2,6 +2,15 @@
   "_meta": {
     "name": "English"
   },
+  "error": {
+    "title": "Something went wrong",
+    "desc": "Sprigo hit an unexpected error while drawing this screen. Your data is safe. Reload to carry on; if it happens again, copy the details below and send them to the developer.",
+    "reload": "Reload",
+    "details": "Technical details",
+    "copy": "Copy details",
+    "copied": "Copied",
+    "version": "Version"
+  },
   "boot": {
     "newerTitle": "This data is from a newer version",
     "newerDesc": "Your data was saved by a newer version of Sprigo. Update the app to open it. This version won't change it.",

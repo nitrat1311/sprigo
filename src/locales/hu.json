@@ -2,6 +2,15 @@
   "_meta": {
     "name": "Magyar"
   },
+  "error": {
+    "title": "Valami hiba történt",
+    "desc": "A Sprigo váratlan hibába futott a képernyő rajzolása közben. Az adataid biztonságban vannak. Töltsd újra az oldalt a folytatáshoz; ha újra előfordul, másold ki az alábbi részleteket, és küldd el a fejlesztőnek.",
+    "reload": "Újratöltés",
+    "details": "Technikai részletek",
+    "copy": "Részletek másolása",
+    "copied": "Másolva",
+    "version": "Verzió"
+  },
   "boot": {
     "newerTitle": "Ezek az adatok egy újabb verzióból származnak",
     "newerDesc": "Az adataidat a Sprigo egy újabb verziója mentette. Frissítsd az alkalmazást a megnyitásukhoz. Ez a verzió nem módosítja őket.",

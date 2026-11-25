@@ -2,6 +2,15 @@
   "_meta": {
     "name": "Türkçe"
   },
+  "error": {
+    "title": "Bir şeyler ters gitti",
+    "desc": "Sprigo bu ekranı çizerken beklenmedik bir hata verdi. Verilerin güvende. Devam etmek için yeniden yükle; hata tekrarlarsa aşağıdaki ayrıntıları kopyalayıp geliştiriciye gönder.",
+    "reload": "Yeniden yükle",
+    "details": "Teknik ayrıntılar",
+    "copy": "Ayrıntıları kopyala",
+    "copied": "Kopyalandı",
+    "version": "Sürüm"
+  },
   "boot": {
     "newerTitle": "Bu veri daha yeni bir sürümden",
     "newerDesc": "Verilerin Sprigo'nun daha yeni bir sürümüyle kaydedilmiş. Açmak için uygulamayı güncelle. Bu sürüm verilere dokunmaz.",

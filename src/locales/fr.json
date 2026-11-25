@@ -2,6 +2,15 @@
   "_meta": {
     "name": "Français"
   },
+  "error": {
+    "title": "Un problème est survenu",
+    "desc": "Sprigo a rencontré une erreur inattendue en affichant cet écran. Vos données sont en sécurité. Rechargez pour continuer ; si cela se reproduit, copiez les détails ci-dessous et envoyez-les au développeur.",
+    "reload": "Recharger",
+    "details": "Détails techniques",
+    "copy": "Copier les détails",
+    "copied": "Copié",
+    "version": "Version"
+  },
   "boot": {
     "newerTitle": "Ces données viennent d'une version plus récente",
     "newerDesc": "Tes données ont été enregistrées par une version plus récente de Sprigo. Mets l'app à jour pour les ouvrir. Cette version ne les modifiera pas.",
