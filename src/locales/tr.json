@@ -89,6 +89,14 @@
     "lockedDesc": "Bu dersi açmak için önceki dersleri tamamla.",
     "toHere": "Kaldığım yere"
   },
+  "levels": {
+    "A1": "Başlangıç",
+    "A2": "Temel",
+    "B1": "Orta",
+    "B2": "Orta üstü",
+    "C1": "İleri",
+    "C2": "Ustalık"
+  },
   "practice": {
     "planning": "Planlama süresi",
     "drills": "Akıcılık alıştırmaları",
@@ -568,7 +576,8 @@
         "tutor": "Öğretmen ve rol yapma",
         "lookup": "Kelime aramaları",
         "memory": "Hafıza",
-        "garden": "Bahçe notları"
+        "garden": "Bahçe notları",
+        "title": "Başlıklar"
       }
     }
   },

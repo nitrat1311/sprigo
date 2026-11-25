@@ -24,8 +24,8 @@ export function Grammar() {
       <input className="input" type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("grammar.search")} aria-label={t("grammar.search")} style={{ marginBottom: "var(--s-5)" }} />
       {!shown.length && <p className="muted">{t("grammar.none")}</p>}
       {shown.map((l) => (
-        <section key={l.level} aria-label={`${l.level} · ${l.title}`} style={{ marginBottom: "var(--s-6)" }}>
-          <h2 className="section-title">{l.level} · {l.title}</h2>
+        <section key={l.level} aria-label={`${l.level} · ${t(`levels.${l.level}`, { defaultValue: l.title })}`} style={{ marginBottom: "var(--s-6)" }}>
+          <h2 className="section-title">{l.level} · {t(`levels.${l.level}`, { defaultValue: l.title })}</h2>
           {l.units.map((u) => {
             // Like Stories: earlier levels are open, and in the current level the first unit and every started one.
             const units = course!.levels[l.level]!.units, ui = units.findIndex((x) => x.id === u.id);

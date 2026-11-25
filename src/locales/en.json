@@ -89,6 +89,14 @@
     "lockedDesc": "Finish the earlier lessons to unlock this.",
     "toHere": "Back to my lesson"
   },
+  "levels": {
+    "A1": "Beginner",
+    "A2": "Elementary",
+    "B1": "Intermediate",
+    "B2": "Upper intermediate",
+    "C1": "Advanced",
+    "C2": "Proficiency"
+  },
   "practice": {
     "planning": "Planning time",
     "drills": "Fluency drills",
@@ -572,7 +580,8 @@
         "tutor": "Tutor & roleplay",
         "lookup": "Word lookups",
         "memory": "Memory",
-        "garden": "Garden notes"
+        "garden": "Garden notes",
+        "title": "Titles"
       }
     }
   },

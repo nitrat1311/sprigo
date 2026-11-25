@@ -92,6 +92,14 @@
     "lockedDesc": "Termine les leçons précédentes pour débloquer celle-ci.",
     "toHere": "Revenir à ma leçon"
   },
+  "levels": {
+    "A1": "Débutant",
+    "A2": "Élémentaire",
+    "B1": "Intermédiaire",
+    "B2": "Intermédiaire avancé",
+    "C1": "Avancé",
+    "C2": "Maîtrise"
+  },
   "practice": {
     "planning": "Temps de préparation",
     "drills": "Exercices de fluidité",
@@ -598,7 +606,8 @@
         "tutor": "Tuteur et jeu de rôle",
         "lookup": "Recherches de mots",
         "memory": "Mémoire",
-        "garden": "Notes du jardin"
+        "garden": "Notes du jardin",
+        "title": "Titres"
       }
     }
   },

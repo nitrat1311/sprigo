@@ -83,6 +83,14 @@
     "lockedDesc": "Completa le lezioni precedenti per sbloccare questa.",
     "toHere": "Torna alla mia lezione"
   },
+  "levels": {
+    "A1": "Principiante",
+    "A2": "Elementare",
+    "B1": "Intermedio",
+    "B2": "Intermedio superiore",
+    "C1": "Avanzato",
+    "C2": "Padronanza"
+  },
   "practice": {
     "planning": "Tempo di pianificazione",
     "drills": "Esercizi di fluidità",
@@ -583,7 +591,8 @@
         "practice": "Esercizi",
         "story": "Storie",
         "tutor": "Tutor e giochi di ruolo",
-        "writing": "Scrittura"
+        "writing": "Scrittura",
+        "title": "Titoli"
       },
       "month": "Mese",
       "noPrice": "Prezzo non disponibile",

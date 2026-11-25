@@ -89,6 +89,14 @@
     "lockedDesc": "Schließe die vorigen Lektionen ab, um diese freizuschalten.",
     "toHere": "Zu meiner Lektion"
   },
+  "levels": {
+    "A1": "Anfänger",
+    "A2": "Grundlagen",
+    "B1": "Mittelstufe",
+    "B2": "Obere Mittelstufe",
+    "C1": "Fortgeschritten",
+    "C2": "Meisterschaft"
+  },
   "practice": {
     "planning": "Planungszeit",
     "drills": "Flüssigkeitsübungen",
@@ -572,7 +580,8 @@
         "tutor": "Tutor & Rollenspiel",
         "lookup": "Wortsuche",
         "memory": "Gedächtnis",
-        "garden": "Garten-Notizen"
+        "garden": "Garten-Notizen",
+        "title": "Titel"
       }
     }
   },

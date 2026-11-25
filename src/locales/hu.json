@@ -89,6 +89,14 @@
     "lockedDesc": "Az előző leckék teljesítésével nyílik meg.",
     "toHere": "Vissza a leckémhez"
   },
+  "levels": {
+    "A1": "Kezdő",
+    "A2": "Alapszint",
+    "B1": "Középszint",
+    "B2": "Középszint felett",
+    "C1": "Haladó",
+    "C2": "Mesterszint"
+  },
   "practice": {
     "planning": "Tervezési idő",
     "drills": "Folyékonyságfejlesztő gyakorlatok",
@@ -572,7 +580,8 @@
         "tutor": "Tutor és szerepjáték",
         "lookup": "Szókeresés",
         "memory": "Memória",
-        "garden": "Kertjegyzetek"
+        "garden": "Kertjegyzetek",
+        "title": "Címek"
       }
     }
   },
