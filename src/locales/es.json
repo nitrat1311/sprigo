@@ -630,7 +630,6 @@
     "highContrast": "Alto contraste",
     "highContrastDesc": "Colores y bordes más marcados, para baja visión y lugares con mucha luz",
     "appearance": "Apariencia",
-    "privacy": "Privacidad",
     "theme": "Tema",
     "themeSystem": "Sistema",
     "themeLight": "Claro",
@@ -967,7 +966,6 @@
     "accent_en-GB": "Británico"
   },
   "data": {
-    "section": "Datos",
     "folder": "Carpeta de datos",
     "default": "Carpeta predeterminada",
     "desktopOnly": "Solo disponible en la app de escritorio",

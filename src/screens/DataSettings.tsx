@@ -11,7 +11,7 @@ import { HelpButton } from "../Help";
 const gap = (g: string) => ({ "--od-gap": g }) as React.CSSProperties;
 const dialog = () => import("@tauri-apps/plugin-dialog");
 
-/** Settings > Data: where the database lives. One row; the section heading sits above its group. */
+/** Settings > Privacy & data: where the database lives. One row, sharing the tab's single group. */
 export function DataRow() {
   const { t } = useTranslation();
   const { openSheet } = useApp();

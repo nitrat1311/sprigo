@@ -602,7 +602,6 @@
     "highContrast": "High contrast",
     "highContrastDesc": "Stronger colours and borders, for low vision and bright rooms",
     "appearance": "Appearance",
-    "privacy": "Privacy",
     "theme": "Theme",
     "themeSystem": "System",
     "themeLight": "Light",
@@ -935,7 +934,6 @@
     "accent_en-GB": "British"
   },
   "data": {
-    "section": "Data",
     "folder": "Data folder",
     "default": "Default folder",
     "desktopOnly": "Only available in the desktop app",

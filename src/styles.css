@@ -43,6 +43,9 @@
   --bark:#8a6242; --bark-dark:#6b4a30;
   --leaf:#6aa84f; --leaf-dark:#4a8a3a; --leaf-dry:#d9b24a; --leaf-dry-dark:#b48a2c; --soil:#a07a55; --fruit:#d9503c;
   --text:#2e2a24; --text-muted:#6b6357; --text-faint:#776e5f;
+  /* An info icon at rest is secondary, but still a control: 3.7:1 on --card, 3.2:1 on the selected option's --sky
+     (WCAG 1.4.11 wants 3:1); hover and focus return it to --text-muted (5.8:1 card). */
+  --icon-quiet:#8a8274;
   --border:#e5ddcc; --bg:#fbf8f1; --surface:#f3eee2; --card:#fffdf8;
   --purple-dark:#6c4270; --on-accent:#fff; --on-gold:var(--text); --on-green:var(--on-accent); --locked-shadow:#d3cab6;
   --green-tint:#e8f1dc; --green-tint-border:#bcd6a0;
@@ -62,7 +65,7 @@
 }
 html[data-theme="dark"]{
   --bg:#161a13; --surface:#21271d; --card:#1b2018; --text:#ece7da;
-  --text-muted:#a7a18f; --text-faint:#938e7c;
+  --text-muted:#a7a18f; --text-faint:#938e7c; --icon-quiet:#7b7868; /* 3.7:1 on --card, 3.2:1 on --sky */
   --border:#2f3629; --sky:#1e2c30; --locked-shadow:#151912;
   --green:#5e9a48; --green-dark:#406f31; --green-bright:#a9d27c;
   --blue-ink:#8cc4e0; /* --gold-dark stays inherited (#b98318): it is also the gold 3D edge, which must stay darker than --gold */
@@ -78,14 +81,14 @@ html[data-theme="dark"]{
 /* High contrast (#34): light keeps white on darker accents; dark puts black on brighter ones. Text ≥ 7:1 where it can, ≥ 4.5:1 always.
    The --*-tint, --green-bright and --sky defaults already hold up against the HC accents. */
 html[data-contrast="high"]:not([data-theme="dark"]){
-  --text:#14110d; --text-muted:#3b352d; --text-faint:#4f483e;
+  --text:#14110d; --text-muted:#3b352d; --text-faint:#4f483e; --icon-quiet:var(--text-faint); /* high contrast keeps the icon strong */
   --bg:#fff; --surface:#f1ede4; --card:#fff; --border:#756c5f; --locked-shadow:#8f8676;
   --green:#2b5a1f; --green-dark:#1b3b13; --blue:#1d4a61; --blue-dark:#12323f; --blue-ink:#1d4a61;
   --red:#922c1a; --red-dark:#5f1a0e; --orange:#8f4416; --purple:#5a2f5d; --purple-dark:#3e1f41;
   --gold:#8a5d00; --gold-dark:#5e3f00; --on-gold:var(--on-accent); --fruit:#a5321f;
 }
 html[data-theme="dark"][data-contrast="high"]{
-  --text:#fff; --text-muted:#e0dbd0; --text-faint:#c2bcae;
+  --text:#fff; --text-muted:#e0dbd0; --text-faint:#c2bcae; --icon-quiet:var(--text-faint); /* high contrast keeps the icon strong */
   --bg:#000; --surface:#151515; --card:#0b0b0b; --border:#9a9384; --locked-shadow:#000;
   --green:#8fd16f; --green-dark:#5c9a43; --blue:#7cc4e6; --blue-dark:#4b93b5; --blue-ink:#7cc4e6;
   --red:#ff8a73; --red-dark:#c95a45; --orange:#ffab7a; --purple:#d9a6dc; --purple-dark:#a873ab;
@@ -711,6 +714,9 @@ html[data-theme="dark"]:not([data-contrast="high"]) .call-fix{color:var(--gold)}
 .voice-option > button[role=radio]:disabled{cursor:default;opacity:.6}
 .tts-signal{width:22px;height:22px;flex:none}
 .voice-info{position:relative;margin-right:var(--s-3);flex:none}
+/* The InfoTip icon is a quiet note, not a call to action: softer at rest but still 3:1+; hover/focus restores --text-muted. */
+.voice-info .icon-btn{color:var(--icon-quiet)}
+.voice-info .icon-btn:hover,.voice-info .icon-btn:focus-visible{color:var(--text-muted)}
 .voice-tip{display:none;position:absolute;right:0;bottom:calc(100% + 6px);width:260px;max-width:70vw;padding:var(--s-3) var(--s-4);border-radius:var(--r);background:var(--text);color:var(--bg);font-size:var(--fs-13);line-height:1.4;z-index:2;box-shadow:var(--elev)}
 .voice-info:hover .voice-tip,.voice-info:focus-within .voice-tip,.voice-tip.open{display:block}
 .sheet .sheet-actions .btn{margin:0}

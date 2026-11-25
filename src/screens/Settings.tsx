@@ -551,18 +551,14 @@ export function Settings() {
           </Group>
         </>}
 
-        {tab === "privacy" && <>
-          <h2 className="section-title">{t("settings.privacy")}</h2>
+        {tab === "privacy" && (
           <Group>
             <ToggleRow k="memory" initial={s.memoryOn} onChange={(memoryOn) => setS((s) => ({ ...s, memoryOn }))} />
             <ToggleRow k="speech" initial={s.speechOn} onChange={(speechOn) => setS((s) => ({ ...s, speechOn }))} />
-          </Group>
-          <h2 className="section-title">{t("data.section")}</h2>
-          <Group>
             <DataRow />
             {isTauri && <PhoneRow />}
           </Group>
-        </>}
+        )}
       </div>
 
       <p className="muted small" style={{ textAlign: "center", marginTop: "var(--s-3)" }}>
