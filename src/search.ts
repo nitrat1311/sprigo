@@ -12,6 +12,8 @@ export type SearchHit = {
   kind: SearchKind;
   /** The title, word or pattern the result is about; a guidebook hit names the entry it explains. */
   text: string;
+  /** A unit or lesson title in the learner's language, the way the path shows it under the English title. */
+  translation?: string;
   /** The guidebook line that matched, when there is one. */
   note?: string;
 };
@@ -50,11 +52,19 @@ function snippet(s: string) {
   return text.length > NOTE_MAX ? `${text.slice(0, NOTE_MAX - 1).trimEnd()}…` : text;
 }
 
-/** Hits in course order; one per kind and text per unit. Queries shorter than two letters find nothing. */
-export function searchCourse(course: Course, query: string, guidebooks: Guidebook[] = []): SearchHit[] {
+/** Hits in course order; one per kind and text per unit. Queries shorter than two letters find nothing.
+ *  `translations` maps an English unit/lesson title to its translation (see titleTranslations.ts), so a query in
+ *  the learner's language finds the unit too; it stays plain data here, the caller owns i18n and the AI cache. */
+export function searchCourse(
+  course: Course,
+  query: string,
+  guidebooks: Guidebook[] = [],
+  translations: Record<string, string> = {},
+): SearchHit[] {
   const needle = fold(query.trim());
   if (needle.length < 2) return [];
   const hit = (s: string) => fold(s).includes(needle);
+  const hitTitle = (title: string) => hit(title) || hit(str(translations[title]));
   const hits: SearchHit[] = [];
   const levels = levelsOf(course);
   const books = guidebooks.map((g) => ({ level: g.level, unit: g.unit, guide: safeGuide(g.guide) }));
@@ -70,10 +80,16 @@ export function searchCourse(course: Course, query: string, guidebooks: Guideboo
         const key = `${kind}:${fold(text)}`;
         if (seen.has(key)) return;
         seen.add(key);
-        hits.push({ level, unitId: unit.id, unitTitle: unit.title, kind, text, ...(note?.trim() ? { note: snippet(note) } : {}) });
+        // A translation identical to the title adds nothing: the path shows it once.
+        const translation = kind === "unit" || kind === "step" ? str(translations[text]).trim() : "";
+        hits.push({
+          level, unitId: unit.id, unitTitle: unit.title, kind, text,
+          ...(translation && fold(translation) !== fold(text) ? { translation } : {}),
+          ...(note?.trim() ? { note: snippet(note) } : {}),
+        });
       };
-      if (hit(unit.title)) add("unit", unit.title);
-      for (const step of unit.steps) if (hit(step.title)) add("step", step.title);
+      if (hitTitle(unit.title)) add("unit", unit.title);
+      for (const step of unit.steps) if (hitTitle(step.title)) add("step", step.title);
       for (const word of new Set(unit.steps.flatMap((s) => s.vocabulary)))
         if (hit(word)) add("vocabulary", word, words.get(fold(word))?.translation);
       for (const pattern of new Set(unit.steps.flatMap((s) => s.grammar.map((g) => g.pattern))))

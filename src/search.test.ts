@@ -47,6 +47,34 @@ test("search finds unit and lesson titles and links them to their unit", () => {
   ]);
 });
 
+test("a query in the learner's language finds a translated unit or lesson title", () => {
+  const translations = {
+    "Greetings & Introductions": "Saludos e introducciones",
+    "Basic Greetings": "Saludos básicos",
+  };
+  // The row keeps the English title, as the path's header does, and carries the translation under it.
+  assert.deepEqual(searchCourse(course, "saludos", [], translations).map((h) => [h.kind, h.text, h.translation]), [
+    ["unit", "Greetings & Introductions", "Saludos e introducciones"],
+    ["step", "Basic Greetings", "Saludos básicos"],
+  ]);
+  // The English title still matches, and only the translated titles get a subtitle to show.
+  assert.deepEqual(searchCourse(course, "introduc", [], translations).map((h) => [h.kind, h.text, h.translation]), [
+    ["unit", "Greetings & Introductions", "Saludos e introducciones"],
+    ["step", "Introduce Yourself", undefined],
+  ]);
+  // A translation that repeats the title (a name, "A1 Checkpoint") is not shown twice.
+  assert.deepEqual(searchCourse(course, "travel", [], { Travel: " Travel " }).map((h) => [h.text, h.translation]), [
+    ["Travel", undefined],
+  ]);
+});
+
+test("a malformed translation cache does not throw", () => {
+  const bad = { "Greetings & Introductions": 42, "Basic Greetings": null } as unknown as Record<string, string>;
+  assert.deepEqual(searchCourse(course, "introductions", [], bad).map((h) => [h.kind, h.text, h.translation]), [
+    ["unit", "Greetings & Introductions", undefined],
+  ]);
+});
+
 test("vocabulary and grammar match without case or accents", () => {
   const hits = searchCourse(course, "ADIOS");
   assert.deepEqual(hits.map((h) => [h.kind, h.text, h.note]), [["vocabulary", "adiós", undefined]]);

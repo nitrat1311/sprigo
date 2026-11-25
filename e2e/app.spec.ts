@@ -128,6 +128,8 @@ test("search finds a lesson or word and opens its unit", async ({ page }) => {
   await expect(search).toBeInViewport();
   await search.fill("How Old");
   const results = page.locator(".search-results");
+  // The level reads as the path's header does, not as a bare CEFR code.
+  await expect(results.getByRole("button", { name: /How Old Are You\?/ })).toContainText("A1 · Beginner");
   await expect(results.getByRole("button", { name: /How Old Are You\?/ })).toBeVisible();
   await results.getByRole("button", { name: /How Old Are You\?/ }).click();
   await expect(results).toBeHidden();
