@@ -2,7 +2,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { parseCourse, buildPath, levelRange, parseStoryId, storyId } from "./course.ts";
+import { parseCourse, buildPath, guideId, levelRange, parseGuideId, parseStoryId, storyId } from "./course.ts";
 
 const en = readFileSync(new URL("../courses/en.yml", import.meta.url), "utf8");
 
@@ -82,4 +82,11 @@ test("story ids carry the level, since unit ids repeat across levels (#27)", () 
   assert.deepEqual(parseStoryId(storyId("B2", "society-and-environment")), { level: "B2", unit: "society-and-environment" });
   assert.equal(parseStoryId("story:greetings"), null); // pre-1.9 id: only a progress key now, never opened
   assert.equal(parseStoryId("story:Z9:greetings"), null);
+});
+
+test("guidebook cache keys carry the level, since unit ids repeat across levels (#183)", () => {
+  assert.deepEqual(parseGuideId(guideId("B2", "society-and-environment")), { level: "B2", unit: "society-and-environment" });
+  assert.deepEqual(parseGuideId(guideId("C1", "society-and-environment")), { level: "C1", unit: "society-and-environment" });
+  assert.equal(parseGuideId("guide:greetings"), null); // pre-1.14 key: no level, so it is ignored and regenerated
+  assert.equal(parseGuideId("guide:Z9:greetings"), null);
 });

@@ -66,7 +66,7 @@ function GrammarSheet({ entry }: { entry: GrammarEntry }) {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
   const pick = (guides: Guide[]) => guides.flatMap((x) => x.grammar).find((x) => x.pattern === entry.pattern && x.explanation) ?? null;
-  useEffect(() => { cachedGuides<Guide>(enrollment!.id).then((gs) => setG(pick(gs))).catch(console.warn); }, [entry.pattern, enrollment?.id]);
+  useEffect(() => { cachedGuides<Guide>(enrollment!.id, first.level).then((gs) => setG(pick(gs))).catch(console.warn); }, [entry.pattern, first.level, enrollment?.id]);
   const generate = () => {
     const unit = course!.levels[first.level]!.units.find((u) => u.id === first.id)!;
     setBusy(true); setErr("");

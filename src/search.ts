@@ -16,8 +16,8 @@ export type SearchHit = {
   note?: string;
 };
 
-/** A cached guidebook and the unit it was written for (`guide:<unit>` keys). */
-export type Guidebook = { unit: string; guide: Guide };
+/** A cached guidebook and the level and unit it was written for (`guide:<level>:<unit>` keys). */
+export type Guidebook = { level: Cefr; unit: string; guide: Guide };
 
 /** Case and accents fold, so "adios" finds "adiós". */
 const fold = (s: string) => s.toLowerCase().normalize("NFD").replace(/\p{Diacritic}/gu, "");
@@ -57,13 +57,11 @@ export function searchCourse(course: Course, query: string, guidebooks: Guideboo
   const hit = (s: string) => fold(s).includes(needle);
   const hits: SearchHit[] = [];
   const levels = levelsOf(course);
-  // `guide:<unit>` carries no level, so an id used at two levels would show one level's guidebook at the other.
-  const idCount = new Map<string, number>();
-  for (const level of levels) for (const unit of course.levels[level]!.units) idCount.set(unit.id, (idCount.get(unit.id) ?? 0) + 1);
-  const books = guidebooks.map((g) => ({ unit: g.unit, guide: safeGuide(g.guide) }));
+  const books = guidebooks.map((g) => ({ level: g.level, unit: g.unit, guide: safeGuide(g.guide) }));
   for (const level of levels) {
     for (const unit of course.levels[level]!.units) {
-      const guides = (idCount.get(unit.id) ?? 0) > 1 ? [] : books.filter((g) => g.unit === unit.id).map((g) => g.guide);
+      // Guidebooks carry their level, so a unit id used at two levels keeps each level's own text (#183).
+      const guides = books.filter((g) => g.level === level && g.unit === unit.id).map((g) => g.guide);
       // A guidebook repeats the YAML lists and adds a translation or explanation to each entry.
       const words = new Map(guides.flatMap((g) => g.vocabulary).map((v) => [fold(v.word), v]));
       const patterns = new Map(guides.flatMap((g) => g.grammar).map((g) => [fold(g.pattern), g]));
