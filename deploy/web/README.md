@@ -4,7 +4,7 @@ This experimental, community-supported Docker Compose deployment serves Sprigo i
 
 ## Start
 
-Requires Docker Compose, OpenSSL and an Ollama server reachable from Docker. Pull the configured model in Ollama first (`ollama pull qwen3:8b` by default). Set `SPRIGO_MODEL` in `.env` if you prefer a different installed model. Ollama must be reachable from inside the container; on Linux, the default host gateway URL may require you to configure Ollama to listen beyond `127.0.0.1`, or set `SPRIGO_OLLAMA_URL` to another reachable endpoint. Whisper downloads its model on the first transcription.
+Requires Docker Compose, OpenSSL and an Ollama server reachable from Docker. Pull the configured model in Ollama first (`ollama pull qwen3.5:4b` by default, a 3.3 GB download). That model needs Ollama 0.30.0 or newer; check with `ollama --version` and upgrade before pulling if it is older. Set `SPRIGO_MODEL` in `.env` if you prefer a different installed model. Ollama must be reachable from inside the container; on Linux, the default host gateway URL may require you to configure Ollama to listen beyond `127.0.0.1`, or set `SPRIGO_OLLAMA_URL` to another reachable endpoint. Whisper downloads its model on the first transcription.
 
 ```sh
 cd deploy/web
