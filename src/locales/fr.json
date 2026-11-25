@@ -87,7 +87,9 @@
     "legendTicket_other": "{{count}} tickets",
     "legendTicket_many": "{{count}} tickets",
     "skipUnit": "Valider l'unité par un test ({{score}} %)",
-    "toTop": "Tout en haut",
+    "summit": "Sommet : {{level}}",
+    "summitEnd": "Sommet",
+    "lockedDesc": "Termine les leçons précédentes pour débloquer celle-ci.",
     "toHere": "Revenir à ma leçon"
   },
   "practice": {

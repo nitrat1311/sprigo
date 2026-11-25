@@ -84,7 +84,9 @@
     "legendTicket_one": "{{count}} bilet",
     "legendTicket_other": "{{count}} bilet",
     "skipUnit": "Üniteyi testle geç (%{{score}})",
-    "toTop": "En yukarı",
+    "summit": "Zirve: {{level}}",
+    "summitEnd": "Zirve",
+    "lockedDesc": "Bu dersi açmak için önceki dersleri tamamla.",
     "toHere": "Kaldığım yere"
   },
   "practice": {

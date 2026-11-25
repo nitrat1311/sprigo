@@ -117,7 +117,10 @@ function UnitSection({ u, level }: { u: PathUnit; level: Cefr }) {
             : () => start(n.id); // checkpoint: retake allowed once done
           return (
             <div className={`node ${cls}`} style={{ transform: `translateX(${off}px)` }} key={n.id}>
-              <button className="node-btn" onClick={onClick} aria-label={name} aria-disabled={!onClick || undefined}>
+              <button
+                className="node-btn" onClick={onClick} aria-label={name} aria-disabled={!onClick || undefined}
+                title={n.state === "locked" ? t("learn.lockedDesc") : undefined}
+              >
                 <NodeShape />
                 <Icon name={gold ? "star" : ICON[n.kind][n.state]} />
               </button>
@@ -193,7 +196,7 @@ function LevelSheet() {
           if (i > cur) return toast(t("learn.finishFirst", { level: enrollment!.level }));
           setViewLevel(l); closeSheet();
         }}>
-          <span className="biome-thumb" dangerouslySetInnerHTML={{ __html: biomeScene(l, 80) }} />
+          <span className="biome-thumb" aria-hidden="true" dangerouslySetInnerHTML={{ __html: biomeScene(l, 80) }} />
           <span className="od-field od-fill"><b>{l} · {course!.levels[l]!.title}</b>
             <span className="muted small">{t(`biome.${BIOMES[l].id}`)} · {t(i < cur ? "learn.levelDone" : i === cur ? "learn.levelCurrent" : "learn.levelLocked")}</span></span>
           <Icon name={i < cur ? "check" : i === cur ? "star" : "lock"} />
@@ -220,7 +223,7 @@ function LevelCard({ level, remaining, total }: { level: Cefr; remaining: number
     : next ? t("learn.lessonsLeft", { count: remaining, level: next }) : t("learn.lessonsLeftFinish", { count: remaining, level });
   return (
     <div className="card level-card">
-      <div className="biome-band" dangerouslySetInnerHTML={{ __html: biomeScene(level, 70) }} />
+      <div className="biome-band" aria-hidden="true" dangerouslySetInnerHTML={{ __html: biomeScene(level, 70) }} />
       <h3 style={{ fontWeight: 900, fontSize: "var(--fs-20)" }}>{title}</h3>
       <div className="progress-track" style={{ margin: "var(--s-4) 0 var(--s-4)" }}><div className="progress-fill green" style={{ width: `${((total - remaining) / total) * 100}%` }} /></div>
       {hasExam && remaining > 0 && <button className="btn btn-ghost btn-block" onClick={() => start(`${level}:test`)}>{t("learn.skipLevel", { level })}</button>}
@@ -228,25 +231,46 @@ function LevelCard({ level, remaining, total }: { level: Cefr; remaining: number
   );
 }
 
-/** Floating "to the top" and "back to my lesson" buttons, each shown only when it would move the page. */
+/** "Back to my lesson", shown only while the current node is off screen. */
 function ScrollButtons() {
   const { t } = useTranslation();
-  const [st, setSt] = useState({ top: false, here: false });
+  const [here, setHere] = useState(false);
   useEffect(() => {
     const check = () => {
       const r = document.querySelector(".node.current")?.getBoundingClientRect();
-      setSt({ top: scrollY > innerHeight / 2, here: !!r && (r.bottom < 0 || r.top > innerHeight) });
+      setHere(!!r && (r.bottom < 0 || r.top > innerHeight));
     };
     check();
     addEventListener("scroll", check, { passive: true }); addEventListener("resize", check);
     return () => { removeEventListener("scroll", check); removeEventListener("resize", check); };
   }, []);
-  const toTop = () => scrollTo({ top: 0, behavior: "smooth" });
   const toHere = () => document.querySelector(".node.current")?.scrollIntoView({ block: "center", behavior: "smooth" });
   return <div className="scroll-btns">
-    {st.top && <button className="scroll-btn" onClick={toTop} aria-label={t("learn.toTop")} data-tip={t("learn.toTop")}><Icon name="down" /></button>}
-    {st.here && <button className="scroll-btn here" onClick={toHere} aria-label={t("learn.toHere")} data-tip={t("learn.toHere")}><Icon name="star" /></button>}
+    {here && <button className="scroll-btn here" onClick={toHere} aria-label={t("learn.toHere")} data-tip={t("learn.toHere")}><Icon name="star" /></button>}
   </div>;
+}
+
+/** Only the head of the unit that holds the bottom edge of the viewport may pin. Left to CSS alone,
+ *  every unit reaching below the fold drags its head up to the same spot and covers the right one. */
+function usePinnedHeads() {
+  useEffect(() => {
+    let raf = 0;
+    const check = () => {
+      raf = 0;
+      const fold = innerHeight;
+      for (const u of document.querySelectorAll<HTMLElement>(".path-stack > .unit")) {
+        const r = u.getBoundingClientRect();
+        u.toggleAttribute("data-pinned", r.top < fold && r.bottom >= fold);
+      }
+    };
+    const queue = () => { if (!raf) raf = requestAnimationFrame(check); };
+    check();
+    addEventListener("scroll", queue, { passive: true }); addEventListener("resize", queue);
+    return () => {
+      removeEventListener("scroll", queue); removeEventListener("resize", queue);
+      cancelAnimationFrame(raf);
+    };
+  }, []);
 }
 
 let setupOffered = false;
@@ -258,6 +282,7 @@ export function Learn() {
   const { t } = useTranslation();
   const { course, enrollment, done, viewLevel, openSheet, courseErrors, ai } = useApp();
   const shownLevel = viewLevel ?? enrollment?.level;
+  usePinnedHeads();
   // The path grows upward, so open on the lesson to do next instead of the page top.
   useLayoutEffect(() => {
     const saved = Date.now() < jumpTo.until ? document.querySelector(`[data-unit="${jumpTo.unit}"]`) : null;
@@ -282,6 +307,8 @@ export function Learn() {
   const level = viewLevel ?? enrollment.level;
   const { units, remaining } = buildPath(course.levels[level]!, level, done);
   const total = course.levels[level]!.units.reduce((a, u) => a + u.steps.length, 0);
+  const levels = levelsOf(course);
+  const nextLevel = levels[levels.indexOf(level) + 1]; // the goal at the top of this path
   return (
     <>
       <LiveButton className="mobile-only" />
@@ -291,8 +318,13 @@ export function Learn() {
       </button>
       {level === enrollment.level && <LevelCard level={level} remaining={remaining} total={total} />}
       <div className="path-stack" style={biomeVars(level)}>
-        <div className="biome-ground" dangerouslySetInnerHTML={{ __html: biomeScene(level, 140) }} />
+        <div className="biome-ground" aria-hidden="true" dangerouslySetInnerHTML={{ __html: biomeScene(level, 72) }} />
         {units.map((u) => <UnitSection u={u} level={level} key={u.id} />)}
+        {/* The stack is column-reverse: last in DOM is the top of the path, past the highest unit. */}
+        <p className="summit">
+          <Icon name="summit" />
+          <span>{nextLevel ? t("learn.summit", { level: nextLevel }) : t("learn.summitEnd")}</span>
+        </p>
       </div>
       <ScrollButtons />
     </>
