@@ -1,5 +1,6 @@
 // Profile stats (DECISIONS E2, E6): XP, streak, daily goal/quests, optional hearts. Pure module, tested by src/progress.test.ts.
 import { rollLeague, type LeagueState, type Who } from "./league.ts"; // .ts: node --test runs this file directly
+import type { Goals } from "./goals.ts"; // type-only: goals.ts reads this module, so a value import here would be a cycle
 
 export type Quest = { id: "q1" | "q2" | "q3"; icon: "bolt" | "book" | "dumbbell" | "list-check"; cur: number; goal: number };
 export type Stats = {
@@ -18,10 +19,17 @@ export type Stats = {
   speechOn: boolean; // voice analysis: speech signals measured, used in the call and on the profile (SPR-25–27)
   xpDays: Record<string, number>; // XP earned per local day, the last XP_DAYS days (#31 progress charts)
   accuracy: Partial<Record<Graded, [right: number, total: number]>>; // graded answers per exercise type, all time (#31)
+  goals: Goals; // #43: weekly and monthly targets, per profile; their reports are derived, never stored
+  reportedWeek: string; // #43: Monday of the last week whose summary was shown ("" = none yet)
 };
 export type Graded = "choice" | "bank" | "input" | "match" | "speak";
 
 export const DAILY_XP_GOAL = 50;
+/** #43: a week of daily XP, then a month of weeks; both measured in XP until the learner picks another metric. */
+export const DEFAULT_GOALS: Goals = {
+  week: { metric: "xp", target: DAILY_XP_GOAL * 7 },
+  month: { metric: "xp", target: DAILY_XP_GOAL * 30 },
+};
 const QUESTS: Quest[] = [
   { id: "q1", icon: "bolt", cur: 0, goal: DAILY_XP_GOAL },
   { id: "q2", icon: "list-check", cur: 0, goal: 3 },
@@ -32,6 +40,7 @@ export const NEW_STATS: Stats = {
   gems: 0, todayXp: 0, bestDayXp: 0, chests: 0, day: "", lastActive: null, quests: QUESTS,
   doubleXpUntil: 0, legendTickets: 0, madnessBest: 0, league: null, weekXp: 0,
   reminderOn: false, reminded: "", speakOn: true, bargeIn: true, memoryOn: true, speechOn: true, xpDays: {}, accuracy: {},
+  goals: { week: { ...DEFAULT_GOALS.week }, month: { ...DEFAULT_GOALS.month } }, reportedWeek: "",
 };
 
 /** Shop "Double XP": 15 minutes of ×2 on everything earned. */

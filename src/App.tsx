@@ -5,11 +5,13 @@ import { useApp, type BootError, type Route } from "./store";
 import { Rail } from "./Rail";
 import { Lesson, sfxState } from "./Lesson";
 import { today } from "./progress";
+import { goalsOf, metricTotals, reportDue } from "./goals";
+import { ReportSheet } from "./GoalsCard";
 import { nudgeDue, nudgeMessage } from "./nudge";
 import { keepInBackground, notify } from "./notify";
 import { takeOver, resetDataDir } from "./datadir";
 import { findUpdate, UpdateSheet, whatsNew, WhatsNewSheet } from "./Update";
-import { isTauri } from "./db";
+import { isTauri, profileWordDays, speechMsDays } from "./db";
 import type { Update } from "@tauri-apps/plugin-updater";
 import { Chat, Story } from "./Talk";
 import { Flashcards } from "./Flashcards";
@@ -219,6 +221,10 @@ export default function App() {
   // Modal focus (#34): what's behind a sheet or lesson is inert; focus moves into it, and back to where it was once it closes.
   const sheetBox = useRef<HTMLDivElement>(null);
   const back = useRef<{ sheet?: HTMLElement; lesson?: HTMLElement }>({});
+  // #43: the launch sheets and the weekly report each open on their own; the report must yield to them.
+  const launchSheet = useRef(false);
+  const activeProfile = useRef(profile?.id); // async work checks this before writing to the profile
+  useEffect(() => { activeProfile.current = profile?.id; }, [profile?.id]);
   useEffect(() => {
     // focusin for the keyboard; pointerdown too, because WebKit (the macOS app) doesn't focus a clicked button
     const f = (e: Event) => {
@@ -263,10 +269,12 @@ export default function App() {
 
   // Once per launch, after sign-in so the sheet has somewhere to show: what's new after an update, else a quiet update check.
   useEffect(() => {
-    if (profile) whatsNew().then(async (n) => {
-      if (n) return openSheet(<WhatsNewSheet {...n} />);
-      const u = await findUpdate();
-      if (u) openSheet(<UpdateSheet update={u} />);
+    if (!profile) return;
+    launchSheet.current = true; // until this check settles, the launch sheet is "open or opening"
+    whatsNew().then(async (n) => {
+      const sheet = n ? <WhatsNewSheet {...n} /> : await findUpdate().then((u) => (u ? <UpdateSheet update={u} /> : null));
+      if (sheet) return openSheet(sheet);
+      launchSheet.current = false; // nothing to show: the weekly report may use the sheet
     });
   }, [!!profile]);
 
@@ -289,6 +297,29 @@ export default function App() {
     const h = setInterval(tick, 60_000);
     return () => clearInterval(h);
   }, [profile?.id, s.reminderOn, s.lastActive, s.reminded, s.streak, course?.iso, i18n.language]);
+
+  // #43: the finished week's summary, once, on the first launch after a new week. A quiet week is marked seen without a sheet.
+  const reported = useRef("");
+  useEffect(() => {
+    if (!ready || !profile) return; // the sheet box and its heading observer only exist once the app has rendered
+    const week = reportDue(profile.stats.reportedWeek, today());
+    if (!week) return;
+    const key = `${profile.id}:${week}`;
+    if (reported.current === key) return; // React StrictMode runs effects twice in development
+    reported.current = key;
+    const p = profile, id = p.id; // the queries may outlive the profile they belong to
+    (async () => {
+      const [words, speakMs] = await Promise.all([profileWordDays(id), speechMsDays(id)]);
+      if (activeProfile.current !== id) { reported.current = ""; return; } // signed out or switched: nothing to mark
+      const data = { xp: { [p.stats.day]: p.stats.todayXp, ...p.stats.xpDays }, words, speakMs };
+      const cur = (m: "xp" | "words" | "speak") => metricTotals(m, "week", week, data).cur;
+      setS((x) => ({ ...x, reportedWeek: week }));
+      if (!cur("xp") && !cur("words") && !cur("speak")) return;
+      notify(t("goals.notifyTitle"), t("goals.notifyBody", { n: cur("xp") }));
+      if (launchSheet.current) return; // never push the What's New / update sheet aside at launch
+      openSheet(<ReportSheet period="week" start={week} goals={goalsOf(p.stats)} data={data} />);
+    })().catch((e) => console.error("weekly report", e));
+  }, [ready, profile?.id]);
 
   if (bootError) return <BootErrorScreen e={bootError} />;
   if (!ready) return null;

@@ -272,6 +272,39 @@
     },
     "table": "Megjelenítés táblázatként"
   },
+  "goals": {
+    "title": "Célok",
+    "week": "Heti cél",
+    "month": "Havi cél",
+    "weekShort": "hét",
+    "monthShort": "hónap",
+    "measure": "Mérőszám",
+    "target": "Cél értéke",
+    "targetAria": "Cél értéke: {{period}}",
+    "progress": "{{n}} / {{goal}} {{unit}}",
+    "lastWeek": "Múlt héten: {{n}} {{unit}}",
+    "lastMonth": "Múlt hónapban: {{n}} {{unit}}",
+    "report": "Jelentés",
+    "weekReport": "Heti jelentés",
+    "monthReport": "Havi jelentés",
+    "range": "{{from}} – {{to}}",
+    "metrics": {
+      "xp": "XP",
+      "words": "Új szavak",
+      "speak": "Beszédpercek"
+    },
+    "units": {
+      "xp": "XP",
+      "words_one": "szó",
+      "words_other": "szó",
+      "speak": "perc"
+    },
+    "goalDone": "Cél teljesítve",
+    "goalLeft": "Még {{n}} {{unit}}",
+    "goalShort": "{{n}} {{unit}} hiányzott",
+    "notifyTitle": "A heti összefoglalód",
+    "notifyBody": "Múlt héten {{n}} XP-t szereztél. A teljes jelentés a profilodban vár."
+  },
   "profile": {
     "since": "{{date}} óta tanul",
     "garden": "A kertem",

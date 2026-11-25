@@ -285,6 +285,40 @@
     },
     "table": "Afficher en tableau"
   },
+  "goals": {
+    "title": "Objectifs",
+    "week": "Objectif hebdomadaire",
+    "month": "Objectif mensuel",
+    "weekShort": "semaine",
+    "monthShort": "mois",
+    "measure": "Mesure",
+    "target": "Cible",
+    "targetAria": "Cible par {{period}}",
+    "progress": "{{n}} sur {{goal}} {{unit}}",
+    "lastWeek": "La semaine dernière : {{n}} {{unit}}",
+    "lastMonth": "Le mois dernier : {{n}} {{unit}}",
+    "report": "Bilan",
+    "weekReport": "Bilan hebdomadaire",
+    "monthReport": "Bilan mensuel",
+    "range": "{{from}} – {{to}}",
+    "metrics": {
+      "xp": "XP",
+      "words": "Nouveaux mots",
+      "speak": "Minutes de parole"
+    },
+    "units": {
+      "xp": "XP",
+      "words_one": "mot",
+      "words_many": "mots",
+      "words_other": "mots",
+      "speak": "min"
+    },
+    "goalDone": "Objectif atteint",
+    "goalLeft": "Encore {{n}} {{unit}}",
+    "goalShort": "Il manquait {{n}} {{unit}}",
+    "notifyTitle": "Ta semaine dans Sprigo",
+    "notifyBody": "{{n}} XP la semaine dernière. Le bilan complet t'attend dans ton profil."
+  },
   "profile": {
     "since": "Apprend depuis le {{date}}",
     "garden": "Mon jardin",

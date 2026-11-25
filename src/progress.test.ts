@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { NEW_STATS, lastDays, lastWeeks, recordSession, rollDay, runningTotal, tally } from "./progress.ts";
+import { DEFAULT_GOALS, NEW_STATS, lastDays, lastWeeks, recordSession, rollDay, runningTotal, tally } from "./progress.ts";
 import type { LeagueState } from "./league.ts";
 
 const lesson = { xp: 30, gems: 4, kind: "lesson" as const };
@@ -73,4 +73,10 @@ test("weeks start on Monday, oldest first", () => {
   assert.deepEqual(lastWeeks("2026-10-20", 3), ["2026-10-05", "2026-10-12", "2026-10-19"]); // a Tuesday
   assert.deepEqual(lastWeeks("2026-10-19", 1), ["2026-10-19"]); // a Monday
   assert.deepEqual(lastWeeks("2026-10-25", 1), ["2026-10-19"]); // a Sunday
+});
+
+test("new stats own their goals, so saving one never edits the defaults", () => {
+  assert.deepEqual(NEW_STATS.goals, DEFAULT_GOALS);
+  assert.notEqual(NEW_STATS.goals.week, DEFAULT_GOALS.week);
+  assert.notEqual(NEW_STATS.goals.month, DEFAULT_GOALS.month);
 });

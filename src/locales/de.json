@@ -272,6 +272,39 @@
     },
     "table": "Als Tabelle zeigen"
   },
+  "goals": {
+    "title": "Ziele",
+    "week": "Wochenziel",
+    "month": "Monatsziel",
+    "weekShort": "Woche",
+    "monthShort": "Monat",
+    "measure": "Messgröße",
+    "target": "Ziel",
+    "targetAria": "Ziel pro {{period}}",
+    "progress": "{{n}} von {{goal}} {{unit}}",
+    "lastWeek": "Letzte Woche: {{n}} {{unit}}",
+    "lastMonth": "Letzter Monat: {{n}} {{unit}}",
+    "report": "Bericht",
+    "weekReport": "Wochenbericht",
+    "monthReport": "Monatsbericht",
+    "range": "{{from}} – {{to}}",
+    "metrics": {
+      "xp": "XP",
+      "words": "Neue Wörter",
+      "speak": "Sprechminuten"
+    },
+    "units": {
+      "xp": "XP",
+      "words_one": "Wort",
+      "words_other": "Wörter",
+      "speak": "Min."
+    },
+    "goalDone": "Ziel erreicht",
+    "goalLeft": "Noch {{n}} {{unit}}",
+    "goalShort": "{{n}} {{unit}} zu wenig",
+    "notifyTitle": "Deine Woche in Sprigo",
+    "notifyBody": "Letzte Woche {{n}} XP. Den ganzen Bericht findest du im Profil."
+  },
   "profile": {
     "since": "Lernt seit {{date}}",
     "garden": "Mein Garten",
