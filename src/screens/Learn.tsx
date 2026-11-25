@@ -148,7 +148,7 @@ export function GuideSheet({ unitId, level }: { unitId: string; level: Cefr }) {
   useEffect(() => { prewarm(lang).catch(() => {}); }, [lang]);
   useEffect(() => {
     if (ai) loadGuide(enrollment!.id, { course: course!, level, native: profile!.native_lang }, unit).then(setGuide, (e) => setErr((e as Error).message));
-  }, [unitId]);
+  }, [unitId, level]);
   // Until the AI answers (or without AI), the plain YAML lists are shown.
   const words = guide?.vocabulary ?? unitWords(unit).map((word) => ({ word, translation: "", example: "", example_translation: "" }));
   const grammar = guide?.grammar ?? unitGrammar(unit).map((pattern) => ({ pattern, explanation: "", example: "" }));

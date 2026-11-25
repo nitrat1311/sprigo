@@ -32,11 +32,11 @@ const course = {
 const empty = (word: string): Guide["vocabulary"][number] => ({ word, translation: "", example: "", example_translation: "" });
 const guide = (vocabulary: Guide["vocabulary"], grammar: Guide["grammar"] = []): Guide => ({ vocabulary, grammar });
 const guidebooks: Guidebook[] = [
-  { unit: "greetings", guide: guide(
+  { level: "A1", unit: "greetings", guide: guide(
     [{ word: "hola", translation: "hello", example: "Hola, Ana.", example_translation: "Hello, Ana." }, empty("adiós")],
     [{ pattern: "¡Hola! ¿Qué tal?", explanation: "A casual way to say hello.", example: "¡Hola! ¿Qué tal?" }],
   ) },
-  { unit: "travel", guide: guide([{ word: "el tren", translation: "the train", example: "El tren llega a las ocho.", example_translation: "The train arrives at eight." }]) },
+  { level: "A1", unit: "travel", guide: guide([{ word: "el tren", translation: "the train", example: "El tren llega a las ocho.", example_translation: "The train arrives at eight." }]) },
 ];
 
 test("search finds unit and lesson titles and links them to their unit", () => {
@@ -75,16 +75,24 @@ test("a guidebook match shows its translation or explanation, and does not repea
   ]);
 });
 
-test("a unit id used at two levels gets no guidebook text", () => {
+test("a unit id used at two levels keeps each level's own guidebook text", () => {
   const repeated = {
     levels: {
       A1: { title: "Beginner", units: [unit("society-and-environment", "Society", [step("society", "Society", ["agua"], [])])] },
       B1: { title: "Intermediate", units: [unit("society-and-environment", "Environment", [step("environment", "Environment", ["bosque"], [])])] },
     },
   } as unknown as Course;
-  const books: Guidebook[] = [{ unit: "society-and-environment", guide: guide([{ word: "agua", translation: "water", example: "", example_translation: "" }]) }];
-  // `guide:<unit>` carries no level, so neither level may claim the other's guidebook.
-  assert.deepEqual(searchCourse(repeated, "water", books), []);
+  const books: Guidebook[] = [
+    { level: "A1", unit: "society-and-environment", guide: guide([{ word: "agua", translation: "water", example: "", example_translation: "" }]) },
+    { level: "B1", unit: "society-and-environment", guide: guide([{ word: "bosque", translation: "forest", example: "", example_translation: "" }]) },
+  ];
+  // `guide:<level>:<unit>` keys keep the two levels apart (#183).
+  assert.deepEqual(searchCourse(repeated, "water", books).map((h) => [h.level, h.unitId, h.kind, h.text]), [
+    ["A1", "society-and-environment", "guide", "agua"],
+  ]);
+  assert.deepEqual(searchCourse(repeated, "forest", books).map((h) => [h.level, h.unitId, h.kind, h.text]), [
+    ["B1", "society-and-environment", "guide", "bosque"],
+  ]);
   assert.deepEqual(searchCourse(repeated, "society", books).map((h) => [h.level, h.kind, h.text]), [
     ["A1", "unit", "Society"],
     ["A1", "step", "Society"],
@@ -93,9 +101,9 @@ test("a unit id used at two levels gets no guidebook text", () => {
 
 test("a malformed cached guidebook does not throw", () => {
   const bad = [
-    { unit: "travel", guide: { vocabulary: "nope", grammar: { pattern: 42 } } },
-    { unit: "travel", guide: null },
-    { unit: "travel", guide: { vocabulary: [{ word: 7, translation: null }, null], grammar: [] } },
+    { level: "A1", unit: "travel", guide: { vocabulary: "nope", grammar: { pattern: 42 } } },
+    { level: "A1", unit: "travel", guide: null },
+    { level: "A1", unit: "travel", guide: { vocabulary: [{ word: 7, translation: null }, null], grammar: [] } },
   ] as unknown as Guidebook[];
   assert.deepEqual(searchCourse(course, "train", bad), []);
   assert.deepEqual(searchCourse(course, "tren", bad).map((h) => [h.kind, h.text]), [["vocabulary", "el tren"]]);
@@ -103,7 +111,7 @@ test("a malformed cached guidebook does not throw", () => {
 
 test("a guidebook hit is a single caption line", () => {
   const long = guide([], [{ pattern: "ser + adjetivo", explanation: "line one\nline two  ".repeat(30), example: "" }]);
-  const [hit] = searchCourse(course, "line", [{ unit: "travel", guide: long }]);
+  const [hit] = searchCourse(course, "line", [{ level: "A1", unit: "travel", guide: long }]);
   assert.equal(hit.note?.includes("\n"), false);
   assert.ok((hit.note?.length ?? 0) <= 160, `${hit.note?.length} chars`);
   assert.ok(hit.note?.endsWith("…"));

@@ -2,7 +2,7 @@
 // Schema changes live in src/migrations.ts and run on open.
 // ponytail: in a plain browser (the Vite preview used during development) the same SQL runs on sql.js,
 // persisted to localStorage. The standalone web edition uses IndexedDB instead.
-import type { Cefr } from "./course";
+import { parseGuideId, type Cefr } from "./course";
 import type { ThemePref } from "./theme";
 import { NEW_STATS, type Stats } from "./progress";
 import { runMigrations, type SqlDb } from "./migrate";
@@ -266,17 +266,19 @@ export async function putCached(enrollmentId: number, stepId: string, content: u
   await (await db()).execute("INSERT INTO content_cache(enrollment_id, step_id, content) VALUES ($1, $2, $3) ON CONFLICT DO UPDATE SET content = $3, created_at = CURRENT_TIMESTAMP", [enrollmentId, stepId, JSON.stringify(content)]);
 }
 
-/** Every cached unit guidebook (`guide:<unit>`), for word lookups (#28). */
-export async function cachedGuides<T>(enrollmentId: number) {
-  return (await cachedGuidebooks<T>(enrollmentId)).map((x) => x.guide);
+/** Cached unit guidebooks, only `level`'s when given (word lookups, #28). */
+export async function cachedGuides<T>(enrollmentId: number, level?: Cefr) {
+  return (await cachedGuidebooks<T>(enrollmentId)).filter((x) => !level || x.level === level).map((x) => x.guide);
 }
 
-/** Cached guidebooks with their unit (#44 search), which the plain list doesn't keep. */
+/** Cached guidebooks with their level and unit (#44 search), which the plain list doesn't keep. */
 export async function cachedGuidebooks<T>(enrollmentId: number) {
   const r = await (await db()).select<{ step_id: string; content: string }>("SELECT step_id, content FROM content_cache WHERE enrollment_id = $1 AND step_id LIKE 'guide:%'", [enrollmentId]);
   return r.flatMap((x) => {
+    const at = parseGuideId(x.step_id);
+    if (!at) return []; // pre-1.14 `guide:<unit>` rows carry no level and regenerate on the next open (#183)
     try {
-      return [{ unit: x.step_id.slice("guide:".length), guide: JSON.parse(x.content) as T }];
+      return [{ ...at, guide: JSON.parse(x.content) as T }];
     } catch (e) {
       console.warn("guidebook parse", x.step_id, e); // one corrupt cache row must not hide the rest
       return [];
