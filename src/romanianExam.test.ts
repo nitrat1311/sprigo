@@ -26,6 +26,7 @@ test("Romanian read-aloud scoring preserves negation, number, and word order", (
   assert.equal(speechScore("Trenul ajunge la șapte.", "Trenul ajunge la 7.", "ro"), 1);
   assert.equal(speechScore("Autobuzul 27.", "Autobuzul 2 7.", "ro"), 0);
   assert.equal(speechScore("Autobuzul 27.", "Autobuzul douăzeci și șapte.", "ro"), 1);
+  assert.ok(speechScore("Dacă vă convine, putem stabili o altă dată.", "Dacă vă convine, putem stabili o data.", "ro") >= 0.75);
 });
 
 test("only renderable generated questions and verified translation keys reach Romanian lessons", () => {

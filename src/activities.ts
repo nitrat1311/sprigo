@@ -266,27 +266,36 @@ export function speechMisses(expected: string, heard: string, lang?: string) {
   });
   return want.filter((w) => { const k = got.indexOf(w); if (k >= 0) got.splice(k, 1); return k < 0; });
 }
-/** Speaking check: share of the expected words the transcript contains. */
 const ROMANIAN_NUMBERS: Record<string, string> = {
-  zero: "0", doi: "2", două: "2", trei: "3", patru: "4", cinci: "5", șase: "6", șapte: "7", opt: "8", nouă: "9", zece: "10",
+  zero: "0", unu: "1", una: "1", doi: "2", două: "2", trei: "3", patru: "4", cinci: "5", șase: "6", șapte: "7", opt: "8", nouă: "9", zece: "10",
   unsprezece: "11", doisprezece: "12", douăsprezece: "12", treisprezece: "13", paisprezece: "14", cincisprezece: "15",
   șaisprezece: "16", șaptesprezece: "17", optsprezece: "18", nouăsprezece: "19",
   douăzeci: "20", treizeci: "30", patruzeci: "40", cincizeci: "50", șaizeci: "60", șaptezeci: "70", optzeci: "80", nouăzeci: "90",
 };
 const ROMANIAN_TENS = /(^| )(douăzeci|treizeci|patruzeci|cincizeci|șaizeci|șaptezeci|optzeci|nouăzeci) și (unu|una|doi|două|trei|patru|cinci|șase|șapte|opt|nouă)(?= |$)/gu;
 
-/** For Romanian read-aloud, preserve words and their order. */
-function romanianTranscript(text: string) {
+function romanianTranscript(text: string): string[] {
   return normalize(text, "ro")
-    .replace(ROMANIAN_TENS, (_, space: string, tens: string, ones: string) => space + (Number(ROMANIAN_NUMBERS[tens]) + Number(ROMANIAN_NUMBERS[ones] ?? 1)))
-    .split(" ").map((word) => ROMANIAN_NUMBERS[word] ?? word).join(" ");
+    .replace(ROMANIAN_TENS, (_, space: string, tens: string, ones: string) => space + (Number(ROMANIAN_NUMBERS[tens]) + Number(ROMANIAN_NUMBERS[ones])))
+    .split(" ").filter(Boolean).map((word) => ROMANIAN_NUMBERS[word] ?? word);
 }
 
+function romanianSpeechScore(expected: string, heard: string) {
+  const want = romanianTranscript(expected), got = romanianTranscript(heard);
+  if (!want.length) return 0;
+  const critical = (words: string[]) => words.filter((w) => /^(?:\d+|nu|n|nici|niciodată|niciun|nicio|nimeni|nimic)$/.test(w))
+    .map((w) => w === "n" ? "nu" : w).join(" ");
+  if (critical(want) !== critical(got)) return 0;
+  // Use words appearing once in both transcripts to detect reordering even when Whisper missed another word.
+  const shared = new Set(want.filter((w) => want.indexOf(w) === want.lastIndexOf(w) && got.includes(w) && got.indexOf(w) === got.lastIndexOf(w)));
+  const order = (words: string[]) => words.filter((w) => shared.has(w)).join(" ");
+  if (order(want) !== order(got)) return 0;
+  return 1 - speechMisses(want.join(" "), got.join(" "), "ro").length / want.length;
+}
+
+/** Speaking check: share of the expected words the transcript contains, with Romanian meaning checks. */
 export function speechScore(expected: string, heard: string, lang?: string) {
-  if (lang === "ro") {
-    const want = romanianTranscript(expected);
-    return want && want === romanianTranscript(heard) ? 1 : 0;
-  }
+  if (lang === "ro") return romanianSpeechScore(expected, heard);
   const want = normalize(expected, lang).split(" ").filter(Boolean).length;
   return want ? 1 - speechMisses(expected, heard, lang).length / want : 0;
 }
