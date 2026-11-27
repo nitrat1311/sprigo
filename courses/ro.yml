@@ -664,10 +664,10 @@ levels:
             vocabulary: ["în timp ce", "a suna", "a se opri", "a se întrerupe", "dintr-odată", "curent"]
             grammar:
               - pattern: "În timp ce pregăteam cina, s-a întrerupt curentul."
-              - pattern: "Ploua când am ieșit din casă."
+              - pattern: "Așteptam autobuzul când a început să plouă."
             activities:
               - { type: fill_blank, count: 2 }
-              - { type: error_correct, count: 2 }
+              - { type: sentence_complete, count: 2, focus: "Use clear time cues to distinguish an ongoing background action from a completed interruption. Give four distinct endings with exactly one fitting the timeline." }
               - { type: listen_select, count: 2 }
               - { type: dialogue, count: 2, scenario: "Ask a neighbor what they were doing when the power went out." }
           - id: ro-b1-past-cause
