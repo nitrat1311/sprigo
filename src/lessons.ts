@@ -8,7 +8,7 @@ import { CHAT_MAX_TURNS, CHAT_MIN_TURNS, FREE_GOAL, type Character } from "./cha
 import { CEFR, guideId, levelsOf, storyId, type Course, type CourseLevel, type Cefr } from "./course";
 import { looseTutor, tutorPrompt, tutorSchema, tutorSystem, type TutorEvent, type TutorMsg } from "./tutor";
 import { cleanOps, looseMemory, memoryPrompt, memorySchema, memorySystem, pickMemories, type MemorySource } from "./memory";
-import { practicePrompt, practiceSchema, toPracticeSet, type PracticeSet } from "./practice";
+import { practiceId, practicePrompt, practiceSchema, toPracticeSet, type PracticeSet } from "./practice";
 import { cleanDebrief, debriefPrompt, debriefSchema, debriefSystem, looseDebrief, looseRoleTurn, rehearsalSystem, roleTurnSchema, type RehearsalBrief } from "./rehearsal";
 import { avoidancePrompt, avoidanceSchema, looseAvoidance } from "./drills";
 import { fromGuides, lookupSchema, wordKey, type Lookup } from "./lookup";
@@ -364,7 +364,7 @@ export async function loadGuide(enrollmentId: number, c: Base, unit: Unit): Prom
 const looked = new Map<string, Promise<Lookup>>();
 
 export function lessonWord(enrollmentId: number, c: Base, word: string, sentence: string): Promise<Lookup> {
-  const key = wordKey(word, c.course.iso), mk = `${enrollmentId}:${key}`;
+  const key = wordKey(c.level, word, c.course.iso), mk = `${enrollmentId}:${key}`;
   let p = looked.get(mk);
   if (!p) {
     p = (async () => {
@@ -425,7 +425,7 @@ export async function rememberSession(profileId: number, native: string, source:
 // ---- Practice together: one call per unit, cached ----
 
 export async function loadPractice(enrollmentId: number, c: Base, unit: Unit): Promise<PracticeSet> {
-  const key = `practice:${unit.id}`;
+  const key = practiceId(c.level, unit.id);
   const cached = await getCached<PracticeSet>(enrollmentId, key);
   if (cached) return cached;
   const out = await generate(practiceSchema, systemPrompt(c), practicePrompt(unit.title, unitWords(unit), unitGrammar(unit)), "practice");

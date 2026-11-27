@@ -1,4 +1,9 @@
 // Ordered schema changes. Append only: never edit a shipped step, add a new one with the next `v`.
+// Foreign keys are enforced on every connection: sqlx turns them on by default (desktop, tauri-plugin-sql) and
+// src/sqljs.ts does the same (dev preview, web edition, tests). A step that rebuilds a table (CREATE new / copy /
+// DROP old / RENAME) must therefore run `PRAGMA foreign_keys = OFF` before BEGIN — it is ignored inside a
+// transaction — or the DROP fails and/or the copy cascades rows away. runMigrations wraps each step in a
+// transaction (src/migrate.ts), so such a step needs runner support before it can be written.
 import type { Migration } from "./migrate";
 
 export const MIGRATIONS: Migration[] = [
@@ -107,8 +112,8 @@ CREATE INDEX tutors_profile ON tutors(profile_id)`,
   {
     v: 10, // #46: the learner's own writing. `unit_notes` is one note per unit of an enrollment (`level:unit`, src/course.ts unitRef);
     // `journal` is one entry per local day (YYYY-MM-DD, src/progress.ts today). Both are part of the database, so export and backups carry them.
-    // The REFERENCES clauses below never cascade: this app never enables `PRAGMA foreign_keys`; deleted profiles lose
-    // their rows because src/profileDelete.ts deletes them explicitly.
+    // The REFERENCES clauses cascade: sqlx turns `PRAGMA foreign_keys` on for every connection (the desktop app), and
+    // src/sqljs.ts does the same (dev preview, web edition, tests). src/profileDelete.ts still deletes explicitly.
     sql: `
 CREATE TABLE unit_notes(
   enrollment_id INTEGER NOT NULL REFERENCES enrollments(id) ON DELETE CASCADE,
@@ -118,5 +123,26 @@ CREATE TABLE journal(
   profile_id INTEGER NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
   day TEXT NOT NULL, text TEXT NOT NULL, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY(profile_id, day))`,
+  },
+  {
+    v: 11, // #184: foreign keys are enforced from now on, so rows left behind while `PRAGMA foreign_keys` was off (their
+    // parent deleted) would never cascade. Remove them once, the way their REFERENCES clause would have: everything
+    // deletes, speech_sessions.enrollment_id is set to NULL. profiles.active_enrollment_id has no REFERENCES, so it is
+    // nulled by hand. Deleting orphan enrollments already NULLs their speech_sessions (ON DELETE SET NULL); the
+    // UPDATE below catches sessions whose enrollment never existed at all.
+    sql: `
+DELETE FROM enrollments WHERE profile_id NOT IN (SELECT id FROM profiles);
+DELETE FROM step_progress WHERE enrollment_id NOT IN (SELECT id FROM enrollments);
+DELETE FROM content_cache WHERE enrollment_id NOT IN (SELECT id FROM enrollments);
+DELETE FROM mistakes WHERE enrollment_id NOT IN (SELECT id FROM enrollments);
+DELETE FROM words WHERE enrollment_id NOT IN (SELECT id FROM enrollments);
+DELETE FROM bookmarks WHERE enrollment_id NOT IN (SELECT id FROM enrollments);
+DELETE FROM unit_notes WHERE enrollment_id NOT IN (SELECT id FROM enrollments);
+DELETE FROM memories WHERE profile_id NOT IN (SELECT id FROM profiles);
+DELETE FROM journal WHERE profile_id NOT IN (SELECT id FROM profiles);
+DELETE FROM tutors WHERE profile_id NOT IN (SELECT id FROM profiles);
+DELETE FROM speech_sessions WHERE profile_id NOT IN (SELECT id FROM profiles);
+UPDATE speech_sessions SET enrollment_id = NULL WHERE enrollment_id IS NOT NULL AND enrollment_id NOT IN (SELECT id FROM enrollments);
+UPDATE profiles SET active_enrollment_id = NULL WHERE active_enrollment_id IS NOT NULL AND active_enrollment_id NOT IN (SELECT id FROM enrollments)`,
   },
 ];

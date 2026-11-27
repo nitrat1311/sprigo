@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import type { Course } from "./course.ts";
 import type { Item } from "./activities.ts";
 import {
-  accepts, answer, begin, currentItem, describePractice, findTopic, needsJudge, next, openPractice, practiceSchema, practiceTopics, toPracticeSet,
+  accepts, answer, begin, currentItem, describePractice, findTopic, needsJudge, next, openPractice, practiceId, practiceSchema, practiceTopics, toPracticeSet,
   type PracticeSet,
 } from "./practice.ts";
 
@@ -30,6 +30,13 @@ test("findTopic: exact title or a sentence that names it", () => {
   assert.equal(findTopic(ts, "food")?.unit.id, "u2");
   assert.equal(findTopic(ts, "Let's do Greetings, please")?.unit.id, "u1");
   assert.equal(findTopic(ts, "sports"), undefined);
+});
+
+test("practice cache keys carry the level, since unit ids repeat across levels (#192)", () => {
+  // `society-and-environment` is a B2 and a C1 unit in courses/en.yml.
+  assert.equal(practiceId("B2", "society-and-environment"), "practice:B2:society-and-environment");
+  assert.notEqual(practiceId("B2", "society-and-environment"), practiceId("C1", "society-and-environment"));
+  assert.notEqual(practiceId("B2", "society-and-environment"), "practice:society-and-environment"); // pre-1.15 key: ignored, so it regenerates
 });
 
 const raw = {
