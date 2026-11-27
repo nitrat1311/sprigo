@@ -1,5 +1,6 @@
 // Tap a word to see its meaning (#28). The lookup itself is lessonWord in src/lessons.ts.
 import { z } from "zod";
+import type { Cefr } from "./course";
 
 export const lookupSchema = z.object({
   lemma: z.string(), translation: z.string(), pos: z.string(), example: z.string(), example_translation: z.string(),
@@ -11,7 +12,8 @@ export function tokens(text: string, lang: string): { text: string; word: boolea
   return [...new Intl.Segmenter(lang, { granularity: "word" }).segment(text)].map((s) => ({ text: s.segment, word: !!s.isWordLike }));
 }
 
-export const wordKey = (word: string, lang: string) => `word:${word.toLocaleLowerCase(lang)}`;
+/** `word:<level>:<word>`, because a word's example is written for the level it was looked up at (#192). */
+export const wordKey = (level: Cefr, word: string, lang: string) => `word:${level}:${word.toLocaleLowerCase(lang)}`;
 
 export type GuideWord = { word: string; translation: string; example: string; example_translation: string };
 /** The guidebook entry for `word`, if a cached guide has it (exact match, ignoring case). */
