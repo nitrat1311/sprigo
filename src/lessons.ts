@@ -302,10 +302,22 @@ export async function loadWritingTask(enrollmentId: number, c: Base, unit: Unit,
   const key = writeId(c.level, unit.id);
   const cached = fresh ? null : await getCached<WritingTask>(enrollmentId, key);
   const russian = c.course.iso === "ro" && c.native === "ru";
-  if (cached && (!russian || cyrillic.test(cached.task))) return cached;
-  const schema = russian ? taskSchema.refine((task) => cyrillic.test(task.task), "Write the task in Russian") : taskSchema;
-  const task = await generate(schema, systemPrompt(c),
-    taskPrompt(unit.title, unit.description ?? "", [...new Set(unit.steps.flatMap((s) => s.vocabulary))]), "writing");
+  const russianTask = (task: WritingTask) => /^[^\p{L}]*\p{Script=Cyrillic}/u.test(task.task);
+  if (cached && (!russian || russianTask(cached))) return cached;
+  const vocabulary = unitWords(unit);
+  const task = await generate(taskSchema, systemPrompt(c), taskPrompt(unit.title, unit.description ?? "", vocabulary), "writing")
+    .then((task) => {
+      if (russian && !russianTask(task)) throw new Error("The writing prompt must start in Russian.");
+      return task;
+    }).catch((e) => {
+      if (!russian) throw e;
+      return {
+        task: c.level === "A1"
+          ? `Напишите 3–5 предложений по теме урока «${unit.title}». Используйте два выражения из подсказок.`
+          : `Напишите 5–7 предложений по теме «${unit.title}». Опишите ситуацию, приведите конкретную деталь и закончите коротким выводом или просьбой. Используйте два выражения из подсказок.`,
+        hints: vocabulary.slice(0, 5),
+      };
+    });
   await putCached(enrollmentId, key, task);
   return task;
 }
