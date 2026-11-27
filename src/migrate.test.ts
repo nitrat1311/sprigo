@@ -13,6 +13,14 @@ const tables = async (db: ReturnType<typeof fresh>) =>
 
 const TABLES = ["ai_usage", "bookmarks", "content_cache", "device_settings", "enrollments", "journal", "memories", "mistakes", "profiles", "speech_sessions", "step_progress", "tutors", "unit_notes", "words"];
 
+/** Every table's rows, with row order normalised so snapshots compare independent of it. */
+const snapshot = async (db: ReturnType<typeof fresh>) => {
+  const out: Record<string, Record<string, unknown>[]> = {};
+  for (const t of await tables(db))
+    out[t] = (await db.select<Record<string, unknown>>(`SELECT * FROM ${t}`)).sort((a, b) => JSON.stringify(a).localeCompare(JSON.stringify(b)));
+  return out;
+};
+
 test("empty database migrates to the latest version", async () => {
   const db = fresh();
   const r = await runMigrations(db, MIGRATIONS);
@@ -163,10 +171,9 @@ test("v5 seeds FSRS state from word strength and keeps every word", async () => 
   ]);
 });
 
-test("v11: drops rows whose parent is gone and keeps every valid row", async () => {
-  const db = fresh();
-  await runMigrations(db, MIGRATIONS.filter((m) => m.v < 11));
-  await db.execute("PRAGMA foreign_keys = OFF"); // what wrote the orphans: the pragma was never on before #184
+// Orphans could only be written while `PRAGMA foreign_keys` was off, as it never was on before #184.
+async function seedOrphans(db: ReturnType<typeof fresh>) {
+  await db.execute("PRAGMA foreign_keys = OFF");
   await db.execute(`
 INSERT INTO profiles(id, name, color, ui_lang, native_lang, stats, active_enrollment_id) VALUES (1, 'a', 'green', 'en', 'en', '{}', 10), (2, 'b', 'green', 'en', 'en', '{}', 99);
 INSERT INTO enrollments(id, profile_id, course_iso, level) VALUES (10, 1, 'en', 'A1'), (30, 99, 'en', 'A1');
@@ -184,6 +191,12 @@ INSERT INTO speech_sessions(profile_id, enrollment_id, mode, utterances, silence
   (1, 99, 'tutor', 1, 0, 90, 0.2, 0, 0.1, 0, 5, 0, 3000),
   (99, 99, 'tutor', 1, 0, 90, 0.2, 0, 0.1, 0, 5, 0, 3000)`);
   await db.execute("PRAGMA foreign_keys = ON"); // the app opens the connection this way now
+}
+
+test("v11: drops rows whose parent is gone and keeps every valid row", async () => {
+  const db = fresh();
+  await runMigrations(db, MIGRATIONS.filter((m) => m.v < 11));
+  await seedOrphans(db);
 
   await runMigrations(db, MIGRATIONS);
   assert.equal(await schemaVersion(db), Math.max(...MIGRATIONS.map((m) => m.v)));
@@ -195,8 +208,60 @@ INSERT INTO speech_sessions(profile_id, enrollment_id, mode, utterances, silence
     assert.deepEqual(await db.select(`SELECT enrollment_id FROM ${t}`), [{ enrollment_id: 10 }], t);
   for (const t of ["journal", "memories", "tutors"])
     assert.deepEqual(await db.select(`SELECT profile_id FROM ${t}`), [{ profile_id: 1 }], t);
-  assert.deepEqual(await db.select("SELECT profile_id, enrollment_id FROM speech_sessions ORDER BY enrollment_id NULLS FIRST"), [
-    { profile_id: 1, enrollment_id: null }, // its enrollment was already gone
-    { profile_id: 1, enrollment_id: 10 },
-  ]);
+  assert.deepEqual(
+    (await db.select<{ profile_id: number; enrollment_id: number | null }>("SELECT profile_id, enrollment_id FROM speech_sessions"))
+      .map((s) => `${s.profile_id}:${s.enrollment_id ?? "null"}`)
+      .sort(),
+    ["1:10", "1:null"], // the NULL is the session whose enrollment was already gone
+  );
+});
+
+test("v11: a v10 database with no orphans comes through untouched", async () => {
+  const db = fresh();
+  await runMigrations(db, MIGRATIONS.filter((m) => m.v < 11));
+  // Written with foreign keys on (src/sqljs.ts), the way the app has written since #184.
+  await db.execute(`
+INSERT INTO device_settings(key, value) VALUES ('lang', 'en');
+INSERT INTO profiles(id, name, color, ui_lang, native_lang, stats, active_enrollment_id) VALUES (1, 'a', 'green', 'en', 'en', '{"streak":3}', 10);
+INSERT INTO enrollments(id, profile_id, course_iso, level, xp) VALUES (10, 1, 'en', 'A1', 30);
+INSERT INTO step_progress(enrollment_id, step_id, state, legendary) VALUES (10, 'A1:greetings', 'done', 1);
+INSERT INTO content_cache(enrollment_id, step_id, content) VALUES (10, 'A1:greetings', '{}');
+INSERT INTO mistakes(enrollment_id, item) VALUES (10, 'word:hello');
+INSERT INTO words(enrollment_id, word, translation, strength) VALUES (10, 'hello', 'hola', 2);
+INSERT INTO bookmarks(enrollment_id, kind, ref) VALUES (10, 'unit', 'A1:greetings');
+INSERT INTO unit_notes(enrollment_id, unit_ref, text) VALUES (10, 'A1:greetings', 'note');
+INSERT INTO journal(profile_id, day, text) VALUES (1, '2026-01-01', 'entry');
+INSERT INTO memories(profile_id, kind, text, source) VALUES (1, 'interest', 'music', 'tutor');
+INSERT INTO tutors(id, profile_id, data) VALUES ('custom:1', 1, '{}');
+INSERT INTO ai_usage(provider, model, feature, input_tokens, output_tokens) VALUES ('openai', 'gpt-4o-mini', 'lesson', 10, 2);
+INSERT INTO speech_sessions(profile_id, enrollment_id, mode, utterances, silences, wpm, pause_ratio, long_pauses, level, fillers, words, native_words, speech_ms) VALUES
+  (1, 10, 'tutor', 1, 0, 90, 0.2, 0, 0.1, 0, 5, 0, 3000),
+  (1, NULL, 'free', 1, 0, 90, 0.2, 0, 0.1, 0, 5, 0, 3000)`);
+  const before = await snapshot(db);
+
+  await runMigrations(db, MIGRATIONS);
+  assert.deepEqual(await snapshot(db), before, "v11 removes nothing when every parent exists");
+  assert.deepEqual(await db.select("PRAGMA foreign_key_check"), []);
+});
+
+test("v11: applying the cleanup twice is idempotent", async () => {
+  const db = fresh();
+  await runMigrations(db, MIGRATIONS.filter((m) => m.v < 11));
+  await seedOrphans(db);
+  const v11 = MIGRATIONS.find((m) => m.v === 11)!;
+
+  await db.execute(v11.sql);
+  const once = await snapshot(db);
+  assert.deepEqual(await db.select("PRAGMA foreign_key_check"), []);
+
+  await db.execute(v11.sql);
+  assert.deepEqual(await snapshot(db), once, "the second pass finds nothing left to remove");
+  assert.deepEqual(await db.select("PRAGMA foreign_key_check"), []);
+});
+
+test("runMigrations leaves foreign keys enforced", async () => {
+  const db = fresh();
+  await runMigrations(db, MIGRATIONS);
+  const [pragma] = await db.select<{ foreign_keys: number }>("PRAGMA foreign_keys");
+  assert.equal(pragma.foreign_keys, 1);
 });

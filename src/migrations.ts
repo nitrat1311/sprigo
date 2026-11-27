@@ -1,4 +1,9 @@
 // Ordered schema changes. Append only: never edit a shipped step, add a new one with the next `v`.
+// Foreign keys are enforced on every connection: sqlx turns them on by default (desktop, tauri-plugin-sql) and
+// src/sqljs.ts does the same (dev preview, web edition, tests). A step that rebuilds a table (CREATE new / copy /
+// DROP old / RENAME) must therefore run `PRAGMA foreign_keys = OFF` before BEGIN — it is ignored inside a
+// transaction — or the DROP fails and/or the copy cascades rows away. runMigrations wraps each step in a
+// transaction (src/migrate.ts), so such a step needs runner support before it can be written.
 import type { Migration } from "./migrate";
 
 export const MIGRATIONS: Migration[] = [
@@ -123,7 +128,8 @@ CREATE TABLE journal(
     v: 11, // #184: foreign keys are enforced from now on, so rows left behind while `PRAGMA foreign_keys` was off (their
     // parent deleted) would never cascade. Remove them once, the way their REFERENCES clause would have: everything
     // deletes, speech_sessions.enrollment_id is set to NULL. profiles.active_enrollment_id has no REFERENCES, so it is
-    // nulled by hand.
+    // nulled by hand. Deleting orphan enrollments already NULLs their speech_sessions (ON DELETE SET NULL); the
+    // UPDATE below catches sessions whose enrollment never existed at all.
     sql: `
 DELETE FROM enrollments WHERE profile_id NOT IN (SELECT id FROM profiles);
 DELETE FROM step_progress WHERE enrollment_id NOT IN (SELECT id FROM enrollments);
