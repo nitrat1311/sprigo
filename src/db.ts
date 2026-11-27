@@ -268,6 +268,14 @@ export async function putCached(enrollmentId: number, stepId: string, content: u
   await (await db()).execute("INSERT INTO content_cache(enrollment_id, step_id, content) VALUES ($1, $2, $3) ON CONFLICT DO UPDATE SET content = $3, created_at = CURRENT_TIMESTAMP", [enrollmentId, stepId, JSON.stringify(content)]);
 }
 
+/** Course examples can replace an old cache, but a concurrent review takes precedence. */
+export async function putCachedRomanianPractice(enrollmentId: number, stepId: string, items: unknown[]) {
+  const content = JSON.stringify(items);
+  await (await db()).execute(
+    "INSERT INTO content_cache(enrollment_id, step_id, content) VALUES ($1, $2, $3) ON CONFLICT DO UPDATE SET content = $3, created_at = CURRENT_TIMESTAMP WHERE json_extract(content_cache.content, '$[0].romanianReview') IS NOT 1",
+    [enrollmentId, stepId, content]);
+}
+
 /** Cached unit guidebooks, only `level`'s when given (word lookups, #28). */
 export async function cachedGuides<T>(enrollmentId: number, level?: Cefr) {
   return (await cachedGuidebooks<T>(enrollmentId)).filter((x) => !level || x.level === level).map((x) => x.guide);
@@ -309,8 +317,13 @@ export async function resumeEnrollment(enrollment: Enrollment, levels: Cefr[]): 
 
 /** Scored items of every cached step lesson (not legend/story/guide/exam keys, which contain ":"), for the timed challenge. */
 export async function cachedLessonItems<T extends { kind: string }>(enrollmentId: number) {
-  const r = await (await db()).select<{ content: string }>("SELECT content FROM content_cache WHERE enrollment_id = $1 AND step_id NOT LIKE '%:%'", [enrollmentId]);
-  return r.flatMap((x) => JSON.parse(x.content) as T[]).filter((it) => it.kind !== "learn");
+  const r = await (await db()).select<{ content: string; course_iso: string }>(
+    "SELECT content, course_iso FROM content_cache JOIN enrollments ON enrollments.id = enrollment_id WHERE enrollment_id = $1 AND step_id NOT LIKE '%:%'", [enrollmentId]);
+  return r.flatMap(({ content, course_iso }) => {
+    const items = JSON.parse(content) as (T & { romanianReview?: 1 | "course" })[];
+    const review = items[0]?.romanianReview;
+    return course_iso !== "ro" || review === 1 || review === "course" ? items : [];
+  }).filter((it) => it.kind !== "learn");
 }
 
 // ---- Mistakes and words (per enrollment, DECISIONS E6) ----

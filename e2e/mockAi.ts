@@ -47,6 +47,11 @@ export async function mockOllama(page: Page) {
     // ponytail: non-streamed replies only; add SSE when a test covers chat or the tutor call
     const schema = req.postDataJSON().response_format?.json_schema?.schema;
     const turn = schema ? fill(schema) as Record<string, unknown> : null;
+    if (turn && "approved" in turn) {
+      const content = req.postDataJSON().messages.at(-1).content;
+      const prompt = Array.isArray(content) ? content.map((part) => part.text).join("\n") : content;
+      turn.approved = Array.from(String(prompt).matchAll(/^(\d+)\. /gm), (m) => Number(m[1]));
+    }
     // A roleplay turn without `translation`: the reply must still arrive, with its translation filled in afterwards.
     if (turn && "goal_reached" in turn) delete turn.translation;
     const content = turn ? JSON.stringify(turn) : "ok";

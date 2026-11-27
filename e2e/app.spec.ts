@@ -6,7 +6,7 @@ import { ANSWER, BANK, FORM, PAIRS, mockOllama } from "./mockAi";
 test.beforeEach(async ({ page }) => { await mockOllama(page); });
 
 /** First run: create a profile, then save the (mocked) local Ollama model. */
-async function onboard(page: Page, course = "es") {
+async function onboard(page: Page, course = "es", setupAi = true) {
   await page.goto("/");
   await expect(page.getByRole("heading", { name: "Create your profile" })).toBeVisible();
   await page.getByLabel("Name").fill("Ada");
@@ -14,6 +14,10 @@ async function onboard(page: Page, course = "es") {
   await page.getByRole("button", { name: "Create profile" }).click();
 
   const sheet = page.getByRole("dialog");
+  if (!setupAi) {
+    await sheet.getByRole("button", { name: "Cancel" }).click();
+    return;
+  }
   await expect(sheet.getByText("Ollama found on this Mac")).toBeVisible();
   await sheet.getByRole("radio", { name: /Ollama/ }).click();
   await expect(sheet.getByLabel(/Model/)).toHaveValue("mock:latest");
@@ -297,6 +301,35 @@ test("Romanian profiles that finished A1 can continue into B1 after a course upd
   await expect(exam.getByText("B1 complete!")).toBeVisible();
   await exam.getByRole("button", { name: "Done" }).click();
   await expect(page.getByRole("button", { name: "B1 Checkpoint" })).toBeEnabled();
+  await page.getByRole("button", { name: "Reading and Relaying Information" }).click();
+  await page.getByRole("button", { name: "Review", exact: true }).click();
+  await expect(lesson.locator(".ex-title")).toHaveText("De la ce dată se deschide biblioteca și duminica?");
+  await expect(lesson.getByText(/Sala de lectură rămâne închisă duminica/)).toBeVisible();
+});
+
+test("Romanian practice opens before AI setup", async ({ page }) => {
+  await onboard(page, "ro", false);
+  await page.getByRole("button", { name: "Learn" }).click();
+  await page.getByRole("button", { name: "Basic Greetings" }).click();
+  const lesson = page.getByRole("dialog", { name: "Lesson" });
+  await expect(lesson.getByText("Bună ziua!", { exact: true })).toBeVisible();
+});
+
+test("a failed Romanian lesson review uses course examples and retries generation next time", async ({ page }) => {
+  await onboard(page, "ro");
+  const url = "http://localhost:11434/v1/chat/completions";
+  await page.route(url, (route) => route.request().postDataJSON()?.response_format?.json_schema?.schema?.properties?.approved
+    ? route.fulfill({ status: 400, headers: { "access-control-allow-origin": "*" }, contentType: "application/json", body: "{}" })
+    : route.fallback());
+  await page.getByRole("button", { name: "Learn" }).click();
+  const first = page.getByRole("button", { name: "Basic Greetings" });
+  await first.click();
+  const lesson = page.getByRole("dialog", { name: "Lesson" });
+  await expect(lesson.getByText("Bună ziua!", { exact: true })).toBeVisible();
+  await page.unroute(url);
+  await page.reload();
+  await first.click();
+  await expect(lesson.getByText("hola", { exact: true })).toBeVisible();
 });
 
 test("writing practice corrects the text inline and queues the mistake", async ({ page }) => {

@@ -16,6 +16,10 @@ rehearse the scenario from the table and respond aloud where voice input is
 available. The app generates lesson exercises and feedback using your configured AI model.
 The Romanian A1 and B1 checkpoints and level tests use fixed questions, including
 reading passages and listening prompts. The conjugation trainer uses built-in tables.
+The B1 lesson Reading and Relaying Information also uses fixed passages and
+questions. Regular A1 and B1 lessons use course examples for listening and
+dictation when the lesson generator or review is unavailable. Generated exercises
+are saved only after they pass the lesson review.
 
 Piper uses [Raluca by eduardem](https://huggingface.co/eduardem/piper-tts-romanian)
 for the female Romanian voice and Mihai for the male voice. Raluca is downloaded

@@ -1,9 +1,10 @@
 import { romanianExam } from "./romanianExam";
+import { hasRomanianPractice, ROMANIAN_READING_ID, romanianPractice, romanianReading, romanianReviewPrompt, romanianReviewSchema } from "./romanianLessons";
 // Lesson generation (DECISIONS C2, C3): cache → one call for the whole step → per-activity fallback.
 import { crossChecked, formsPrompt, formsSchema, fromTable, pickAsks } from "./conjugation";
 import { z } from "zod";
 import { generate, generatePlain, generateStream } from "./ai";
-import { applyMemoryOps, cachedGuides, enrollmentProfile, getCached, listMemories, listMistakes, markMemoriesUsed, memoryOn, putCached } from "./db";
+import { applyMemoryOps, cachedGuides, enrollmentProfile, getCached, listMemories, listMistakes, markMemoriesUsed, memoryOn, putCached, putCachedRomanianPractice } from "./db";
 import { REGISTRY, givesAway, langEn, lessonPrompt, mistakeLine, lessonSchema, plannedActivities, normalize, checkPrompt, checkSchema, rejected, reviewSystem, shuffleAnswer, solvePrompt, solveSchema, solveSystem, systemPrompt, toItems, type Item, type LessonContext, isEchoCorrection } from "./activities";
 import { CHAT_MAX_TURNS, CHAT_MIN_TURNS, FREE_GOAL, type Character } from "./characters";
 import { CEFR, guideId, levelsOf, storyId, type Course, type CourseLevel, type Cefr } from "./course";
@@ -103,7 +104,7 @@ async function generateItems(c: LessonContext, mistakes: string[], about: string
   const system = systemPrompt(c), langs = [c.course.iso, c.native];
   try {
     const items = toItems(acts, await generate(lessonSchema(acts), system, lessonPrompt(c, acts, mistakes, about), "lesson") as Record<string, unknown[]>, langs);
-    if (items.length) return reviewed(c, items);
+    if (items.length) return items;
   } catch (e) { console.warn("Whole-lesson generation failed, falling back to per-activity calls", e); }
   // Fallback for small local models that struggle with the full schema.
   const items: Item[] = [];
@@ -115,7 +116,7 @@ async function generateItems(c: LessonContext, mistakes: string[], about: string
     } catch (e) { lastError = e; }
   }
   if (!items.length) throw lastError ?? new Error("The model returned no usable exercises.");
-  return reviewed(c, items);
+  return items;
 }
 
 // Gemma takes 5–10 s; in tests about 1 request in 60 hung for 5 minutes, which must not hold a lesson back.
@@ -141,23 +142,54 @@ async function reviewed(c: LessonContext, items: Item[]): Promise<Item[]> {
 }
 
 const inflight = new Map<string, Promise<Item[]>>();
+type CachedLessonItem = Item & { romanianReview?: 1 | "course" };
+const visibleItems = (items: CachedLessonItem[]) => items
+  .filter((it) => it.kind !== "choice" || !givesAway(it.prompt, it.options, it.answer))
+  .map(({ romanianReview: _review, ...item }) => item);
 /** Cached lesson for (enrollment, step); `fresh` regenerates it ("Yeniden üret"). */
-export function loadLesson(enrollmentId: number, c: LessonContext, fresh = false): Promise<Item[]> {
+export function loadLesson(enrollmentId: number, c: LessonContext, fresh = false, offline = false): Promise<Item[]> {
   const exam = examLevel(c.step.id);
-  if (c.course.iso === "ro" && (exam === "A1" || exam === "B1")) return Promise.resolve(romanianExam(exam));
+  const romanian = c.course.iso === "ro";
+  if (romanian && (exam === "A1" || exam === "B1")) return Promise.resolve(romanianExam(exam));
+  if (romanian && c.step.id === ROMANIAN_READING_ID) return Promise.resolve(romanianReading());
+  const localPractice = hasRomanianPractice(c);
   const k = `${enrollmentId}:${c.step.id}`;
-  if (!fresh && inflight.has(k)) return inflight.get(k)!;
+  if (!fresh && !offline && inflight.has(k)) return inflight.get(k)!;
   const p = (async () => {
-    const cached = fresh ? null : await getCached<(Item & { romanianReviewed?: true })[]>(enrollmentId, c.step.id);
-    if (cached && (c.course.iso !== "ro" || cached[0]?.romanianReviewed)) return cached.filter((it) => it.kind !== "choice" || !givesAway(it.prompt, it.options, it.answer)); // cached before the check
+    const cached = fresh && !romanian ? null : await getCached<CachedLessonItem[]>(enrollmentId, c.step.id);
+    const checked = cached?.[0]?.romanianReview === 1;
+    if (!fresh && cached && (!romanian || checked || (offline && cached[0]?.romanianReview === "course"))) return visibleItems(cached);
+    const fromCourse = async () => {
+      if (cached && checked) return visibleItems(cached);
+      const items = romanianPractice(c);
+      await putCachedRomanianPractice(enrollmentId, c.step.id, items.map((item) => ({ ...item, romanianReview: "course" })));
+      return items;
+    };
+    if (localPractice && offline) return fromCourse();
     const mistakes = (await listMistakes<Item>(enrollmentId, MISTAKES_IN_PROMPT)).map((m) => mistakeLine(m.item)).filter((x): x is string => !!x);
     const pid = await enrollmentProfile(enrollmentId);
-    const items = await generateItems(c, mistakes, pid === null ? [] : await learnerFacts(pid));
-    await putCached(enrollmentId, c.step.id, c.course.iso === "ro"
-      ? items.map((item) => ({ ...item, romanianReviewed: true })) : items);
+    let items: Item[];
+    try {
+      items = await generateItems(c, mistakes, pid === null ? [] : await learnerFacts(pid));
+      if (romanian) {
+        const { approved } = await generate(romanianReviewSchema, reviewSystem, romanianReviewPrompt(c, items), "check", undefined, undefined, 45);
+        const verified = new Set(approved);
+        const kept = items.filter((_, index) => verified.has(index + 1));
+        if (kept.length < Math.ceil(items.length / 2)) throw new Error("The Romanian lesson needs more verified exercises.");
+        items = kept;
+      } else {
+        items = await reviewed(c, items);
+      }
+    } catch (e) {
+      if (!localPractice) throw e;
+      console.warn("Romanian lesson could not be verified; using course examples", e);
+      return fromCourse();
+    }
+    await putCached(enrollmentId, c.step.id, romanian
+      ? items.map((item) => ({ ...item, romanianReview: 1 })) : items);
     return items;
-  })().finally(() => inflight.delete(k));
-  inflight.set(k, p);
+  })().finally(() => { if (inflight.get(k) === p) inflight.delete(k); });
+  if (!offline) inflight.set(k, p);
   return p;
 }
 

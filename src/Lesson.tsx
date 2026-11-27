@@ -5,6 +5,7 @@ import { useApp } from "./store";
 import { useBuy } from "./screens/Screens";
 import * as db from "./db";
 import { SPEECH_PASS, hideAnswer, listenItems, madnessItems, matchesAnswer, normalize, sameWords, speakItems, speechMisses, speechScore, type Item } from "./activities";
+import { hasRomanianPractice, ROMANIAN_READING_ID } from "./romanianLessons";
 import { MicButton } from "./Mic";
 import { answerLang } from "./evalRules";
 import { sttReady } from "./stt";
@@ -23,7 +24,9 @@ export function useStartLesson() {
   const { s, ai, course, startLesson, openSheet, closeSheet, go } = useApp();
   const buy = useBuy();
   return (id: string) => {
-    const localRomanian = course?.iso === "ro" && (/^(A1|B1):(checkpoint|test)$/.test(id) || id === "practice-conjugate");
+    const ctx = !ai && course?.iso === "ro" ? stepContext(course, id, "en") : null;
+    const localRomanian = course?.iso === "ro" && (/^(A1|B1):(checkpoint|test)$/.test(id) || id === "practice-conjugate" ||
+      id === ROMANIAN_READING_ID || (ctx && hasRomanianPractice(ctx)));
     if (!ai && !localRomanian && (!id.startsWith("practice-") || id === "practice-conjugate")) return openSheet(<>
       <h3>{t("ai.needed")}</h3><p>{t("ai.neededDesc")}</p>
       <button className="btn btn-primary btn-block" onClick={() => { closeSheet(); go("settings"); }}>{t("ai.setUp")}</button>
@@ -124,12 +127,12 @@ export function Lesson({ id }: { id: string }) {
     if (!enrollment || (!ctx && !practice)) return;
     let live = true;
     setLoad({ state: "loading" }); setI(0); reset(); setScore({ correct: 0, xp: 0 });
-    (ctx ? loadLesson(enrollment.id, ctx, gen > 0) : practiceItems(id, enrollment.id, { listen: t("practice.listenPrompt"), conjugate: t("conjugate.prompt") },
+    (ctx ? loadLesson(enrollment.id, ctx, gen > 0, !ai) : practiceItems(id, enrollment.id, { listen: t("practice.listenPrompt"), conjugate: t("conjugate.prompt") },
       course && native ? { course, level: enrollment.level, native } : null))
       .then((items) => live && setLoad({ state: "ready", items }))
       .catch((e) => live && setLoad({ state: "error", msg: (e as Error).message }));
     return () => { live = false; };
-  }, [ctx, enrollment?.id, gen]);
+  }, [ctx, enrollment?.id, gen, ai]);
 
   useEffect(() => { document.body.style.overflow = "hidden"; return () => { document.body.style.overflow = ""; }; }, []);
 
@@ -241,7 +244,7 @@ export function Lesson({ id }: { id: string }) {
     // Tiles too: "A nevem Anna" and "Anna a nevem" are both right, and the model gives only one order.
     const [given, expected] = it.kind === "bank" ? [bankSel.map((j) => it.bank[j]).join(" "), it.answer.join(" ")] : [text, it.answer];
     if (it.kind === "bank" ? normalize(given, lang) === normalize(expected, lang) : matchesAnswer(text, it, lang)) return grade(true, expected, given);
-    if (!ctx || (it.kind === "bank" && !sameWords(given, expected, lang))) return grade(false, expected, given); // other tiles: wrong, no AI needed
+    if (!ctx || !ai || (it.kind === "input" && it.literal) || (it.kind === "bank" && !sameWords(given, expected, lang))) return grade(false, expected, given);
     setChecking(true); // C4: string match failed, let the AI judge meaning
     // A failed AI call is not a wrong answer: no heart lost, the learner just checks again.
     try { const r = await judge(ctx, questionOf(it), expected, given); grade(r.correct, expected, given, r.feedback, true); }
@@ -287,13 +290,14 @@ export function Lesson({ id }: { id: string }) {
   // Keyboard: one listener maps keys to the same actions as the buttons.
   const hit = it?.kind === "bank" ? bankMatch(it.bank, bankSel, typed) : -1;
   const audio = !it ? "" : it.kind === "learn" ? it.phrase : (it.kind === "choice" || it.kind === "input") ? it.listen : "";
+  const canExplain = !!ai && !!fb && !fb.ok && !!ctx && !result;
   const keyState: KeyState = {
     kind: load.state !== "ready" || result || !it || it.kind === "learn" ? "other" : it.kind,
     answered: !!fb && !result,
     options: it?.kind === "choice" ? it.options.length : 0,
     matchL: matchCols?.l.length, matchR: matchCols?.r.length,
     typed, hit, listen: !!audio && !result,
-    canExplain: !!fb && !fb.ok && !!ctx && !result,
+    canExplain,
     canAppeal: !!fb?.judged && !fb.appealed && !!ctx && !result,
   };
   const primary = () => {
@@ -497,7 +501,7 @@ export function Lesson({ id }: { id: string }) {
                       {fb.verdict && <small role="status">{t("lesson.appealRejected", { reason: fb.verdict })}</small>}</span></span>
                 )}
                 <span className="od-row" style={gap("var(--s-4)")}>
-                  {!fb.ok && ctx && <button className="btn btn-ghost" aria-keyshortcuts="1" onClick={openExplain}>{t("lesson.explain")} <kbd className="kbd" aria-hidden="true">1</kbd></button>}
+                  {canExplain && <button className="btn btn-ghost" aria-keyshortcuts="1" onClick={openExplain}>{t("lesson.explain")} <kbd className="kbd" aria-hidden="true">1</kbd></button>}
                   {fb.judged && !fb.appealed && ctx && <button className="btn btn-ghost" aria-keyshortcuts="2" onClick={openAppeal}>🚩 {t("lesson.appeal")} <kbd className="kbd" aria-hidden="true">2</kbd></button>}
                   <button className={`btn ${fb.ok ? "btn-primary" : "btn-danger"}`} onClick={next}>{t(last ? "lesson.finish" : "lesson.continue")}</button>
                 </span>
