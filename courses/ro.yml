@@ -1160,7 +1160,7 @@ levels:
               - pattern: "Începând cu 1 mai, biblioteca va fi deschisă și duminica."
               - pattern: "Accesul e gratuit, cu excepția atelierelor pentru care trebuie să te înscrii."
             activities:
-              - { type: multiple_choice, count: 2, focus: "Include a two-sentence Romanian notice in the prompt alongside a question in the learner's language about its practical implications." }
+              - { type: reading_choice, count: 2, focus: "Use a two-sentence Romanian notice and ask about its practical implications." }
               - { type: fill_blank, count: 2 }
               - { type: translate, count: 2 }
               - { type: dialogue, count: 2, scenario: "Use a short event notice or email, including one rule or exception, and ask what it means for a specific visitor." }

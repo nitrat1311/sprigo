@@ -43,10 +43,11 @@ export function guessLang(text: string): Lang | null {
 /** The language a typed answer is in (#26: which language dictation listens for). Translations go either way:
  *  native when the answer reads native or the source reads target; otherwise, and for listen_type, the target. */
 export function answerLang(it: { answer: string; context: string }, target: string, native: string): string {
+  if (native === "ru" && /\p{Script=Cyrillic}/u.test(it.answer)) return native;
   return guessLang(it.answer) === native || guessLang(it.context) === target ? native : target;
 }
 
-const CHOICE = new Set(["word_select", "multiple_choice", "image_select", "listen_select", "fill_blank", "sentence_complete", "error_correct"]);
+const CHOICE = new Set(["word_select", "multiple_choice", "reading_choice", "image_select", "listen_select", "fill_blank", "sentence_complete", "error_correct"]);
 
 /** Texts that must be in the course language and in the native language. Options are joined: one word alone is too short to guess. */
 export function fieldsOf(type: string, g: any, native: Lang): { target: string[]; native: string[] } {
@@ -55,6 +56,7 @@ export function fieldsOf(type: string, g: any, native: Lang): { target: string[]
     case "learn": return { target: [g.phrase], native: [g.translation, g.note] };
     case "speak": return { target: [g.sentence], native: [g.translation] };
     case "word_select": case "multiple_choice": return { target: [], native: [g.prompt] }; // direction goes either way
+    case "reading_choice": return { target: [g.passage], native: [g.prompt] };
     case "image_select": return { target: [opts], native: [g.prompt] };
     case "listen_select": return { target: [g.audio_text], native: [g.prompt] }; // options may be meanings
     case "fill_blank": return { target: [g.sentence_with_blank, opts], native: [g.prompt] };
@@ -99,7 +101,7 @@ export function checkItem(type: string, g: any, ctx: { target: Lang; native: Lan
   }
   if (type === "translate" && n(g.answer) === n(g.source_sentence)) bad.add("no_leak");
   if (type === "listen_type" && has(g.prompt, g.audio_text)) bad.add("no_leak");
-  if (type === "fill_blank" && (g.sentence_with_blank.match(/_{3,}/g) ?? []).length !== 1) bad.add("one_blank");
+  if (type === "fill_blank" && (g.sentence_with_blank.match(/_+/g) ?? []).join(",") !== "___") bad.add("one_blank");
   const f = fieldsOf(type, g, ctx.native);
   if (wrongLang(f.target, ctx.target)) bad.add("target_lang");
   if (wrongLang(f.native.map((t) => withoutTarget(t, g)), ctx.native)) bad.add("native_lang");

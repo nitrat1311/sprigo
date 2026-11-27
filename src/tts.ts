@@ -47,7 +47,7 @@ const PIPER: Record<string, Record<"f" | "m", string>> = {
   es: { f: "es_ES-sharvard-medium", m: "es_ES-davefx-medium" },
   tr: { f: "tr_TR-dfki-medium", m: "tr_TR-fahrettin-medium" },
   hu: { f: "hu_HU-anna-medium", m: "hu_HU-imre-medium" },
-  ro: { f: "ro_RO-mihai-medium", m: "ro_RO-mihai-medium" },
+  ro: { f: "ro_RO-raluca-high", m: "ro_RO-mihai-medium" },
   // Flemish voices: the bundled library's only nl_NL voice (MLS) was reported to sound unnatural; the newer nl_NL
   // voices (pim, ronnie, alex) need Piper 1.5, so switch to one of them once the Piper runtime is updated.
   nl: { f: "nl_BE-nathalie-medium", m: "nl_BE-rdh-medium" },
@@ -86,7 +86,7 @@ async function engineFor(lang: string, voice?: Voice, p?: TtsProvider, accent?: 
 
 const workers: Partial<Record<Engine, Worker>> = {};
 const loadListeners: Record<Engine, Set<(m: Msg) => void>> = { kokoro: new Set(), piper: new Set() };
-let pending: { id: number; msg: (m: Msg) => void; cancel: () => void } | undefined; // the one speak a worker is working on
+let pending: { engine: Engine; id: number; msg: (m: Msg) => void; cancel: () => void } | undefined; // the one speak a worker is working on
 
 function worker(e: Engine) {
   let w = workers[e];
@@ -95,19 +95,30 @@ function worker(e: Engine) {
       ? new Worker(new URL("./kokoro.worker.ts", import.meta.url), { type: "module" })
       : new Worker(new URL("./piper.worker.ts", import.meta.url), { type: "module" });
     w.onmessage = ({ data: m }: MessageEvent<Msg>) => {
+      if (workers[e] !== w) return;
       if (m.id === undefined) loadListeners[e].forEach((f) => f(m));
       else if (m.id === pending?.id) pending.msg(m);
     };
     w.onerror = (ev) => {
-      const m = { type: "error", message: ev.message || `${e} worker failed` };
-      loadListeners[e].forEach((f) => f(m));
-      pending?.msg({ ...m, id: pending.id });
+      if (workers[e] === w) resetWorker(e, ev.message || `${e} worker failed`);
     };
   }
   return w;
 }
 
 const loads = new Map<string, Promise<void>>();
+const VOICE_LOAD_MS = 120_000;
+const SYNTHESIS_MS = 60_000;
+
+function resetWorker(engine: Engine, message: string) {
+  workers[engine]?.terminate();
+  delete workers[engine];
+  for (const key of loads.keys()) if (key.startsWith(engine + ":")) loads.delete(key);
+  const error = { type: "error", message };
+  loadListeners[engine].forEach((f) => f(error));
+  if (pending?.engine === engine) pending.msg(error);
+}
+
 /** Loads (downloads on first use, then cached) an engine's model; `onProgress` gets 0..1 of the first load. */
 function load(e: Engine, voice: string, onProgress: (p: number) => void = () => {}) {
   const key = `${e}:${voice}`;
@@ -120,12 +131,16 @@ function load(e: Engine, voice: string, onProgress: (p: number) => void = () => 
     p = new Promise<void>((ok, no) => {
       const f = (m: Msg) => {
         if (!mine(m)) return;
-        if (m.type === "ready") { loadListeners[e].delete(f); ok(); }
-        else if (m.type === "error") { loadListeners[e].delete(f); no(new Error(m.message)); }
+        if (m.type !== "ready" && m.type !== "error") return;
+        clearTimeout(timer);
+        loadListeners[e].delete(f);
+        if (m.type === "ready") ok();
+        else no(new Error(m.message));
       };
+      const timer = setTimeout(() => resetWorker(e, `${e} voice load timed out`), VOICE_LOAD_MS);
       loadListeners[e].add(f);
       worker(e).postMessage({ type: "load", voice });
-    }).catch((err) => { loads.delete(key); throw err; });
+    }).catch((err) => { if (loads.get(key) === p) loads.delete(key); throw err; });
     loads.set(key, p);
   }
   return p.finally(() => loadListeners[e].delete(progress));
@@ -195,14 +210,20 @@ async function system(text: string, lang: string, gender: "f" | "m" | undefined,
   if (!synth) return done(); // no system voice in this webview: nothing to say it with
   const voices = await systemVoices();
   if (mine !== seq) return; // cut while waiting
+  if (!voices.length) return done();
   const u = new SpeechSynthesisUtterance(text);
   u.lang = accent ?? lang;
   const { voice, pitch } = pickSystemVoice(voices, lang, gender, accent);
   if (voice) u.voice = voice;
   u.pitch = pitch;
   u.rate = speed;
-  u.onstart = () => begun();
-  u.onend = u.onerror = done;
+  let timer = setTimeout(done, 10_000);
+  u.onstart = () => {
+    clearTimeout(timer);
+    if (mine === seq) begun();
+    timer = setTimeout(done, 90_000);
+  };
+  u.onend = u.onerror = () => { clearTimeout(timer); done(); };
   synth.speak(u);
 }
 
@@ -231,6 +252,7 @@ function player(ctx: AudioContext, mine: number, done: () => void) {
 
 const audioCtx = async (mine: number) => {
   webAudio = true;
+  if (actx?.state === "closed") { actx = undefined; analyser = undefined; }
   const ctx = (actx ??= new AudioContext());
   await ctx.resume().catch(() => {}); // iOS: may stay suspended until the next pointerup / touchend warms it
   if (!isRunning(ctx)) watch(); // the tap that would have resumed it may already be gone
@@ -274,22 +296,23 @@ async function viaWorker(e: Engine, text: string, voice: string, mine: number, d
   const hit = cache.get(key);
   if (hit) { remember(cache, key, hit); hit.forEach(play); end(); return; }
 
-  const loading = load(e, e === "kokoro" ? "" : voice);
-  // A Piper voice not downloaded yet keeps downloading, but this line falls back to the system voice.
-  if (e === "piper" && !(await Promise.race([loading.then(() => true), new Promise((ok) => setTimeout(ok, 5000, false))]))) throw new Error(STILL_LOADING);
+  await load(e, e === "kokoro" ? "" : voice);
   if (mine !== seq) return;
   const got: Chunk[] = [];
   await new Promise<void>((started, failed) => {
-    const timer = setTimeout(() => { pending = undefined; failed(new Error(`${e} timed out`)); }, 30_000);
+    const timeout = () => setTimeout(() => resetWorker(e, `${e} synthesis timed out`), SYNTHESIS_MS);
+    let timer = timeout();
     pending = {
+      engine: e,
       id: mine,
       cancel: () => { clearTimeout(timer); started(); },
       msg: (m) => {
-        if (m.type === "chunk") { clearTimeout(timer); got.push(m as Chunk); play(m as Chunk); started(); }
-        else if (m.type === "end" || m.type === "error") {
+        if (m.type === "chunk") {
+          clearTimeout(timer); timer = timeout(); got.push(m as Chunk); play(m as Chunk); started();
+        } else if (m.type === "end" || m.type === "error") {
           clearTimeout(timer);
           pending = undefined;
-          if (m.type === "end") remember(cache, key, got); // ponytail: 20 lines kept, oldest dropped
+          if (m.type === "end" && got.length) remember(cache, key, got);
           if (got.length) { end(); started(); } else failed(new Error(m.message ?? `${e} made no audio`));
         }
       },
@@ -351,7 +374,6 @@ let noticed = false;
 export function onTtsFallback(cb: () => void) { fallbackSubs.add(cb); return () => { fallbackSubs.delete(cb); }; }
 export const resetTtsNotice = () => { noticed = false; };
 const fellBack = () => { if (!noticed) { noticed = true; fallbackSubs.forEach((f) => f()); } };
-const STILL_LOADING = "Piper voice still loading"; // a first download: the next lines use it, not worth a notice
 
 /** One voice at a time: a new call cuts the previous one. Resolves when this speech ends or is cut.
  *  Falls back to the system voice if the local engine fails before any audio. `started` gets the time its audio begins.
@@ -376,7 +398,13 @@ export async function speak(text: string, lang: string, voice?: Voice, started?:
       return over;
     } catch (e) {
       console.error(e);
-      if ((e as Error).message !== STILL_LOADING) fellBack();
+      if (mine === seq && local[1] === PIPER.ro.f) {
+        try {
+          await viaWorker("piper", text, PIPER.ro.m, mine, done, rate);
+          return over;
+        } catch (backupError) { console.error(backupError); }
+      }
+      if (mine === seq) fellBack();
     }
   } else if (want !== "system") fellBack(); // e.g. Kokoro or Piper has no voice for this language
   lastEngine = "system";

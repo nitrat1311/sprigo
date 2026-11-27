@@ -1,3 +1,4 @@
+import { romanianExam } from "../src/romanianExam";
 import { expect, test, type Page } from "@playwright/test";
 import { readFileSync } from "node:fs";
 import { ANSWER, BANK, FORM, PAIRS, mockOllama } from "./mockAi";
@@ -69,7 +70,7 @@ test("help answers setup questions in the app, also from a setting's ?", async (
 });
 
 /** Answers whatever exercise is on screen with the mock's right answer; false once the lesson is over. */
-async function answer(lesson: ReturnType<Page["getByRole"]>) {
+async function answer(lesson: ReturnType<Page["getByRole"]>, expected = ANSWER) {
   const button = (name: string) => lesson.getByRole("button", { name, exact: true });
   const opt = (text: string) => lesson.locator(".opt", { hasText: new RegExp(`^\\d?${text}$`) });
   await expect(lesson.locator('.result-wrap[role="status"]')).toBeHidden({ timeout: 15_000 }); // still generating is not "over"
@@ -84,7 +85,7 @@ async function answer(lesson: ReturnType<Page["getByRole"]>) {
     for (const w of BANK) await lesson.locator(".bank .tok", { hasText: w }).click();
     await button("Check").click();
   } else {
-    await opt(ANSWER).click();
+    await lesson.locator(".opt").filter({ hasText: expected }).getByText(expected, { exact: true }).click();
     await button("Check").click();
   }
   await expect(lesson.getByText("Correct!")).toBeVisible();
@@ -252,6 +253,17 @@ test("Stories lists earlier levels once the learner moves up", async ({ page }) 
   await expect(page.getByRole("dialog", { name: "ok" }).getByText("Hola").first()).toBeVisible();
 });
 
+async function passRomanianExam(exam: ReturnType<Page["getByRole"]>, level: "A1" | "B1") {
+  const questions = romanianExam(level);
+  for (let i = 0; i < questions.length; i++) {
+    const prompt = await exam.locator(".ex-title").innerText();
+    const choice = questions.find((item) => item.kind === "choice" && item.prompt === prompt);
+    if (choice?.kind !== "choice") throw new Error("Unexpected Romanian exam question: " + prompt);
+    await answer(exam, choice.options[choice.answer]);
+    await answer(exam);
+  }
+}
+
 test("Romanian profiles that finished A1 can continue into B1 after a course update", async ({ page }) => {
   const course = readFileSync(new URL("../courses/ro.yml", import.meta.url), "utf8");
   const previous = course.split("\n  B1:")[0];
@@ -264,7 +276,7 @@ test("Romanian profiles that finished A1 can continue into B1 after a course upd
   await page.getByRole("button", { name: "Learn" }).click();
   await page.getByRole("button", { name: "Skip A1 — take the level test" }).click();
   const exam = page.getByRole("dialog", { name: "Lesson" });
-  for (let i = 0; await answer(exam); i++) expect(i).toBeLessThan(40);
+  await passRomanianExam(exam, "A1");
   await expect(exam.getByText("A1 complete!")).toBeVisible();
   await exam.getByRole("button", { name: "Done" }).click();
   await expect(page.getByText("Telling Stories", { exact: true })).toHaveCount(0);
@@ -281,7 +293,7 @@ test("Romanian profiles that finished A1 can continue into B1 after a course upd
   await expect(page.getByRole("button", { name: "What Life Used to Be Like" })).toBeEnabled();
 
   await page.getByRole("button", { name: "Skip B1 — take the level test" }).click();
-  for (let i = 0; await answer(exam); i++) expect(i).toBeLessThan(40);
+  await passRomanianExam(exam, "B1");
   await expect(exam.getByText("B1 complete!")).toBeVisible();
   await exam.getByRole("button", { name: "Done" }).click();
   await expect(page.getByRole("button", { name: "B1 Checkpoint" })).toBeEnabled();

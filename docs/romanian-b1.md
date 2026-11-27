@@ -13,7 +13,13 @@ revisit examples and Practice to review mistakes and recall vocabulary.
 Open the matching unit in Stories for reading practice. For feedback on a
 short composition, choose the unit in Practice → Writing. In Roleplay,
 rehearse the scenario from the table and respond aloud where voice input is
-available. The app generates its exercises and feedback using your configured AI model.
+available. The app generates lesson exercises and feedback using your configured AI model.
+The Romanian A1 and B1 checkpoints and level tests use fixed questions, including
+reading passages and listening prompts. The conjugation trainer uses built-in tables.
+
+Piper uses [Raluca by eduardem](https://huggingface.co/eduardem/piper-tts-romanian)
+for the female Romanian voice and Mihai for the male voice. Raluca is downloaded
+on demand and licensed under CC BY-NC 4.0.
 
 For listening practice, hear a recording once for the main point and again
 for details. Summarize it in two or three Romanian sentences before checking

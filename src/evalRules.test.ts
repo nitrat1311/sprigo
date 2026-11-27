@@ -29,7 +29,7 @@ test("a sound choice item passes every rule", () => {
 
 test("choice items: answer outside the options, equal options, answer named in the prompt", () => {
   assert.deepEqual(checkItem("multiple_choice", { prompt: "Hangisi?", options: ["Hi", "Bye", "Yes"], answer_index: 3 }, EN_TR), ["answer_in_options", "dropped"]);
-  assert.deepEqual(checkItem("multiple_choice", { prompt: "Hangisi?", options: ["Good morning", "good morning!", "Bye", "Hi"], answer_index: 0 }, EN_TR), ["distinct_options"]);
+  assert.deepEqual(checkItem("multiple_choice", { prompt: "Hangisi?", options: ["Good morning", "good morning!", "Bye", "Hi"], answer_index: 0 }, EN_TR), ["distinct_options", "dropped"]);
   assert.deepEqual(checkItem("word_select", { prompt: "'evening' kelimesi hangisi?", options: ["evening", "morning", "night", "noon"], answer_index: 0 }, EN_TR), ["no_leak", "dropped"]);
 });
 
@@ -55,7 +55,7 @@ test("translate works in both directions", () => {
 test("fill_blank needs exactly one blank", () => {
   const g = { prompt: "Boşluğu doldur.", sentence_with_blank: "I ___ a teacher.", options: ["am", "is", "are", "be"], answer_index: 0 };
   assert.deepEqual(checkItem("fill_blank", g, EN_TR), []);
-  assert.deepEqual(checkItem("fill_blank", { ...g, sentence_with_blank: "I ___ a ____." }, EN_TR), ["one_blank"]);
+  assert.deepEqual(checkItem("fill_blank", { ...g, sentence_with_blank: "I ___ a ____." }, EN_TR), ["one_blank", "dropped"]);
 });
 
 test("match: a repeated target word", () => {
@@ -126,4 +126,9 @@ test("Dutch dictation and sentences with ij use Dutch", () => {
   assert.equal(guessLang("Mijn fiets is gestolen."), "nl");
   assert.equal(answerLang({ answer: "Hoe laat is het nu?", context: "" }, "en", "nl"), "nl");
   assert.equal(answerLang({ answer: "Hij is ziek.", context: "" }, "en", "nl"), "nl");
+});
+
+test("Russian dictation uses the answer script even for short Romanian prompts", () => {
+  assert.equal(answerLang({ answer: "Спасибо!", context: "Mulțumesc!" }, "ro", "ru"), "ru");
+  assert.equal(answerLang({ answer: "Mulțumesc!", context: "Спасибо!" }, "ro", "ru"), "ro");
 });

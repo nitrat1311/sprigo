@@ -17,12 +17,13 @@ const idx = z.int().min(0).max(3);
 
 type Def = { guide: string; schema: z.ZodType; toItem: (g: any) => Item | null };
 
-const choice = (guide: string, extra: Record<string, z.ZodType>, map: (g: any) => { context?: string; big?: boolean; listen?: string }): Def => ({
+const choice = (guide: string, extra: Record<string, z.ZodType>, map: (g: any) => { context?: string; big?: boolean; listen?: string } | null): Def => ({
   guide,
   schema: z.object({ prompt: s, ...extra, options, answer_index: idx }),
   toItem: (g) => {
-    if (g.answer_index >= g.options.length || new Set(g.options).size !== g.options.length || givesAway(g.prompt, g.options, g.answer_index)) return null;
+    if (g.answer_index >= g.options.length || new Set(g.options.map((o: string) => normalize(o))).size !== g.options.length || givesAway(g.prompt, g.options, g.answer_index)) return null;
     const m = map(g);
+    if (!m) return null;
     return { kind: "choice", prompt: g.prompt, context: m.context ?? "", big: !!m.big, listen: m.listen ?? "", ...shuffleAnswer(g.options, g.answer_index) };
   },
 });
@@ -40,22 +41,27 @@ export const REGISTRY: Partial<Record<string, Def>> = {
   },
   word_select: choice("Ask for the target-language word that matches a native-language word (or the reverse). 4 options, one correct.", {}, () => ({})),
   multiple_choice: choice("A multiple-choice question about a word, phrase or translation. 4 options, one correct.", {}, () => ({})),
+  reading_choice: choice("Put the complete target-language notice or email in passage. Ask a question in the learner's language that requires reading it, with exactly one correct option.",
+    { passage: s }, (g) => g.passage.trim() ? { context: g.passage.trim() } : null),
   image_select: choice("Show one emoji that clearly depicts a vocabulary word; options are target-language words. 4 options, one correct.",
     { emoji: s }, (g) => ({ context: g.emoji, big: true })),
   listen_select: choice("The learner hears `audio_text` (a short target-language word or sentence) and picks what they heard or its meaning. Options must not show audio_text verbatim unless the question is 'which did you hear'.",
     { audio_text: s }, (g) => ({ listen: g.audio_text })),
   fill_blank: choice("A target-language sentence with exactly one blank written as ___; options fill the blank.",
-    { sentence_with_blank: s }, (g) => ({ context: g.sentence_with_blank })),
+    { sentence_with_blank: s }, (g) => {
+      const blanks = g.sentence_with_blank.match(/_+/g);
+      return blanks?.length === 1 && blanks[0] === "___" ? { context: g.sentence_with_blank } : null;
+    }),
   sentence_complete: choice("The beginning of a target-language sentence; options are possible endings, only one natural and correct.",
     { sentence_start: s }, (g) => ({ context: `${g.sentence_start} …` })),
   error_correct: choice("A target-language sentence containing one typical learner mistake; options are rewrites, exactly one fully correct.",
-    { wrong_sentence: s }, (g) => ({ context: g.wrong_sentence })),
-  dialogue: {
-    guide: "A short dialogue (2–4 lines, 'Name: text') following the scenario/goal if given; the learner picks the best next line. 4 options, one correct.",
-    schema: z.object({ prompt: s, dialogue_lines: z.array(s).min(2).max(4), options, answer_index: idx }),
-    toItem: (g) => g.answer_index >= g.options.length ? null
-      : { kind: "choice", prompt: g.prompt, context: g.dialogue_lines.join("\n"), big: false, listen: "", ...shuffleAnswer(g.options, g.answer_index) },
-  },
+    { wrong_sentence: s }, (g) => normalize(g.wrong_sentence) !== normalize(g.options[g.answer_index])
+      ? { context: g.wrong_sentence } : null),
+  dialogue: choice("A short dialogue (2–4 lines, 'Name: text') following the scenario/goal. End before the missing reply. Ask for the next line with one correct option.",
+    { dialogue_lines: z.array(s).min(2).max(4) }, (g) => {
+      const context = g.dialogue_lines.join("\n");
+      return repeatsDialogueAnswer(context, g.options[g.answer_index]) ? null : { context };
+    }),
   word_bank: {
     guide: "The learner builds a target-language sentence from word tiles. `answer_words` is the correct sentence split into words (punctuation attached to words), `distractor_words` 2–4 plausible wrong tiles. `prompt` is only the native-language meaning: never write the target sentence in it.",
     schema: z.object({ prompt: s, answer_words: z.array(s).min(2).max(10), distractor_words: z.array(s).min(1).max(4) }),
@@ -79,6 +85,12 @@ export const REGISTRY: Partial<Record<string, Def>> = {
   // speak / story / roleplay / video_call: not generated in v1 (DECISIONS D2, E1) — skipped.
 };
 
+export function repeatsDialogueAnswer(context: string, answer: string) {
+  const normalized = normalize(answer);
+  return !!normalized && context.split("\n").some((line) =>
+    normalize(line.replace(/^[^:]*:\s*/, "")) === normalized);
+}
+
 export const DEFAULT_COUNT = 2; // DECISIONS B6: used when the YAML activity has no `count`
 
 export type LessonActivity = { key: string; type: string; count: number; hints: Record<string, unknown> };
@@ -94,7 +106,11 @@ export const lessonSchema = (acts: LessonActivity[]) =>
 /** `langs`: the course and native languages, whose alphabets the items may use besides Latin. */
 export function toItems(acts: LessonActivity[], out: Record<string, unknown[]>, langs: string[]): Item[] {
   const stray = strayScript(langs);
-  return acts.flatMap((a) => (out[a.key] ?? []).filter((g) => !stray(g)).map((g) => REGISTRY[a.type]!.toItem(g)).filter((x): x is Item => !!x));
+  return acts.flatMap((a) => (out[a.key] ?? []).filter((g) => !stray(g)).map((g) => {
+    const item = REGISTRY[a.type]!.toItem(g);
+    // Score alternate Romanian translations through contextual judging, not the model's unverified list.
+    return a.type === "translate" && langs[0] === "ro" && item?.kind === "input" ? { ...item, accepted: [] } : item;
+  }).filter((x): x is Item => !!x));
 }
 
 // Small models now and then slip a word of another alphabet into a sentence ("Tíz perccel後に", "емiatt").
@@ -116,6 +132,7 @@ export function systemPrompt(c: Pick<LessonContext, "course" | "level" | "native
     `You write exercises for a language-learning app. The learner is a native ${langEn(c.native)} speaker learning ${c.course.name} at CEFR level ${c.level}.`,
     `Target-language text must be natural and suit ${c.level}. Every instruction ("prompt"), translation, note and explanation is written in ${langEn(c.native)}.`,
     "Practice the step's vocabulary and grammar. Choice questions have exactly one correct option. Do not repeat the same sentence across exercises.",
+    ...(c.course.iso === "ro" ? ["Use standard Romanian with ă, â, î, ș and ț. Check agreement, clitics and verb forms. Before returning any item, verify the prompt, the marked answer, and every accepted variant against the source meaning. Use distinct distractors that differ in meaning or grammatical fit. Acknowledge uncertainty rather than invent a rule or word."] : []),
     "Respond only with JSON matching the schema.",
   ].join("\n");
 }
@@ -250,7 +267,26 @@ export function speechMisses(expected: string, heard: string, lang?: string) {
   return want.filter((w) => { const k = got.indexOf(w); if (k >= 0) got.splice(k, 1); return k < 0; });
 }
 /** Speaking check: share of the expected words the transcript contains. */
+const ROMANIAN_NUMBERS: Record<string, string> = {
+  zero: "0", doi: "2", două: "2", trei: "3", patru: "4", cinci: "5", șase: "6", șapte: "7", opt: "8", nouă: "9", zece: "10",
+  unsprezece: "11", doisprezece: "12", douăsprezece: "12", treisprezece: "13", paisprezece: "14", cincisprezece: "15",
+  șaisprezece: "16", șaptesprezece: "17", optsprezece: "18", nouăsprezece: "19",
+  douăzeci: "20", treizeci: "30", patruzeci: "40", cincizeci: "50", șaizeci: "60", șaptezeci: "70", optzeci: "80", nouăzeci: "90",
+};
+const ROMANIAN_TENS = /(^| )(douăzeci|treizeci|patruzeci|cincizeci|șaizeci|șaptezeci|optzeci|nouăzeci) și (unu|una|doi|două|trei|patru|cinci|șase|șapte|opt|nouă)(?= |$)/gu;
+
+/** For Romanian read-aloud, preserve words and their order. */
+function romanianTranscript(text: string) {
+  return normalize(text, "ro")
+    .replace(ROMANIAN_TENS, (_, space: string, tens: string, ones: string) => space + (Number(ROMANIAN_NUMBERS[tens]) + Number(ROMANIAN_NUMBERS[ones] ?? 1)))
+    .split(" ").map((word) => ROMANIAN_NUMBERS[word] ?? word).join(" ");
+}
+
 export function speechScore(expected: string, heard: string, lang?: string) {
+  if (lang === "ro") {
+    const want = romanianTranscript(expected);
+    return want && want === romanianTranscript(heard) ? 1 : 0;
+  }
   const want = normalize(expected, lang).split(" ").filter(Boolean).length;
   return want ? 1 - speechMisses(expected, heard, lang).length / want : 0;
 }

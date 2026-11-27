@@ -31,7 +31,7 @@ export const taskPrompt = (unitTitle: string, description: string, vocabulary: s
 export const feedbackPrompt = (task: string, text: string) => [
   `Task: ${task}`,
   `The learner wrote:\n"""\n${text}\n"""`,
-  "Correct real mistakes only (grammar, spelling, word choice, unnatural wording); leave correct sentences alone.",
+  "Correct real mistakes only (grammar, spelling, word choice, unnatural wording); leave correct sentences alone. Preserve the people, gender, dates, facts and intent. List every edit in corrections and never return identical original and corrected phrases.",
   "`corrections`: one entry per mistake. `original` is copied exactly from the learner's text (a few words around the mistake, never the whole text), " +
     "`corrected` is that part fixed, `why` explains the rule in one short sentence in the learner's language.",
   "`rewritten`: the whole text, corrected and natural, still at the learner's level. `comment`: one encouraging sentence in the learner's language.",

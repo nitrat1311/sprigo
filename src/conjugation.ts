@@ -4,6 +4,7 @@
 import { z } from "zod";
 import { CEFR, type Cefr } from "./course.ts"; // .ts: node --test runs this file directly
 import { normalize, type Item } from "./activities.ts";
+import { RO_FORMS } from "./conjugationRo.ts";
 import { HU_FORMS } from "./conjugationHu.ts";
 
 /** `forms`: verb → tense → one form per person in `persons` order, comma-separated; "x/y" accepts both, x is shown. */
@@ -69,9 +70,9 @@ export const LANGS: Record<string, Lang> = {
   },
   ro: {
     persons: ["eu", "tu", "el/ea", "noi", "voi", "ei/ele"],
-    verbs: ["fi", "avea", "face", "merge", "putea", "spune", "vrea", "ști", "veni", "vorbi", "mânca", "locui",
-      "lucra", "studia", "bea", "scrie", "deschide", "dormi", "cere", "aștepta", "vedea", "aduce", "pleca", "plăcea", "înțelege"],
-    tenses: { A1: ["prezent"], A2: ["perfect compus", "imperfect"], B1: ["viitor", "condițional-optativ"], B2: ["conjunctiv"], C1: ["mai mult ca perfect"] },
+    verbs: Object.keys(RO_FORMS),
+    tenses: { A1: ["prezent"], A2: ["perfect compus", "imperfect"], B1: ["viitor", "condițional-optativ", "conjunctiv", "mai mult ca perfect"] },
+    forms: RO_FORMS,
   },
   nl: {
     persons: ["ik", "jij", "hij/zij", "wij", "jullie", "zij"],
@@ -138,7 +139,6 @@ export function fromTable(iso: string, asks: Ask[], prompt: string): Item[] | nu
   return asks.flatMap((x) => {
     const all = l.forms![x.verb]?.[x.tense]?.split(", ")[l.persons.indexOf(x.person)]?.split("/");
     if (!all?.[0]) return [];
-    const pronoun = x.person.split("/")[0];
-    return [drillItem(x, all[0], [...all.slice(1), ...all.map((f) => `${pronoun} ${f}`)], prompt)];
+    return [drillItem(x, all[0], [...all.slice(1), ...x.person.split("/").flatMap((pronoun) => all.map((f) => `${pronoun} ${f}`))], prompt)];
   });
 }

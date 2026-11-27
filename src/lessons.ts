@@ -1,9 +1,10 @@
+import { romanianExam } from "./romanianExam";
 // Lesson generation (DECISIONS C2, C3): cache → one call for the whole step → per-activity fallback.
 import { crossChecked, formsPrompt, formsSchema, fromTable, pickAsks } from "./conjugation";
 import { z } from "zod";
 import { generate, generatePlain, generateStream } from "./ai";
 import { applyMemoryOps, cachedGuides, enrollmentProfile, getCached, listMemories, listMistakes, markMemoriesUsed, memoryOn, putCached } from "./db";
-import { REGISTRY, givesAway, langEn, lessonPrompt, mistakeLine, lessonSchema, plannedActivities, checkPrompt, checkSchema, rejected, reviewSystem, shuffleAnswer, solvePrompt, solveSchema, solveSystem, systemPrompt, toItems, type Item, type LessonContext, isEchoCorrection } from "./activities";
+import { REGISTRY, givesAway, langEn, lessonPrompt, mistakeLine, lessonSchema, plannedActivities, normalize, checkPrompt, checkSchema, rejected, reviewSystem, shuffleAnswer, solvePrompt, solveSchema, solveSystem, systemPrompt, toItems, type Item, type LessonContext, isEchoCorrection } from "./activities";
 import { CHAT_MAX_TURNS, CHAT_MIN_TURNS, FREE_GOAL, type Character } from "./characters";
 import { CEFR, guideId, levelsOf, storyId, type Course, type CourseLevel, type Cefr } from "./course";
 import { looseTutor, tutorPrompt, tutorSchema, tutorSystem, type TutorEvent, type TutorMsg } from "./tutor";
@@ -12,7 +13,7 @@ import { practicePrompt, practiceSchema, toPracticeSet, type PracticeSet } from 
 import { cleanDebrief, debriefPrompt, debriefSchema, debriefSystem, looseDebrief, looseRoleTurn, rehearsalSystem, roleTurnSchema, type RehearsalBrief } from "./rehearsal";
 import { avoidancePrompt, avoidanceSchema, looseAvoidance } from "./drills";
 import { fromGuides, lookupSchema, wordKey, type Lookup } from "./lookup";
-import { feedbackPrompt, feedbackSchema, looseFeedback, taskPrompt, taskSchema, writeId, type WritingTask } from "./writing";
+import { feedbackPrompt, feedbackSchema, looseFeedback, segments, taskPrompt, taskSchema, writeId, type WritingTask } from "./writing";
 import { cleanNote, noteFor, noteFresh, notePrompt, noteSystem, NOTE_KEY, type GardenNote, type NoteInfo } from "./gardenNote";
 import { goalInPrompt, inlineName, nameInPrompt, personaInPrompt } from "./tutors";
 
@@ -142,15 +143,18 @@ async function reviewed(c: LessonContext, items: Item[]): Promise<Item[]> {
 const inflight = new Map<string, Promise<Item[]>>();
 /** Cached lesson for (enrollment, step); `fresh` regenerates it ("Yeniden üret"). */
 export function loadLesson(enrollmentId: number, c: LessonContext, fresh = false): Promise<Item[]> {
+  const exam = examLevel(c.step.id);
+  if (c.course.iso === "ro" && (exam === "A1" || exam === "B1")) return Promise.resolve(romanianExam(exam));
   const k = `${enrollmentId}:${c.step.id}`;
   if (!fresh && inflight.has(k)) return inflight.get(k)!;
   const p = (async () => {
-    const cached = fresh ? null : await getCached<Item[]>(enrollmentId, c.step.id);
-    if (cached) return cached.filter((it) => it.kind !== "choice" || !givesAway(it.prompt, it.options, it.answer)); // cached before the check
+    const cached = fresh ? null : await getCached<(Item & { romanianReviewed?: true })[]>(enrollmentId, c.step.id);
+    if (cached && (c.course.iso !== "ro" || cached[0]?.romanianReviewed)) return cached.filter((it) => it.kind !== "choice" || !givesAway(it.prompt, it.options, it.answer)); // cached before the check
     const mistakes = (await listMistakes<Item>(enrollmentId, MISTAKES_IN_PROMPT)).map((m) => mistakeLine(m.item)).filter((x): x is string => !!x);
     const pid = await enrollmentProfile(enrollmentId);
     const items = await generateItems(c, mistakes, pid === null ? [] : await learnerFacts(pid));
-    await putCached(enrollmentId, c.step.id, items);
+    await putCached(enrollmentId, c.step.id, c.course.iso === "ro"
+      ? items.map((item) => ({ ...item, romanianReviewed: true })) : items);
     return items;
   })().finally(() => inflight.delete(k));
   inflight.set(k, p);
@@ -212,12 +216,30 @@ const storySchema = z.object({
   questions: z.array(z.object({ after_line: z.int(), prompt: z.string(), options: z.array(z.string()).min(3).max(4), answer: z.int() })).min(1).max(3),
 });
 export type Story = z.infer<typeof storySchema>;
+const supportedQuestions = z.object({ verified: z.array(z.int().min(1).max(3)) });
+const cyrillic = /\p{Script=Cyrillic}/u;
+
+async function verifyRomanianQuestions(c: Base, g: Story): Promise<Story["questions"]> {
+  const candidates = g.questions.filter((q) =>
+    q.after_line >= 0 && q.after_line < g.lines.length && q.options[q.answer] !== undefined &&
+    new Set(q.options.map((option) => normalize(option))).size === q.options.length &&
+    (c.native !== "ru" || cyrillic.test(q.prompt)));
+  if (!candidates.length) return [];
+  const evidence = candidates.map((q, i) => ({
+    number: i + 1, visible: g.lines.slice(0, q.after_line + 1).map((line) => line.text),
+    question: q.prompt, answer: q.options[q.answer], alternatives: q.options.filter((_, i) => i !== q.answer),
+  }));
+  const result = await generate(supportedQuestions, "You verify Romanian reading comprehension questions. Return their numbers only if the marked answer addresses the question, is explicitly supported by the visible lines, and no other option fits. Reject a time as an answer to a place question.",
+    JSON.stringify(evidence), "check", undefined, undefined, 60).catch(() => null);
+  return candidates.filter((_, i) => result?.verified.includes(i + 1));
+}
 
 /** Cached per (enrollment, unit) like lessons; `fresh` regenerates. */
 export async function loadStory(enrollmentId: number, c: Base, unit: Unit, fresh = false): Promise<Story> {
   const key = storyId(c.level, unit.id);
-  const cached = fresh ? null : await getCached<Story>(enrollmentId, key);
-  if (cached) return cached;
+  const romanian = c.course.iso === "ro";
+  const cached = fresh ? null : await getCached<Story & { romanianReviewed?: true }>(enrollmentId, key);
+  if (cached && (!romanian || cached.romanianReviewed)) return cached;
   const steps = unit.steps;
   const g = await generate(storySchema, systemPrompt(c), [
     `Write a short story told as a dialogue between 2–3 named characters, on the theme of the unit "${unit.title}"${unit.description ? ` (${unit.description})` : ""}.`,
@@ -230,10 +252,10 @@ export async function loadStory(enrollmentId: number, c: Base, unit: Unit, fresh
   const last = g.lines.length - 1;
   const story: Story = {
     ...g,
-    questions: g.questions.filter((q) => q.options[q.answer] !== undefined)
+    questions: (romanian ? await verifyRomanianQuestions(c, g) : g.questions).filter((q) => q.options[q.answer] !== undefined)
       .map((q) => ({ ...q, after_line: Math.min(Math.max(q.after_line, 0), last), ...shuffleAnswer(q.options, q.answer) })),
   };
-  await putCached(enrollmentId, key, story);
+  await putCached(enrollmentId, key, romanian ? { ...story, romanianReviewed: true } : story);
   return story;
 }
 
@@ -241,8 +263,10 @@ export async function loadStory(enrollmentId: number, c: Base, unit: Unit, fresh
 export async function loadWritingTask(enrollmentId: number, c: Base, unit: Unit, fresh = false): Promise<WritingTask> {
   const key = writeId(c.level, unit.id);
   const cached = fresh ? null : await getCached<WritingTask>(enrollmentId, key);
-  if (cached) return cached;
-  const task = await generate(taskSchema, systemPrompt(c),
+  const russian = c.course.iso === "ro" && c.native === "ru";
+  if (cached && (!russian || cyrillic.test(cached.task))) return cached;
+  const schema = russian ? taskSchema.refine((task) => cyrillic.test(task.task), "Write the task in Russian") : taskSchema;
+  const task = await generate(schema, systemPrompt(c),
     taskPrompt(unit.title, unit.description ?? "", [...new Set(unit.steps.flatMap((s) => s.vocabulary))]), "writing");
   await putCached(enrollmentId, key, task);
   return task;
@@ -260,8 +284,18 @@ export async function loadConjugation(c: Base, prompt: string): Promise<Item[]> 
   if (!items.length) throw new Error("The AI's verb forms didn't agree. Try again.");
   return items;
 }
-export const checkWriting = (c: Base, task: string, text: string) =>
-  generate(feedbackSchema, systemPrompt(c), feedbackPrompt(task, text), "writing", undefined, looseFeedback);
+export async function checkWriting(c: Base, task: string, text: string) {
+  const feedback = await generate(feedbackSchema, systemPrompt(c), feedbackPrompt(task, text), "writing", undefined, looseFeedback);
+  if (c.course.iso !== "ro") return feedback;
+  const patches = segments(text, feedback.corrections.filter((fix) =>
+    fix.corrected.trim() && normalize(fix.original, "ro") !== normalize(fix.corrected, "ro") &&
+    (c.native !== "ru" || cyrillic.test(fix.why))));
+  return {
+    corrections: patches.flatMap(({ fix }) => fix ? [{ original: fix.original, corrected: fix.corrected, why: fix.why }] : []),
+    rewritten: patches.map((part) => part.fix?.corrected ?? part.text).join(""),
+    comment: c.native === "ru" && !cyrillic.test(feedback.comment) ? "" : feedback.comment,
+  };
+}
 
 export type ChatMsg = { from: "ai" | "me"; text: string; translation?: string; correction?: string };
 
@@ -290,6 +324,7 @@ export async function chatTurn(c: Base & { about?: string[] }, ch: Character, to
       ? "Keep the chat going: react to what the learner just said and ask one follow-up question about the topic or their experience with it."
       : `Pace the scene so it lasts about ${CHAT_MIN_TURNS}–${CHAT_MAX_TURNS} learner messages: one small step per turn, with realistic details to sort out (names, dates, preferences, a small complication) and a question the learner has to answer. Never solve several steps at once.`,
     `\`correction\`: if the learner's last message has a mistake, the corrected sentence and a very short explanation in ${native}; otherwise "". Ignore capitalization and punctuation.`,
+    c.course.iso === "ro" ? "Use standard Romanian with diacritics. Correct grammar or wording only where needed, preserving names, gender, register, who did what and what the learner meant." : "",
     free
       ? "`goal_reached`: keep it false unless the learner clearly says goodbye; then say goodbye in `reply`."
       : `\`goal_reached\`: the learner has sent ${sent} message${sent === 1 ? "" : "s"}. Before ${CHAT_MIN_TURNS} it must be false: keep the scene going with the next step. From then on, true once the learner has achieved the goal; then wrap up the scene politely in \`reply\`.`,
@@ -347,15 +382,30 @@ export const unitGrammar = (u: Unit) => [...new Set(u.steps.flatMap((s) => s.gra
 
 export async function loadGuide(enrollmentId: number, c: Base, unit: Unit): Promise<Guide> {
   const key = guideId(c.level, unit.id);
-  const cached = await getCached<Guide>(enrollmentId, key);
-  if (cached) return cached;
+  const romanian = c.course.iso === "ro";
+  const cached = await getCached<Guide & { romanianReviewed?: true }>(enrollmentId, key);
+  if (cached && (!romanian || cached.romanianReviewed)) return cached;
+  const patterns = unitGrammar(unit);
+  const words = unitWords(unit);
   const g = await generate(guideSchema, systemPrompt(c), [
     `Write a study guide for the unit "${unit.title}".`,
-    `vocabulary: one entry per word, in this order: ${unitWords(unit).join(", ")}. \`translation\` in the learner's language; \`example\` a short ${c.level} sentence using it, with \`example_translation\`.`,
-    `grammar: one entry per pattern, in this order: ${unitGrammar(unit).join(" | ")}. \`explanation\`: 1–2 plain sentences in the learner's language; \`example\`: one target-language sentence.`,
+    `vocabulary: one entry per word, in this order: ${words.join(", ")}. \`translation\` in the learner's language; \`example\` a short ${c.level} sentence using it, with \`example_translation\`.`,
+    `grammar: one entry per pattern, in this order: ${patterns.join(" | ")}. \`explanation\`: 1–2 plain sentences in the learner's language; \`example\`: one target-language sentence.`,
+    ...(romanian ? ["Copy each vocabulary word and grammar pattern exactly. Explain only the given pattern in context, using standard Romanian and the learner's language as instructed. Never add words or rules to fill gaps."] : []),
   ].join("\n"), "guide");
-  await putCached(enrollmentId, key, g);
-  return g;
+  const guide = !romanian ? g : {
+    vocabulary: words.flatMap((word) => {
+      const row = g.vocabulary.find((v) => normalize(v.word, "ro") === normalize(word, "ro"));
+      return row ? [{ ...row, word }] : [];
+    }),
+    grammar: patterns.map((pattern) => ({
+      pattern,
+      explanation: g.grammar.find((row) => normalize(row.pattern, "ro") === normalize(pattern, "ro"))?.explanation ?? "",
+      example: "",
+    })),
+  };
+  await putCached(enrollmentId, key, romanian ? { ...guide, romanianReviewed: true } : guide);
+  return guide;
 }
 
 // ---- Word lookup (#28): course guidebooks first, then one AI call, cached per word and enrollment ----

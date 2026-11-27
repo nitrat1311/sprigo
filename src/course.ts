@@ -8,7 +8,7 @@ export type Cefr = (typeof CEFR)[number];
 
 // Canonical activity ids (PLAN §3.2). YAML only names the type; AI generates the content (DECISIONS B5).
 export const ACTIVITY_TYPES = [
-  "learn", "translate", "word_select", "match", "word_bank", "fill_blank", "multiple_choice",
+  "learn", "translate", "word_select", "match", "word_bank", "fill_blank", "multiple_choice", "reading_choice",
   "listen_type", "listen_select", "image_select", "sentence_complete", "error_correct", "dialogue",
   "speak", "story", "roleplay", "video_call",
 ] as const;

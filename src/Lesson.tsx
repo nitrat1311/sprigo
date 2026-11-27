@@ -9,7 +9,7 @@ import { MicButton } from "./Mic";
 import { answerLang } from "./evalRules";
 import { sttReady } from "./stt";
 import { dueToday } from "./srs";
-import { prewarm, speak, SPEED } from "./tts";
+import { prewarm, speak, SPEED, stopSpeaking } from "./tts";
 import { Words } from "./Words";
 import { SpeakButton } from "./SpeakButton";
 import { LEGEND_PASS, UNIT_TEST_PASS, unitTestOf, appeal, examLevel, explain, grammarDrill, judge, legendStep, loadConjugation, loadLesson, prefetchNext, stepContext, type Base } from "./lessons";
@@ -20,10 +20,11 @@ import { bankMatch, inField, keyAction, type KeyAction, type KeyState } from "./
 /** Opens a lesson, or the out-of-hearts sheet (design behaviour). Steps need an AI provider (DECISIONS C6). */
 export function useStartLesson() {
   const { t } = useTranslation();
-  const { s, ai, startLesson, openSheet, closeSheet, go } = useApp();
+  const { s, ai, course, startLesson, openSheet, closeSheet, go } = useApp();
   const buy = useBuy();
   return (id: string) => {
-    if (!ai && (!id.startsWith("practice-") || id === "practice-conjugate")) return openSheet(<>
+    const localRomanian = course?.iso === "ro" && (/^(A1|B1):(checkpoint|test)$/.test(id) || id === "practice-conjugate");
+    if (!ai && !localRomanian && (!id.startsWith("practice-") || id === "practice-conjugate")) return openSheet(<>
       <h3>{t("ai.needed")}</h3><p>{t("ai.neededDesc")}</p>
       <button className="btn btn-primary btn-block" onClick={() => { closeSheet(); go("settings"); }}>{t("ai.setUp")}</button>
       <button className="btn btn-ghost btn-block" onClick={closeSheet}>{t("sheet.cancel")}</button>
@@ -140,6 +141,8 @@ export function Lesson({ id }: { id: string }) {
   // Auto-play listening items once.
   useEffect(() => { prewarm(lang).catch(() => {}); }, [lang]); // the local voice loads while the lesson does
   useEffect(() => { if (it && (it.kind === "choice" || it.kind === "input") && it.listen) speak(it.listen, lang); }, [it, lang]);
+
+  useEffect(() => stopSpeaking, []);
 
   const quit = () => { closeSheet(); endLesson(); };
   const askQuit = () => {
