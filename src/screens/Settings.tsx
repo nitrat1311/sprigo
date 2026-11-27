@@ -7,6 +7,8 @@ import { SMALL_MODEL_B, isSmallModel } from "../modelSize";
 import { guideFor, verdictOf, type Measurement } from "../modelGuide";
 import { MEASURED } from "../modelGuideData";
 import { PROVIDERS, RECOMMENDED_OLLAMA, detectLocal, getKey, listModels, pullOllama, setKey, type AiConfig, type ProviderId } from "../ai";
+import { cancelOpenRouter, signInOpenRouter } from "../oauth";
+import { createPkce } from "../pkce";
 import { aiUsage, aiUsageMonths, getSetting, isCompanion, isTauri, isWeb, setSetting } from "../db";
 import { monthOf, summarize, type UsageMonth, type UsageRow } from "../usage";
 import { setCompanion, tailscaleStatus, type TailscaleStatus } from "../companion";
@@ -343,10 +345,13 @@ function AiConfigSheet({ provider, models: found }: { provider: ProviderId; mode
   const [models, setModels] = useState(found);
   const [status, setStatus] = useState<{ ok: boolean; msg: string } | null>(null);
   const [busy, setBusy] = useState(false);
+  const [signingIn, setSigningIn] = useState(false);
   const needsKey = PROVIDERS[provider].needsKey;
   const back = () => openSheet(<AiSheet />);
 
   useEffect(() => { getKey(provider).then((k) => setKeyState(k ?? "")); }, [provider]);
+  // Closing the sheet abandons a sign-in that is still waiting for the browser.
+  useEffect(() => () => { void cancelOpenRouter(); }, []);
   const cfg: AiConfig = { provider, baseURL: baseURL.trim(), model: model.trim() };
   // The measured guidance sits outside the label and is linked by aria-describedby, so it does not become part of the
   // field's accessible name. A small model keeps the size warning even when it was measured.
@@ -362,6 +367,25 @@ function AiConfigSheet({ provider, models: found }: { provider: ProviderId; mode
       setStatus({ ok: true, msg: t("ai.connected", { count: list.length }) });
     } catch (e) { setStatus({ ok: false, msg: `${t("ai.connectFailed")}: ${e instanceof Error ? e.message : String(e)}` }); }
     finally { setBusy(false); }
+  };
+  // #197: one click in the browser; Rust exchanges the code and writes the key to the keychain.
+  const signIn = async () => {
+    setSigningIn(true); setStatus(null);
+    try {
+      const r = await signInOpenRouter(await createPkce());
+      if (r === "cancelled") return; // the learner closed the tab or the sheet
+      if (r === "timeout") { setStatus({ ok: false, msg: t("ai.openrouterTimeout") }); return; }
+      const k = (await getKey(provider)) ?? "";
+      setKeyState(k);
+      setStatus({ ok: true, msg: t("ai.openrouterSignedIn") });
+      try {
+        const list = await listModels(cfg, k);
+        setModels(list);
+        if (!model && list[0]) setModel(list[0]);
+      } catch { /* the key is saved; Test shows what the model list could not load */ }
+    } catch (e) {
+      setStatus({ ok: false, msg: `${t("ai.openrouterFailed")}: ${e instanceof Error ? e.message : String(e)}` });
+    } finally { setSigningIn(false); }
   };
   const save = async (asBackup = false) => {
     setBusy(true);
@@ -386,6 +410,14 @@ function AiConfigSheet({ provider, models: found }: { provider: ProviderId; mode
           <input className="input" type="password" autoComplete="off" spellCheck={false} value={key} onChange={(e) => setKeyState(e.target.value)} />
         </label>
       )}
+      {provider === "openrouter" && isTauri && (
+        <div className="od-stack" style={gap("var(--s-2)")}>
+          <button className="btn btn-ghost btn-block" disabled={busy || signingIn} onClick={signIn}>
+            {t(signingIn ? "ai.openrouterSigningIn" : "ai.openrouterSignIn")}
+          </button>
+          <span className="muted small">{t("ai.openrouterSignInHint")}</span>
+        </div>
+      )}
       <label className="od-field"><b>{t("ai.model")}</b><span className="muted small">{t("ai.modelDesc")}</span>
         <input className="input" list="ai-models" value={model} spellCheck={false} onChange={(e) => setModel(e.target.value)}
           aria-describedby={measured || small ? "ai-model-note" : undefined} />
@@ -400,12 +432,12 @@ function AiConfigSheet({ provider, models: found }: { provider: ProviderId; mode
       {status && <p className="small" role="status" style={{ color: status.ok ? "var(--green)" : "var(--red)", overflowWrap: "anywhere" }}>{status.msg}</p>}
       <div className="od-stack sheet-actions" style={gap("var(--s-3)")}>
         <div className="od-row" style={gap("var(--s-3)")}>
-          <button className="btn btn-ghost" disabled={busy || (needsKey && !key.trim())} onClick={test}>{t("ai.test")}</button>
-          <button className="btn btn-primary od-fill" disabled={busy || !cfg.model || (needsKey && !key.trim())} onClick={() => save()}>{t("ai.save")}</button>
+          <button className="btn btn-ghost" disabled={busy || signingIn || (needsKey && !key.trim())} onClick={test}>{t("ai.test")}</button>
+          <button className="btn btn-primary od-fill" disabled={busy || signingIn || !cfg.model || (needsKey && !key.trim())} onClick={() => save()}>{t("ai.save")}</button>
         </div>
         {ai && ai.provider !== provider && (isBackup
           ? <button className="btn btn-ghost btn-block" disabled={busy} onClick={unsetBackup}>{t("ai.removeBackup")}</button>
-          : <button className="btn btn-ghost btn-block" disabled={busy || !cfg.model || (needsKey && !key.trim())} onClick={() => save(true)}>{t("ai.saveBackup")}</button>)}
+          : <button className="btn btn-ghost btn-block" disabled={busy || signingIn || !cfg.model || (needsKey && !key.trim())} onClick={() => save(true)}>{t("ai.saveBackup")}</button>)}
         <button className="btn btn-ghost btn-block" onClick={back}>{t("sheet.cancel")}</button>
       </div>
     </div>
