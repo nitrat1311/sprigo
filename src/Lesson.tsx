@@ -6,6 +6,7 @@ import { useBuy } from "./screens/Screens";
 import * as db from "./db";
 import { SPEECH_PASS, hideAnswer, listenItems, madnessItems, matchesAnswer, normalize, sameWords, speakItems, speechMisses, speechScore, type Item } from "./activities";
 import { hasRomanianPractice, ROMANIAN_READING_ID } from "./romanianLessons";
+import { romanianContrast, romanianMission, romanianMistakeContrast } from "./romanianPractice";
 import { MicButton } from "./Mic";
 import { answerLang } from "./evalRules";
 import { sttReady } from "./stt";
@@ -66,6 +67,17 @@ async function practiceItems(id: string, enrollmentId: number, prompts: { listen
   const listenPrompt = prompts.listen;
   if (id === "practice-conjugate") return base ? loadConjugation(base, prompts.conjugate) : [];
   if (id === "practice-mistakes") return (await db.listMistakes<Item>(enrollmentId, 10)).map((m) => ({ ...m.item, mistakeId: m.id }));
+  if (base?.course.iso === "ro" && (id === "practice-mission-a1" || id === "practice-mission-b1"))
+    return romanianMission(id === "practice-mission-a1" ? "a1" : "b1", base.native);
+  if (base?.course.iso === "ro" && id === "practice-romanian-recall") {
+    const recent = await db.listMistakes<Item>(enrollmentId, 1000, true);
+    const picked = new Map<number, number>();
+    for (const { id, item } of recent) {
+      const index = romanianMistakeContrast(item);
+      if (index >= 0 && !picked.has(index)) picked.set(index, id);
+    }
+    return [...picked].map(([index, mistakeId]) => ({ ...romanianContrast(index), mistakeId }));
+  }
   if (id === "practice-listen") return listenItems(await db.listWords(enrollmentId), listenPrompt);
   if (id === "practice-due") {
     const all = await db.listWords(enrollmentId);
@@ -116,12 +128,13 @@ export function Lesson({ id }: { id: string }) {
   const [micPress, setMicPress] = useState(0); // speak: Space bumps this to press the mic
   const [matched, setMatched] = useState<{ done: string[]; left: string | null; wrong: string[]; misses: number }>({ done: [], left: null, wrong: [], misses: 0 });
   const [heard, setHeard] = useState<string | null>(null); // speak: last transcript ("" = nothing heard)
+  const spokenRetry = useRef(false);
   const [stt, setStt] = useState(false);
   useEffect(() => { sttReady().then(setStt); }, []);
   const limit = TIME_LIMIT[id];
   const [left, setLeft] = useState(limit ?? 0);
 
-  function reset() { picked.current = null; setSel(null); setBankSel([]); setText(""); setTyped(""); setHeard(null); setFb(null); setMatched({ done: [], left: null, wrong: [], misses: 0 }); }
+  function reset() { picked.current = null; spokenRetry.current = false; setSel(null); setBankSel([]); setText(""); setTyped(""); setHeard(null); setFb(null); setMatched({ done: [], left: null, wrong: [], misses: 0 }); }
 
   useEffect(() => {
     if (!enrollment || (!ctx && !practice)) return;
@@ -206,6 +219,7 @@ export function Lesson({ id }: { id: string }) {
       const { mistakeId, ...item } = it;
       if ((id === "practice-listen" || id === "practice-due") && it.kind === "choice") db.reviewWord(enrollment.id, it.listen, ok);
       else if (ok && mistakeId) db.deleteMistake(mistakeId);
+      else if (!ok && mistakeId && id === "practice-romanian-recall") db.deferMistake(mistakeId);
       else if (!ok && !mistakeId) db.addMistake(enrollment.id, item);
     }
     let lost = false;
@@ -392,11 +406,15 @@ export function Lesson({ id }: { id: string }) {
       </div>
       <MicButton item={i} playback lang={lang} disabled={!!fb} trigger={micPress} onText={(txt) => {
         setHeard(txt);
+        if (!txt) return;
+        const correct = speechScore(it.phrase, txt, lang) >= SPEECH_PASS;
+        if (lang === "ro" && !correct && !spokenRetry.current) { spokenRetry.current = true; return; }
         const miss = speechMisses(it.phrase, txt, lang);
-        if (txt) grade(speechScore(it.phrase, txt, lang) >= SPEECH_PASS, it.phrase, txt,
+        grade(correct, it.phrase, txt,
           [t("lesson.heard", { text: txt }), miss.length ? t("lesson.missed", { words: miss.join(", ") }) : ""].filter(Boolean).join(" · "));
       }} />
       {heard === "" && <p className="small" role="alert" style={{ textAlign: "center", color: "var(--orange)", fontWeight: 800 }}>{t("lesson.heardNothing")}</p>}
+      {lang === "ro" && heard && !fb && spokenRetry.current && <p className="small" role="status">{t("lesson.heard", { text: heard })} · {t("lesson.speechRetry")}</p>}
     </>
   );
   else if (it.kind === "choice") body = (

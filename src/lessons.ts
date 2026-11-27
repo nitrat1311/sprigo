@@ -1,4 +1,5 @@
 import { romanianExam } from "./romanianExam";
+import { contrastFor, repairRomanian, repairRomanianExplanation, romanianContrast, romanianWritingFixes } from "./romanianPractice";
 import { hasRomanianPractice, ROMANIAN_READING_ID, romanianPractice, romanianReading, romanianReviewPrompt, romanianReviewSchema } from "./romanianLessons";
 // Lesson generation (DECISIONS C2, C3): cache → one call for the whole step → per-activity fallback.
 import { crossChecked, formsPrompt, formsSchema, fromTable, pickAsks } from "./conjugation";
@@ -153,6 +154,9 @@ export function loadLesson(enrollmentId: number, c: LessonContext, fresh = false
   if (romanian && (exam === "A1" || exam === "B1")) return Promise.resolve(romanianExam(exam));
   if (romanian && c.step.id === ROMANIAN_READING_ID) return Promise.resolve(romanianReading());
   const localPractice = hasRomanianPractice(c);
+  const grammar = romanian ? grammarDrill(c.step.id) : undefined;
+  const contrast = grammar === undefined ? -1 : contrastFor(grammar);
+  if (offline && contrast >= 0) return Promise.resolve([romanianContrast(contrast)]);
   const k = `${enrollmentId}:${c.step.id}`;
   if (!fresh && !offline && inflight.has(k)) return inflight.get(k)!;
   const p = (async () => {
@@ -181,6 +185,7 @@ export function loadLesson(enrollmentId: number, c: LessonContext, fresh = false
         items = await reviewed(c, items);
       }
     } catch (e) {
+      if (contrast >= 0) return [romanianContrast(contrast)];
       if (!localPractice) throw e;
       console.warn("Romanian lesson could not be verified; using course examples", e);
       return fromCourse();
@@ -270,8 +275,8 @@ async function verifyRomanianQuestions(c: Base, g: Story): Promise<Story["questi
 export async function loadStory(enrollmentId: number, c: Base, unit: Unit, fresh = false): Promise<Story> {
   const key = storyId(c.level, unit.id);
   const romanian = c.course.iso === "ro";
-  const cached = fresh ? null : await getCached<Story & { romanianReviewed?: true }>(enrollmentId, key);
-  if (cached && (!romanian || cached.romanianReviewed)) return cached;
+  const cached = fresh ? null : await getCached<Story & { romanianReviewed?: 2 }>(enrollmentId, key);
+  if (cached && (!romanian || cached.romanianReviewed === 2)) return cached;
   const steps = unit.steps;
   const g = await generate(storySchema, systemPrompt(c), [
     `Write a short story told as a dialogue between 2–3 named characters, on the theme of the unit "${unit.title}"${unit.description ? ` (${unit.description})` : ""}.`,
@@ -281,13 +286,14 @@ export async function loadStory(enrollmentId: number, c: Base, unit: Unit, fresh
     "`questions`: 2–3 comprehension questions (prompt in the learner's language, options in the target language), exactly one correct, `answer` is its 0-based index. " +
       "`after_line` is the 0-based index of the line after which it is asked; the question must be answerable from the lines up to there.",
   ].join("\n"), "story");
+  if (romanian) g.lines = g.lines.map((line) => ({ ...line, text: repairRomanian(line.text) }));
   const last = g.lines.length - 1;
   const story: Story = {
     ...g,
     questions: (romanian ? await verifyRomanianQuestions(c, g) : g.questions).filter((q) => q.options[q.answer] !== undefined)
       .map((q) => ({ ...q, after_line: Math.min(Math.max(q.after_line, 0), last), ...shuffleAnswer(q.options, q.answer) })),
   };
-  await putCached(enrollmentId, key, romanian ? { ...story, romanianReviewed: true } : story);
+  await putCached(enrollmentId, key, romanian ? { ...story, romanianReviewed: 2 } : story);
   return story;
 }
 
@@ -319,7 +325,7 @@ export async function loadConjugation(c: Base, prompt: string): Promise<Item[]> 
 export async function checkWriting(c: Base, task: string, text: string) {
   const feedback = await generate(feedbackSchema, systemPrompt(c), feedbackPrompt(task, text), "writing", undefined, looseFeedback);
   if (c.course.iso !== "ro") return feedback;
-  const patches = segments(text, feedback.corrections.filter((fix) =>
+  const patches = segments(text, [...romanianWritingFixes(text, c.native), ...feedback.corrections].filter((fix) =>
     fix.corrected.trim() && normalize(fix.original, "ro") !== normalize(fix.corrected, "ro") &&
     (c.native !== "ru" || cyrillic.test(fix.why))));
   return {
@@ -369,7 +375,9 @@ export async function chatTurn(c: Base & { about?: string[] }, ch: Character, to
       `Check only this last learner message for \`correction\` (earlier ones were already corrected): "${last.text}"\nThen write ${name}'s next turn.`
     : free ? "Open the chat: a short, friendly greeting and a first question about the topic."
     : "Open the scene: a short greeting that leads straight into the goal and invites the learner to start.";
-  const r = await generate(turnSchema, system, prompt, "tutor", undefined, looseTurn);
+  const generated = await generate(turnSchema, system, prompt, "tutor", undefined, looseTurn);
+  const r = c.course.iso === "ro" ? { ...generated, reply: repairRomanian(generated.reply),
+    correction: repairRomanianExplanation(generated.correction, c.native) } : generated;
   // The model sometimes repeats the learner's sentence (often with a short explanation after it) and calls that a correction.
   return r.correction && isEchoCorrection(last?.from === "me" ? last.text : "", r.correction, c.course.iso) ? { ...r, correction: "" } : r;
 }
@@ -389,7 +397,8 @@ export function rehearseTurn(c: Base, brief: RehearsalBrief, history: ChatMsg[])
   const prompt = history.length
     ? `Conversation so far:\n${history.map((m) => `${m.from === "ai" ? who : "Learner"}: ${m.text}`).join("\n")}\n\nWrite ${who}'s next turn.`
     : "Open the conversation the way it would really start.";
-  return generate(roleTurnSchema, rehearsalSystem(c, brief), prompt, "tutor", undefined, looseRoleTurn);
+  return generate(roleTurnSchema, rehearsalSystem(c, brief), prompt, "tutor", undefined, looseRoleTurn)
+    .then((turn) => c.course.iso === "ro" ? { ...turn, reply: repairRomanian(turn.reply) } : turn);
 }
 
 /** Structure drill (#43): asks whether the learner attempted `goal` in their spoken turns. */
@@ -476,6 +485,8 @@ export function tutorTurn(c: Base & { about?: string[]; coach?: string }, ch: Ch
     unit: unit.title, words: unitWords(unit), grammar: unitGrammar(unit), about: c.about ?? [], custom: ch.custom,
   });
   const prompt = tutorPrompt(inlineName(ch), history, notes, event, screen, c.coach);
+  if (c.course.iso === "ro") return generate(tutorSchema, system, prompt, "tutor", undefined, looseTutor)
+    .then((turn) => ({ ...turn, say: repairRomanian(turn.say), correction: repairRomanianExplanation(turn.correction, c.native) }));
   return onText ? generateStream(tutorSchema, system, prompt, "tutor", onText, looseTutor) : generate(tutorSchema, system, prompt, "tutor", undefined, looseTutor);
 }
 
@@ -507,11 +518,12 @@ export async function rememberSession(profileId: number, native: string, source:
 // ---- Practice together: one call per unit, cached ----
 
 export async function loadPractice(enrollmentId: number, c: Base, unit: Unit): Promise<PracticeSet> {
-  const key = `practice:${unit.id}`;
+  const key = c.course.iso === "ro" ? `practice:${c.level}:${unit.id}:2` : `practice:${unit.id}`;
   const cached = await getCached<PracticeSet>(enrollmentId, key);
   if (cached) return cached;
   const out = await generate(practiceSchema, systemPrompt(c), practicePrompt(unit.title, unitWords(unit), unitGrammar(unit)), "practice");
   const raw = toPracticeSet(out as Record<string, unknown>, [c.course.iso, c.native]), all = [...raw.warmup, ...raw.comprehension];
+  if (c.course.iso === "ro") raw.reading.text = repairRomanian(raw.reading.text);
   const bad = await flagged({ ...c, step: unit }, all, raw.reading.text), ok = (it: Item) => !bad.has(all.indexOf(it));
   const set = { ...raw, warmup: raw.warmup.filter(ok), comprehension: raw.comprehension.filter(ok) };
   if (!set.warmup.length && !set.comprehension.length && !set.discussion.length) throw new Error("The model returned no usable exercises.");

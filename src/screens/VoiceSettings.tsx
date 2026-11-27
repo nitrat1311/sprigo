@@ -347,7 +347,7 @@ const WHISPER: WhisperModel[] = ["base", "small", "turbo", "large"];
 const cap = (x: string) => x[0].toUpperCase() + x.slice(1);
 // Course languages the bundled base model hears poorly. Hungarian course sentences (macOS voice) passed the speech
 // check 6/18 with base, 8/18 with small and 15/18 with turbo. ponytail: add a language once it is measured.
-const WHISPER_FOR: Record<string, WhisperModel> = { hu: "turbo" };
+const WHISPER_FOR: Record<string, WhisperModel> = { hu: "turbo", ro: "turbo" };
 
 /** Whisper model: the bundled one or a bigger download. Picking one downloads it if needed, then uses it. */
 function WhisperSheet({ onBack }: { onBack: () => void }) {

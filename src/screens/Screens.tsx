@@ -12,6 +12,7 @@ import { WriteSheet } from "../Write";
 import { useSpeakBlock } from "../Mic";
 import { SpeakButton } from "../SpeakButton";
 import type { Item } from "../activities";
+import { romanianMistakeContrast } from "../romanianPractice";
 import { msLeft, rivalXp, zones, PROMOTE, DEMOTE, TIERS } from "../league";
 import * as db from "../db";
 import { dueToday } from "../srs";
@@ -107,13 +108,20 @@ export function Practice() {
   const start = useStartLesson();
   const [data, setData] = useState<{ mistakes: number; words: db.Word[]; timed: number; saved: db.Bookmark[]; cached: Item[] }>({ mistakes: 0, words: [], timed: 0, saved: [], cached: [] });
   const [loaded, reload] = useState(0);
+  const [romanianRecall, setRomanianRecall] = useState(false);
   const [tab, setTab] = useState<"activities" | "saved" | "words">("activities");
   // Reloads when a practice session closes (lessonId → null) or words were imported.
   useEffect(() => {
     if (!enrollment || lessonId) return;
     Promise.all([db.listMistakes(enrollment.id), db.listWords(enrollment.id), db.cachedLessonItems<Item>(enrollment.id), db.listBookmarks(enrollment.id)])
       .then(([m, words, cached, saved]) => setData({ mistakes: m.length, words, timed: cached.length, saved, cached }));
-  }, [enrollment?.id, lessonId, loaded]);
+    if (course?.iso !== "ro") return;
+    let live = true;
+    void db.listMistakes<Item>(enrollment.id, 1000, true).then((items) => {
+      if (live) setRomanianRecall(items.some(({ item }) => romanianMistakeContrast(item) >= 0));
+    }).catch(console.warn);
+    return () => { live = false; };
+  }, [enrollment?.id, course?.iso, lessonId, loaded]);
   useEffect(() => { const r = () => reload((n) => n + 1); addEventListener(BOOKMARKS_CHANGED, r); return () => removeEventListener(BOOKMARKS_CHANGED, r); }, []);
   const { mistakes, words, timed, saved, cached } = data;
   // Bookmarked targets are ids only; one whose unit no longer exists is not shown.
@@ -159,6 +167,10 @@ export function Practice() {
       </div>
       <div id="prac-panel" role="tabpanel" aria-labelledby={`prac-tab-${tab}`}>
         {tab === "activities" && <>
+          {course?.iso === "ro" && group(t("practice.missions"), [
+            <Fragment key="a1">{card(() => start("practice-mission-a1"), "headphones", "var(--sky)", "var(--blue)", t("practice.missionCafe"), t("practice.missionCafeDesc"))}</Fragment>,
+            <Fragment key="b1">{card(() => start("practice-mission-b1"), "clock", "var(--green-tint)", "var(--green)", t("practice.missionMeeting"), t("practice.missionMeetingDesc"))}</Fragment>,
+          ])}
           {group(t("practice.groups.speak"), [
             <Fragment key="tutor">{card(() => openSheet(<TutorSheet />), "video", "var(--green-tint)", "var(--green)", t("tutor.card"), t("tutor.cardDesc"))}</Fragment>,
             /* Speaking: bundled Whisper (DECISIONS D2). */
@@ -168,6 +180,7 @@ export function Practice() {
             <Fragment key="drills">{card(() => speakBlock ? toast(t(speakBlock)) : openSheet(<DrillsSheet />), "clock", "var(--sky)", "var(--blue)", t("practice.drills"), t("practice.drillsDesc"), !!speakBlock)}</Fragment>,
           ])}
           {group(t("practice.groups.review"), [
+            ...(course?.iso === "ro" && romanianRecall ? [<Fragment key="romanian-recall">{card(() => start("practice-romanian-recall"), "refresh", "var(--gold-tint)", "var(--gold-dark)", t("practice.romanianRecall"), t("practice.romanianRecallDesc"))}</Fragment>] : []),
             <Fragment key="mistakes">{card(() => mistakes ? start("practice-mistakes") : toast(t("practice.noMistakes")), "refresh", "var(--red-tint)", "var(--red)", t("practice.mistakes"),
               mistakes ? t("practice.mistakesCount", { count: mistakes }) : t("practice.noMistakes"), !mistakes)}</Fragment>,
             <Fragment key="due">{card(() => words.length < LISTEN_MIN_WORDS ? toast(needWords(LISTEN_MIN_WORDS)) : due ? start("practice-due") : toast(t("practice.noDue")),

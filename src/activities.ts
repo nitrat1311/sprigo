@@ -286,6 +286,7 @@ function romanianSpeechScore(expected: string, heard: string) {
   const critical = (words: string[]) => words.filter((w) => /^(?:\d+|nu|n|nici|niciodată|niciun|nicio|nimeni|nimic)$/.test(w))
     .map((w) => w === "n" ? "nu" : w).join(" ");
   if (critical(want) !== critical(got)) return 0;
+  if (want.length <= 5 && want.length === got.length && want.some((word, i) => word !== got[i])) return 0;
   // Use words appearing once in both transcripts to detect reordering even when Whisper missed another word.
   const shared = new Set(want.filter((w) => want.indexOf(w) === want.lastIndexOf(w) && got.includes(w) && got.indexOf(w) === got.lastIndexOf(w)));
   const order = (words: string[]) => words.filter((w) => shared.has(w)).join(" ");

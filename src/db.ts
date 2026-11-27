@@ -331,12 +331,16 @@ export async function cachedLessonItems<T extends { kind: string }>(enrollmentId
 export async function addMistake(enrollmentId: number, item: unknown) {
   await (await db()).execute("INSERT INTO mistakes(enrollment_id, item) VALUES ($1, $2) ON CONFLICT DO NOTHING", [enrollmentId, JSON.stringify(item)]);
 }
-export async function listMistakes<T>(enrollmentId: number, limit = 1000) {
-  const r = await (await db()).select<{ id: number; item: string }>("SELECT id, item FROM mistakes WHERE enrollment_id = $1 ORDER BY id DESC LIMIT $2", [enrollmentId, limit]);
+export async function listMistakes<T>(enrollmentId: number, limit = 1000, due = false) {
+  const age = due ? " AND created_at <= datetime('now', '-1 day')" : "";
+  const r = await (await db()).select<{ id: number; item: string }>(`SELECT id, item FROM mistakes WHERE enrollment_id = $1${age} ORDER BY id DESC LIMIT $2`, [enrollmentId, limit]);
   return r.map((x) => ({ id: x.id, item: JSON.parse(x.item) as T }));
 }
 export async function deleteMistake(id: number) {
   await (await db()).execute("DELETE FROM mistakes WHERE id = $1", [id]);
+}
+export async function deferMistake(id: number) {
+  await (await db()).execute("UPDATE mistakes SET created_at = CURRENT_TIMESTAMP WHERE id = $1", [id]);
 }
 /** Removes the row `addMistake` wrote for this item (F: accepted appeal). */
 export async function deleteMistakeByItem(enrollmentId: number, item: unknown) {

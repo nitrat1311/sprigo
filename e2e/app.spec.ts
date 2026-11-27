@@ -315,6 +315,27 @@ test("Romanian practice opens before AI setup", async ({ page }) => {
   await expect(lesson.getByText("Bună ziua!", { exact: true })).toBeVisible();
 });
 
+test("Romanian mini-missions can be completed without AI", async ({ page }) => {
+  await onboard(page, "ro", false);
+  await page.getByRole("button", { name: "Practice" }).click();
+  for (const [name, first, second, written] of [
+    ["A1 · At the café", "Opt lei.", "O cafea cu lapte, vă rog.", "Aș dori o cafea cu lapte, vă rog."],
+    ["B1 · A meeting moves", "Joi.", "Să confirm întâlnirea.", "Confirm că vin joi la ora trei."],
+  ]) {
+    await page.getByRole("button", { name: new RegExp(name) }).click();
+    const lesson = page.getByRole("dialog", { name: "Lesson" });
+    for (const option of [first, second]) {
+      await answer(lesson, option);
+      await lesson.getByRole("button", { name: "Continue", exact: true }).click();
+    }
+    await lesson.getByLabel("Your answer").fill(written);
+    await lesson.getByRole("button", { name: "Check", exact: true }).click();
+    await expect(lesson.getByText("Correct!")).toBeVisible();
+    await lesson.getByRole("button", { name: "Finish", exact: true }).click();
+    await lesson.getByRole("button", { name: "Done", exact: true }).click();
+  }
+});
+
 test("a failed Romanian lesson review uses course examples and retries generation next time", async ({ page }) => {
   await onboard(page, "ro");
   const url = "http://localhost:11434/v1/chat/completions";

@@ -34,7 +34,8 @@ function examples(c: LessonContext) {
 }
 
 export function hasRomanianPractice(c: LessonContext) {
-  return c.course.iso === "ro" && c.levelDef.units.some((u) => u.steps.some(({ id }) => id === c.step.id)) && examples(c).length > 0;
+  return c.course.iso === "ro" && (c.step.id.startsWith("grammar:") ||
+    c.levelDef.units.some((u) => u.steps.some(({ id }) => id === c.step.id))) && examples(c).length > 0;
 }
 
 export function romanianPractice(c: LessonContext): Item[] {
