@@ -16,7 +16,7 @@ export default defineConfig(() => ({
   server: {
     port: 1420,
     strictPort: true,
-    host: host || "127.0.0.1", // not "localhost": that binds ::1 only, and tailscale serve dials 127.0.0.1
+    host: host || "127.0.0.1",
     hmr: host
       ? {
           protocol: "ws",
@@ -28,9 +28,8 @@ export default defineConfig(() => ({
       // 3. tell Vite to ignore watching `src-tauri`
       ignored: ["**/src-tauri/**"],
     },
-    // 4. phone spike (docs/MOBILE.md): `tailscale serve` reaches this dev server; Ollama is same-origin under /ollama.
+    // Standalone web development uses a same-origin Ollama proxy.
     // Origin is dropped because Ollama refuses origins it doesn't know.
-    allowedHosts: [".ts.net"],
     proxy: {
       "/ollama": {
         target: "http://127.0.0.1:11434",

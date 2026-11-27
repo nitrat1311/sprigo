@@ -7,12 +7,10 @@ import { SMALL_MODEL_B, isSmallModel } from "../modelSize";
 import { guideFor, verdictOf, type Measurement } from "../modelGuide";
 import { MEASURED } from "../modelGuideData";
 import { PROVIDERS, RECOMMENDED_OLLAMA, detectLocal, getKey, listModels, pullOllama, setKey, type AiConfig, type ProviderId } from "../ai";
-import { aiUsage, aiUsageMonths, getSetting, isCompanion, isTauri, isWeb, setSetting } from "../db";
+import { aiUsage, aiUsageMonths, isTauri, isWeb } from "../db";
 import { monthOf, summarize, type UsageMonth, type UsageRow } from "../usage";
-import { setCompanion, tailscaleStatus, type TailscaleStatus } from "../companion";
 import { CourseFlag, CourseSheet, NATIVE, ProfileForm, useLangName } from "./Profiles";
 import { notifyAllowed } from "../notify";
-import { betaOn, findUpdate, UpdateSheet } from "../Update";
 import { DataRow } from "./DataSettings";
 import { InfoTip, SttRow, TtsRow } from "./VoiceSettings";
 import { Icon, type IconName } from "../icons";
@@ -47,102 +45,6 @@ export function ToggleRow({ k, initial, onChange }: { k: string; initial: boolea
       <b className="od-fill" id={id}>{t(`settings.${k}`)}</b>
       <InfoTip label={t("voice.about", { name: t(`settings.${k}`) })}>{t(`settings.${k}Desc`)}</InfoTip>
       <Switch checked={on} onChange={setOn} labelledBy={id} />
-    </div>
-  );
-}
-
-/** Desktop only: the phone companion server (docs/MOBILE.md). Needs Tailscale installed and signed in. */
-const TAILSCALE_DOWNLOAD = "https://tailscale.com/download";
-function PhoneRow() {
-  const { t } = useTranslation();
-  const { toast, openSheet } = useApp();
-  const id = useId();
-  const [ts, setTs] = useState<TailscaleStatus | null>(null);
-  const [on, setOn] = useState(false);
-  const [busy, setBusy] = useState(false);
-  useEffect(() => { Promise.all([tailscaleStatus(), getSetting("companion")]).then(([s, v]) => { setTs(s); setOn(v === "on"); }); }, []);
-  // The learner opens or signs in to Tailscale in its own app, then comes back here.
-  useEffect(() => {
-    const check = () => tailscaleStatus().then(setTs);
-    window.addEventListener("focus", check);
-    return () => window.removeEventListener("focus", check);
-  }, []);
-  if (!ts) return null;
-  const ready = ts.installed && ts.running;
-  // Turning on (or the QR button) runs `tailscale serve` again: it's idempotent and returns the address to show.
-  const turn = async (v: boolean) => {
-    setBusy(true);
-    try {
-      const r = await setCompanion(v);
-      await setSetting("companion", v ? "on" : "off");
-      setOn(v);
-      if (r) openSheet(<PhoneQrSheet url={r[0]} qr={r[1]} />);
-    } catch (e) {
-      const link = String(e).match(/https:\/\/\S+/)?.[0];
-      link ? openSheet(<PhoneApproveSheet url={link} />) : toast(String(e));
-      tailscaleStatus().then(setTs); // a failure may mean Tailscale quit or signed out meanwhile
-    } finally { setBusy(false); }
-  };
-  const note = !ts.installed ? "settings.phoneMissing" : "settings.phoneSignIn"; // ready: the ⓘ sheet explains it
-  return (
-    <div className="od-row" style={gap("var(--s-4)")}>
-      <span className="od-field od-fill"><b id={id}>{t("settings.phone")}</b>{!ready && <span className="muted small">{t(note)}</span>}</span>
-      <button className="icon-btn" aria-label={t("settings.phoneAbout")} onClick={() => openSheet(<PhoneInfoSheet />)}><Icon name="info" /></button>
-      {on && ready && <button className="icon-btn" aria-label={t("settings.phoneShowQr")} disabled={busy} onClick={() => turn(true)}><Icon name="qr" /></button>}
-      {/* An unready Tailscale still lets the learner switch an old "on" off. */}
-      <Switch checked={on} onChange={turn} labelledBy={id} disabled={busy || (!ready && !on)} />
-    </div>
-  );
-}
-
-function PhoneInfoSheet() {
-  const { t } = useTranslation();
-  const { closeSheet } = useApp();
-  return (
-    <div className="od-stack" style={gap("var(--s-4)")}>
-      <div className="od-row" style={gap("var(--s-2)")}><h3>{t("settings.phone")}</h3><HelpButton topic="phone" /></div>
-      <p className="muted">{t("settings.phoneDesc")}</p>
-      <ol className="od-stack small" style={{ ...gap("var(--s-3)"), paddingLeft: "var(--s-6)" }}>
-        <li>{t("settings.phoneHow1")}</li>
-        <li>{t("settings.phoneHow2")}</li>
-        <li>{t("settings.phoneHow3")}</li>
-      </ol>
-      <div className="od-stack sheet-actions" style={gap("var(--s-3)")}>
-        <button className="btn btn-blue btn-block" onClick={() => openLink(TAILSCALE_DOWNLOAD)}>{t("settings.phoneGetTailscale")}</button>
-        <button className="btn btn-ghost btn-block" onClick={closeSheet}>{t("settings.phoneOk")}</button>
-      </div>
-    </div>
-  );
-}
-
-function PhoneQrSheet({ url, qr }: { url: string; qr: string }) {
-  const { t } = useTranslation();
-  const { closeSheet } = useApp();
-  return (
-    <div className="od-stack" style={{ ...gap("var(--s-4)"), alignItems: "center", textAlign: "center" }}>
-      <h3>{t("settings.phoneScan")}</h3>
-      <p className="muted small">{t("settings.phoneScanDesc")}</p>
-      {/* SVG made by our own Rust side from the tailnet address; white behind it so dark mode still scans. */}
-      <div style={{ background: "#fff", padding: "var(--s-3)", borderRadius: "var(--r)", lineHeight: 0 }} dangerouslySetInnerHTML={{ __html: qr }} />
-      <code className="small" style={{ userSelect: "all", overflowWrap: "anywhere" }}>{url}</code>
-      <div className="od-stack sheet-actions" style={{ ...gap("var(--s-3)"), alignSelf: "stretch" }}>
-        <button className="btn btn-ghost btn-block" onClick={closeSheet}>{t("settings.phoneOk")}</button>
-      </div>
-    </div>
-  );
-}
-
-function PhoneApproveSheet({ url }: { url: string }) {
-  const { t } = useTranslation();
-  const { closeSheet } = useApp();
-  return (
-    <div className="od-stack" style={gap("var(--s-4)")}>
-      <h3>{t("settings.phoneApprove")}</h3>
-      <p className="muted">{t("settings.phoneApproveDesc")}</p>
-      <div className="od-stack sheet-actions" style={gap("var(--s-3)")}>
-        <button className="btn btn-blue btn-block" onClick={() => openLink(url)}>{t("settings.phoneApproveOpen")}</button>
-        <button className="btn btn-ghost btn-block" onClick={closeSheet}>{t("sheet.cancel")}</button>
-      </div>
     </div>
   );
 }
@@ -414,26 +316,9 @@ function AiConfigSheet({ provider, models: found }: { provider: ProviderId; mode
 
 function VersionRow() {
   const { t } = useTranslation();
-  const { openSheet, toast } = useApp();
   const [version, setVersion] = useState("dev");
-  const [busy, setBusy] = useState(false);
-  const [beta, setBeta] = useState<boolean | null>(null);
-  useEffect(() => { if (isTauri) { import("@tauri-apps/api/app").then((a) => a.getVersion()).then(setVersion); betaOn().then(setBeta); } }, []);
-  const check = async () => {
-    setBusy(true);
-    const u = await findUpdate();
-    setBusy(false);
-    u ? openSheet(<UpdateSheet update={u} />) : toast(t("update.none"));
-  };
-  return (<>
-    <div className="od-row" style={gap("var(--s-4)")}>
-      <b className="od-fill">{t("update.version", { version })}</b>
-      <InfoTip label={t("voice.about", { name: t("update.section") })}>{t("update.desc")}</InfoTip>
-      <button className="btn btn-ghost" disabled={busy} onClick={check}>{t("update.check")}</button>
-    </div>
-    {beta !== null && <ToggleRow k="betaUpdates" initial={beta} onChange={(on) => setSetting("update.beta", on ? "1" : null)} />}
-    </>
-  );
+  useEffect(() => { if (isTauri) import("@tauri-apps/api/app").then((app) => app.getVersion()).then(setVersion); }, []);
+  return <b>{t("update.version", { version })}</b>;
 }
 
 type Tab = "profile" | "prefs" | "ai" | "privacy";
@@ -444,9 +329,8 @@ export function Settings() {
   const langName = useLangName();
   const themes: ThemePref[] = ["system", "light", "dark"];
   const cap = (s: string) => s[0].toUpperCase() + s.slice(1);
-  // Phone: AI, voice and data settings are the desktop's (shared database), so those tabs stay there.
-  const tabs: Tab[] = isCompanion ? (isWeb ? ["profile", "prefs", "ai"] : ["profile", "prefs"]) : ["profile", "prefs", "ai", "privacy"];
-  const [tab, setTab] = useState<Tab>(ai || isCompanion ? "profile" : "ai"); // AI not set up yet → its tab, so the warning shows
+  const tabs: Tab[] = isWeb ? ["profile", "prefs", "ai"] : ["profile", "prefs", "ai", "privacy"];
+  const [tab, setTab] = useState<Tab>(ai || isWeb ? "profile" : "ai"); // AI not set up yet → its tab, so the warning shows
   return (
     <>
       <h1 className="section-title" style={{ marginTop: "var(--s-6)" }}>{t("settings.title")}</h1>
@@ -493,7 +377,7 @@ export function Settings() {
               <span className="od-field od-fill"><b>{t("help.title")}</b><span className="muted small">{t("help.tagline")}</span></span>
               <button className="btn btn-ghost" onClick={() => openSheet(<HelpSheet />)}>{t("help.view")}</button>
             </div>
-            {!isCompanion && <VersionRow />}
+            {!isWeb && <VersionRow />}
           </Group>
         </>}
 
@@ -503,12 +387,12 @@ export function Settings() {
             <ToggleRow k="sound" initial={s.soundOn} onChange={(soundOn) => setS((s) => ({ ...s, soundOn }))} />
             <ToggleRow k="speaking" initial={s.speakOn} onChange={(speakOn) => setS((s) => ({ ...s, speakOn }))} />
             <ToggleRow k="bargeIn" initial={s.bargeIn} onChange={(bargeIn) => setS((s) => ({ ...s, bargeIn }))} />
-            {!isCompanion && <ToggleRow k="reminder" initial={s.reminderOn} onChange={async (reminderOn) => {
+            {!isWeb && <ToggleRow k="reminder" initial={s.reminderOn} onChange={async (reminderOn) => {
               setS((s) => ({ ...s, reminderOn }));
               if (reminderOn && !(await notifyAllowed())) toast(t("settings.reminderBlocked"));
             }} />}
             <ToggleRow k="reduceMotion" initial={s.reduceMotion} onChange={(reduceMotion) => setS((s) => ({ ...s, reduceMotion }))} />
-            {isCompanion && <TtsRow />}
+            {isWeb && <TtsRow />}
           </Group>
           <h2 className="section-title">{t("settings.appearance")}</h2>
           <Group>
@@ -556,7 +440,6 @@ export function Settings() {
             <ToggleRow k="memory" initial={s.memoryOn} onChange={(memoryOn) => setS((s) => ({ ...s, memoryOn }))} />
             <ToggleRow k="speech" initial={s.speechOn} onChange={(speechOn) => setS((s) => ({ ...s, speechOn }))} />
             <DataRow />
-            {isTauri && <PhoneRow />}
           </Group>
         )}
       </div>

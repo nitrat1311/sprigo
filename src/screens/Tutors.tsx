@@ -177,7 +177,7 @@ function TutorForm({ initial }: { initial?: db.Tutor }) {
             {voices.map((v) => <option key={v} value={v}>{voiceLabel(v)}</option>)}
             {ownVoice && <option value={voice}>{voice}</option>}
           </select>
-          {!db.isCompanion && ( // Kokoro runs out of memory in the phone's Safari, so Settings does not offer it there either
+          {!db.isWeb && ( // Kokoro runs out of memory in the phone's Safari, so Settings does not offer it there either
             <button type="button" className="btn btn-ghost" disabled={preview !== null || testing} aria-busy={preview !== null || testing} onClick={listen}>
               {t("voice.listen")}
             </button>

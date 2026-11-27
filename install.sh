@@ -1,10 +1,10 @@
 #!/bin/sh
 # Installs the latest Sprigo release:
-#   curl -fsSL https://raw.githubusercontent.com/ozerozdas/sprigo/master/install.sh | sh
+#   curl -fsSL https://raw.githubusercontent.com/nitrat1311/sprigo/feature/romanian-b1/install.sh | sh
 # macOS: Sprigo.app into /Applications. Linux (x86_64, aarch64): the AppImage as ~/.local/bin/sprigo.
 set -eu
 
-repo="https://github.com/ozerozdas/sprigo"
+repo="https://github.com/nitrat1311/sprigo"
 tag=$(curl -fsSLI -o /dev/null -w '%{url_effective}' "$repo/releases/latest")
 tag=${tag##*/}
 version=${tag#v}

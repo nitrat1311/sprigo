@@ -35,6 +35,19 @@ test("onboarding creates a profile and sets up local AI", async ({ page }) => {
   await expect(page.getByRole("dialog")).toBeHidden();
 });
 
+test("fork settings keep the app version and omit update and phone setup", async ({ page }) => {
+  await onboard(page, "ro");
+  await page.getByRole("tab", { name: "Profile" }).click();
+  await expect(page.getByText("Sprigo dev", { exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: /check for updates/i })).toHaveCount(0);
+  await expect(page.getByText("Beta updates", { exact: true })).toHaveCount(0);
+  await page.locator(".od-row").filter({ has: page.getByText("Help & FAQ", { exact: true }) }).getByRole("button", { name: "Open" }).click();
+  await expect(page.getByRole("dialog")).not.toContainText(/Can I use Sprigo on my phone/i);
+  await page.getByRole("dialog").getByRole("button", { name: "Close" }).click();
+  await page.getByRole("tab", { name: "Privacy & data" }).click();
+  await expect(page.getByText("Use on your phone", { exact: true })).toHaveCount(0);
+});
+
 test("the model picker shows measured guidance", async ({ page }) => {
   await onboard(page);
   await page.getByRole("tab", { name: "AI & voice" }).click();

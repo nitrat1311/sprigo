@@ -22,12 +22,7 @@
     "lockedDesc": "Orada Sprigo'yu kapat, sonra tekrar dene. Devralırsan o cihazın henüz kaydetmediği değişiklikler kaybolabilir.",
     "retry": "Tekrar dene",
     "takeOver": "Devral",
-    "useDefault": "Varsayılan klasörü kullan",
-    "onPhoneTitle": "Telefonda devam ediyor",
-    "onPhoneDesc": "Sprigo telefonunda açık; ilerlemen bozulmasın diye bu pencere bekliyor. İstediğin zaman buradan devam edebilirsin.",
-    "onDesktopTitle": "Bilgisayarda devam ediyor",
-    "onDesktopDesc": "Sprigo bilgisayarında açıldı; ilerlemen bozulmasın diye bu ekran bekliyor.",
-    "continueHere": "Burada devam et"
+    "useDefault": "Varsayılan klasörü kullan"
   },
   "nav": {
     "live": "Canlı ders",
@@ -579,22 +574,6 @@
     "memoryDesc": "Sprigo, tutor'una anlattığın kalıcı şeyleri (ilgi alanların, planların, zorlandığın konular) saklar ve derslerde kullanır. Yapay zekâ sağlayıcın bulutta değilse hiçbir şey bu cihazdan çıkmaz.",
     "speech": "Ses analizi",
     "speechDesc": "Bir tutor'la konuşurken zamanlamayı ve tempoyu ölçer (ne kadar hızlı cevap verdiğin, duraklamalar, cümle uzunluğu); dersi buna göre ayarlar ve ilerlemeni gösterir. Ses kaydedilmez.",
-    "phone": "Telefonda kullan",
-    "phoneDesc": "Sprigo'yu Tailscale üzerinden kendi cihazlarına açar; verilerin bu bilgisayarda kalır.",
-    "phoneMissing": "Bu bilgisayarda Tailscale kurulu değil.",
-    "phoneSignIn": "Bu bilgisayarda Tailscale'i aç ve oturum aç.",
-    "phoneAbout": "Nasıl çalışır",
-    "phoneShowQr": "Kodu göster",
-    "phoneHow1": "Tailscale'i bu bilgisayara ve telefonuna kur, ikisinde de aynı hesapla oturum aç.",
-    "phoneHow2": "Bunu aç ve kodu telefonunun kamerasıyla okut.",
-    "phoneHow3": "iPhone'da öğretmeni duymak için sessiz modu kapat. Sprigo aynı anda tek cihazda açık olur.",
-    "phoneGetTailscale": "Tailscale'i indir",
-    "phoneOk": "Tamam",
-    "phoneScan": "Telefonunla okut",
-    "phoneScanDesc": "Telefonunda Tailscale aynı hesapla açık olmalı.",
-    "phoneApprove": "Tailscale onay istiyor",
-    "phoneApproveDesc": "Tailnet'in henüz paylaşıma izin vermiyor. Açılan sayfada izin ver, sonra bunu tekrar aç.",
-    "phoneApproveOpen": "Tailscale'i aç",
     "reminder": "Hatırlatmalar",
     "reminderDesc": "Sprigo gün içinde birkaç kez seni derse çağırır; o gün çalıştıysan susar. Açıkken arka planda kalır.",
     "reduceMotion": "Hareket azaltma",
@@ -635,8 +614,6 @@
     },
     "profileDesc": "Ad, renk ve PIN",
     "edit": "Düzenle",
-    "betaUpdates": "Beta güncellemeleri",
-    "betaUpdatesDesc": "Test sürümlerini herkesten önce al. Hata içerebilirler; normal sürümleri de almaya devam edersin.",
     "usage": {
       "title": "Token kullanımı",
       "details": "Ayrıntılar",
@@ -852,18 +829,8 @@
     "playback": "Kaydımı dinle"
   },
   "update": {
-    "section": "Güncellemeler",
     "version": "Sprigo {{version}}",
-    "desc": "Yeni sürümler GitHub'dan iner ve yeniden başlatınca kurulur",
-    "check": "Denetle",
-    "none": "En güncel sürümdesin",
-    "title": "Sprigo {{version}} hazır",
-    "install": "Güncelle ve yeniden başlat",
-    "later": "Sonra",
-    "downloading": "İndiriliyor… %{{pct}}",
-    "madeBy": "Geliştiren: Mehmet Özer Özdaş ·",
-    "whatsNew": "Sprigo {{version}} ile gelen yenilikler",
-    "gotIt": "Anladım"
+    "madeBy": "Geliştiren: Mehmet Özer Özdaş ·"
   },
   "voice": {
     "kokoroDesc": "Daha doğal bir ses. Bilgisayarının hızına göre cümle başına birkaç saniye sürebilir.",
@@ -1198,10 +1165,6 @@
       "voice": {
         "q": "Hangi sesi kullanmalıyım?",
         "a": "Piper uygulamanın içinde çalışır ve bütün kurs dillerini konuşur. Kokoro en doğal yerel sestir ama yalnızca İngilizce konuşur. Sistem sesi işletim sisteminde kurulu sesleri kullanır; ElevenLabs ise kendi anahtarınla çalışan bir bulut sesidir.\nSeçtiğin ses konuşamazsa Sprigo sistem sesine geçer.\nTutor kendi kendine susuyor mu? Mikrofon hoparlörü duyuyordur: kulaklık tak ya da Tutor'un sözünü kesebilirim ayarını kapat."
-      },
-      "phone": {
-        "q": "Sprigo'yu telefonda kullanabilir miyim?",
-        "a": "Evet, Tailscale ile: Ayarlar → Gizlilik ve veri → Telefonda kullan. Telefon, bilgisayarın verisini, konuşma tanımasını ve yerel modelini kullanır; bu yüzden bilgisayar açık olmalı. Anahtarlar bilgisayarda kaldığı için bulut sağlayıcılar telefonda çalışmaz.\niPhone'da Tutor'u duymak için sessiz modu kapat."
       },
       "data": {
         "q": "Verilerim nerede?",

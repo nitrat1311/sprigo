@@ -1,6 +1,6 @@
 # Sprigo — Development and release
 
-The repo is public, so GitHub Actions' macOS and Windows minutes are free and every build runs in CI. There are no local or Docker builds (see below).
+Install a new version by building your fork locally or downloading one of its published installers.
 
 ## Flow
 
@@ -17,19 +17,19 @@ The repo is public, so GitHub Actions' macOS and Windows minutes are free and ev
    ```bash
    git tag v1.3.0 && git push origin v1.3.0
    ```
-   `release` runs the four builds and uploads the files and a merged `latest.json` to a **draft** release.
-6. **Publish:** publish the draft by hand. The in-app updater only sees published releases, so this is the last gate. If a build is red, the draft is not published; the fix ships as a new version.
-   Publishing also runs `tap`, which bumps the Homebrew cask in [ozerozdas/homebrew-tap](https://github.com/ozerozdas/homebrew-tap) (needs the `HOMEBREW_TAP_TOKEN` secret). `install.sh` always reads the latest release, so it needs nothing.
-   The release notes are what the app shows once, in "What's new", on the first launch after the update. The draft has GitHub's generated PR list: trim it to what learners care about before publishing.
-7. **Beta (optional):** to let beta testers (Settings → Beta updates) try a version first, tag it with a numeric pre-release part, e.g. `v1.8.0-1` (Windows installers only accept numbers there), with the same version in the three files. The draft is a pre-release; publishing it runs `channel`, which copies its `latest.json` to the `updater-beta` release that beta apps check. Stable releases are copied there too, so beta testers also get them. Pre-releases skip `tap` and never become `releases/latest`.
-
+   `release` runs the four builds and uploads the installers to a **draft** release.
+6. **Publish:** review and publish the draft in the fork’s Releases page.
 **Model guidance:** when the recommended local model or the measurements in Settings change, run `pnpm bench` → `pnpm eval` → `pnpm guide` on the release machine and commit `src/modelGuideData.ts` (provenance rules in [CONTRIBUTING.md](CONTRIBUTING.md)).
 
-## Why no local or Docker builds
+## Local macOS build
 
-- **macOS:** Docker cannot build for macOS (there are no macOS containers). A local Mac could, but CI is free and takes 6–8 min.
-- **Windows:** Windows containers need a Windows host; cross-compiling from macOS (cargo-xwin) is experimental in Tauri and fragile with whisper.cpp's MSVC/CMake build. The longest build (~14 min), but free.
-- **Linux:** possible in Docker, but it gains nothing on its own.
-- Producing builds in two places would mean merging `latest.json` by hand; one source is safer.
+From the fork checkout, run:
 
-If the repo goes private (macOS minutes cost 10×, Windows 2×), moving the macOS builds to a local Mac is worth reconsidering.
+```sh
+pnpm install --frozen-lockfile
+pnpm tauri build --debug --bundles app
+```
+
+Quit Sprigo and replace the installed app bundle with the build from
+`src-tauri/target/debug/bundle/macos`. If you set `CARGO_TARGET_DIR`, look in that directory.
+Use the same installed app name so your existing launcher opens the new bundle.

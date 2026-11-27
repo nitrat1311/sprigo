@@ -10,9 +10,7 @@ import { ReportSheet } from "./GoalsCard";
 import { nudgeDue, nudgeMessage } from "./nudge";
 import { keepInBackground, notify } from "./notify";
 import { takeOver, resetDataDir } from "./datadir";
-import { findUpdate, UpdateSheet, whatsNew, WhatsNewSheet } from "./Update";
 import { isTauri, profileWordDays, speechMsDays } from "./db";
-import type { Update } from "@tauri-apps/plugin-updater";
 import { Chat, Story } from "./Talk";
 import { Flashcards } from "./Flashcards";
 import { TutorCall } from "./TutorCall";
@@ -155,16 +153,6 @@ function BootErrorScreen({ e }: { e: BootError }) {
   const [busy, setBusy] = useState(false);
   const act = (f: () => Promise<void> | void) => async () => { setBusy(true); try { await f(); } catch (x) { console.error(x); setBusy(false); } };
   // Data folder / lock: retrying is a reload, the boot sequence checks everything again.
-  // Phone companion: one device at a time; continuing here reloads, which takes the data back (src/companion.ts).
-  if (e.kind === "onPhone" || e.kind === "onDesktop") return (
-    <div className="boot-error" role="alert">
-      <div className="card od-stack" style={{ "--od-gap": "var(--s-4)" } as React.CSSProperties}>
-        <h3>{t(`boot.${e.kind}Title`)}</h3>
-        <p className="muted">{t(`boot.${e.kind}Desc`)}</p>
-        <button className="btn btn-primary btn-block" onClick={() => location.reload()}>{t("boot.continueHere")}</button>
-      </div>
-    </div>
-  );
   const retry = <button className="btn btn-primary btn-block" disabled={busy} onClick={() => location.reload()}>{t("boot.retry")}</button>;
   if (e.kind === "unreachable" || e.kind === "locked") return (
     <div className="boot-error" role="alert">
@@ -185,15 +173,12 @@ function BootErrorScreen({ e }: { e: BootError }) {
 
 function FutureOrFailed({ e, future }: { e: BootError; future: boolean }) {
   const { t } = useTranslation();
-  const [update, setUpdate] = useState<Update | null>(null);
-  useEffect(() => { if (future) findUpdate().then(setUpdate); }, [future]);
   return (
     <div className="boot-error" role="alert">
       <div className="card">
         <h3>{t(future ? "boot.newerTitle" : "boot.failedTitle")}</h3>
         <p className="muted">{t(future ? "boot.newerDesc" : "boot.failedDesc")}</p>
         {!future && <pre className="boot-detail">{e.detail}</pre>}
-        {update && <UpdateSheet update={update} inline />}
       </div>
     </div>
   );
@@ -224,7 +209,6 @@ export default function App() {
   const sheetBox = useRef<HTMLDivElement>(null);
   const back = useRef<{ sheet?: HTMLElement; lesson?: HTMLElement }>({});
   // #43: the launch sheets and the weekly report each open on their own; the report must yield to them.
-  const launchSheet = useRef(false);
   const activeProfile = useRef(profile?.id); // async work checks this before writing to the profile
   useEffect(() => { activeProfile.current = profile?.id; }, [profile?.id]);
   useEffect(() => {
@@ -269,17 +253,6 @@ export default function App() {
   }, [s.soundOn, s.reduceMotion, s.readableFont, s.highContrast]);
   useEffect(() => { textSize(s.textSize).catch((e) => console.warn("text size", e)); }, [s.textSize]);
 
-  // Once per launch, after sign-in so the sheet has somewhere to show: what's new after an update, else a quiet update check.
-  useEffect(() => {
-    if (!profile) return;
-    launchSheet.current = true; // until this check settles, the launch sheet is "open or opening"
-    whatsNew().then(async (n) => {
-      const sheet = n ? <WhatsNewSheet {...n} /> : await findUpdate().then((u) => (u ? <UpdateSheet update={u} /> : null));
-      if (sheet) return openSheet(sheet);
-      launchSheet.current = false; // nothing to show: the weekly report may use the sheet
-    });
-  }, [!!profile]);
-
   // ponytail: a PIN-locked profile never auto-signs in, so its reminder only fires once someone signs in
   useEffect(() => { keepInBackground(!!profile && s.reminderOn); }, [profile?.id, s.reminderOn]);
 
@@ -318,7 +291,6 @@ export default function App() {
       setS((x) => ({ ...x, reportedWeek: week }));
       if (!cur("xp") && !cur("words") && !cur("speak")) return;
       notify(t("goals.notifyTitle"), t("goals.notifyBody", { n: cur("xp") }));
-      if (launchSheet.current) return; // never push the What's New / update sheet aside at launch
       openSheet(<ReportSheet period="week" start={week} goals={goalsOf(p.stats)} data={data} />);
     })().catch((e) => console.error("weekly report", e));
   }, [ready, profile?.id]);

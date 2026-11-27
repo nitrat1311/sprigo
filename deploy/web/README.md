@@ -1,6 +1,6 @@
 # Experimental, community-supported web edition
 
-This experimental, community-supported Docker Compose deployment serves Sprigo in a browser. It is separate from the Tauri desktop app and its [phone companion](../../docs/MOBILE.md). The browser provides the screen, microphone and speaker; the server runs the UI, a restricted Ollama proxy and CPU-based faster-whisper (`base.en`). Piper runs in the browser and downloads its voice on first use.
+This experimental, community-supported Docker Compose deployment serves Sprigo in a browser. It is separate from the Tauri desktop app. The browser provides the screen, microphone and speaker; the server runs the UI, a restricted Ollama proxy and CPU-based faster-whisper (`base.en`). Piper runs in the browser and downloads its voice on first use.
 
 ## Start
 
@@ -29,4 +29,4 @@ If you already have a trusted TLS certificate for the chosen address, place its 
 
 Each browser stores its own profiles and progress in IndexedDB. This edition does not synchronize them between devices. Clearing browser data deletes local progress, so export or backup your browser profile before clearing it. The Tauri desktop app keeps its own database. A separate follow-up contribution can add optional server-backed accounts for shared progress.
 
-Only the configured Ollama model is proxied. Speech recognition in this experimental edition is currently **English only** with `base.en`. Other course languages need a multilingual Whisper model. The generated CA private key and server key stay in the ignored `certs/` directory; never commit them. The separate desktop app's Tailscale phone mode remains available.
+Only the configured Ollama model is proxied. Speech recognition in this experimental edition is currently **English only** with `base.en`. Other course languages need a multilingual Whisper model. The generated CA private key and server key stay in the ignored `certs/` directory; never commit them.

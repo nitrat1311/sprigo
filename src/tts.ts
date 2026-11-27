@@ -5,7 +5,7 @@
 import { useSyncExternalStore } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { fetch as tauriFetch } from "@tauri-apps/plugin-http";
-import { getSetting, isCompanion, isTauri } from "./db";
+import { getSetting, isWeb, isTauri } from "./db";
 import { ELEVEN_VOICES, LOCAL_TTS, elevenRequest, localRequest, type ByteRequest, type LocalTts } from "./ttsCloud";
 import { pickSystemVoice } from "./voices";
 import { unlockOnGesture } from "./audioUnlock";
@@ -17,13 +17,13 @@ type Engine = "piper" | "kokoro"; // the worker engines
 type Chunk = { audio: Float32Array; rate: number };
 type Msg = { type: string; id?: number; p?: number; message?: string; voice?: string } & Partial<Chunk>;
 
-// The phone shares the desktop's database but has its own voice: Kokoro runs out of memory in iOS Safari (docs/MOBILE.md §3).
-export const TTS_KEY = isCompanion ? "tts.phone" : "tts";
+// Preserve the existing voice preference key for the standalone web edition.
+export const TTS_KEY = isWeb ? "tts.phone" : "tts";
 // Linux's WebKitGTK (Ubuntu's build at least) has no speechSynthesis at all; there Piper is the default instead of silence.
 const synth: SpeechSynthesis | undefined = typeof speechSynthesis === "undefined" ? undefined : speechSynthesis;
 export const ttsProvider = async (): Promise<TtsProvider> => {
   const v = await getSetting(TTS_KEY);
-  return ((v === "kokoro" || v === "elevenlabs" || v === "local") && !isCompanion) || v === "piper" ? v : synth ? "system" : "piper";
+  return ((v === "kokoro" || v === "elevenlabs" || v === "local") && !isWeb) || v === "piper" ? v : synth ? "system" : "piper";
 };
 
 // ponytail: the dev browser preview has no keychain, so it keeps the key in localStorage. Never used in the app.

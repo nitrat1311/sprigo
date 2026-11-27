@@ -7,13 +7,13 @@ import { createGoogle } from "@ai-sdk/google";
 import { fetch as tauriFetch } from "@tauri-apps/plugin-http";
 import { invoke } from "@tauri-apps/api/core";
 import { z } from "zod";
-import { isTauri, isCompanion, addAiUsage, getSetting, setSetting } from "./db";
+import { isTauri, isWeb, addAiUsage, getSetting, setSetting } from "./db";
 import { retry, withBackup } from "./retry";
 import type { AiFeature } from "./usage";
 
 export type ProviderId = "ollama" | "lmstudio" | "openai" | "anthropic" | "gemini" | "openrouter";
 export const PROVIDERS: Record<ProviderId, { label: string; baseURL: string; needsKey: boolean }> = {
-  ollama: { label: "Ollama", baseURL: isCompanion ? `${location.origin}/ollama` : "http://localhost:11434", needsKey: false },
+  ollama: { label: "Ollama", baseURL: isWeb ? `${location.origin}/ollama` : "http://localhost:11434", needsKey: false },
   lmstudio: { label: "LM Studio", baseURL: "http://localhost:1234/v1", needsKey: false },
   openai: { label: "OpenAI", baseURL: "https://api.openai.com/v1", needsKey: true },
   anthropic: { label: "Anthropic", baseURL: "https://api.anthropic.com/v1", needsKey: true },
@@ -26,7 +26,7 @@ export type AiConfig = { provider: ProviderId; baseURL: string; model: string };
 const http = (isTauri ? tauriFetch : window.fetch.bind(window)) as typeof fetch;
 const trim = (u: string) => u.replace(/\/+$/, "");
 // The saved config is the desktop's (shared database), so on the phone its localhost address means the proxy.
-const baseOf = (c: AiConfig) => trim(isCompanion && c.provider === "ollama" ? PROVIDERS.ollama.baseURL : c.baseURL || PROVIDERS[c.provider].baseURL);
+const baseOf = (c: AiConfig) => trim(isWeb && c.provider === "ollama" ? PROVIDERS.ollama.baseURL : c.baseURL || PROVIDERS[c.provider].baseURL);
 
 export async function loadAiConfig(): Promise<AiConfig | null> {
   const v = await getSetting("ai");

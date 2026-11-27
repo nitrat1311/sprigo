@@ -5,13 +5,13 @@ import { isTauri } from "./db";
 import { Icon } from "./icons";
 
 /** In-app help (#39): the top setup questions, offline and in every UI language. The wiki keeps the long guides. */
-export type HelpTopic = "ai" | "aiConnect" | "weak" | "mic" | "voice" | "phone" | "data" | "offline";
+export type HelpTopic = "ai" | "aiConnect" | "weak" | "mic" | "voice" | "data" | "offline";
 
 const WIKI = "https://github.com/ozerozdas/sprigo/wiki";
 const QA = "https://github.com/ozerozdas/sprigo/discussions/categories/q-a-help";
 const PAGE: Record<HelpTopic, string> = {
   ai: "AI-Model-Setup", aiConnect: "Troubleshooting", weak: "AI-Model-Setup", mic: "Voice-and-Microphone",
-  voice: "Voice-and-Microphone", phone: "FAQ", data: "FAQ", offline: "FAQ",
+  voice: "Voice-and-Microphone", data: "FAQ", offline: "FAQ",
 };
 const TOPICS = Object.keys(PAGE) as HelpTopic[];
 

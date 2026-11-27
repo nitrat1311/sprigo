@@ -11,7 +11,6 @@ import { wrapSqlJs } from "./sqljs";
 import { dailyBackup, openTauriDb, snapshot } from "./datadir";
 import { deleteProfileSql } from "./profileDelete";
 import type { Baseline, Conditions, SessionRow, SpeechSummary } from "./speech";
-import { remoteDb, serveCompanion } from "./companion";
 import { evictIds, type Memory, type MemoryOps, type MemorySource } from "./memory";
 import { grade, newCard, review, strengthOf, type Grade, type WordCard } from "./srs";
 import { USAGE_SQL, type AiFeature, type UsageRow } from "./usage";
@@ -56,12 +55,9 @@ async function browserDb(): Promise<Db> {
 
 let dbP: Promise<Db> | null = null;
 export const isTauri = "__TAURI_INTERNALS__" in window;
-/** Opened from a phone through `tailscale serve` (docs/MOBILE.md): data, whisper and Ollama are the desktop's. */
 export const isWeb = import.meta.env.VITE_STANDALONE_WEB === "1";
-export const isCompanion = !isTauri && (location.hostname.endsWith(".ts.net") || isWeb);
 function db() {
   return (dbP ??= (async () => {
-    if (isCompanion && !isWeb) return remoteDb(); // the desktop already migrated it
     const d = await (isTauri ? openTauriDb() : (import.meta.env.DEV || isWeb) ? browserDb() : Promise.reject(new Error("Sprigo needs the Tauri shell")));
     await runMigrations(d, MIGRATIONS, isTauri ? (v) => snapshot(d, `pre-v${v}-${Date.now()}.db`).then(() => {}) : undefined);
     if (isWeb) {
@@ -81,7 +77,6 @@ function db() {
       await d.execute("INSERT INTO device_settings(key, value) VALUES ($1, $2) ON CONFLICT(key) DO UPDATE SET value = $2 WHERE device_settings.value IS NOT $2", ["ai", ai]);
     }
     if (isTauri) await dailyBackup(d).catch((e) => console.error("daily backup", e));
-    if (isTauri) void serveCompanion(d).catch((e) => console.error("companion", e));
     return d;
   })());
 }

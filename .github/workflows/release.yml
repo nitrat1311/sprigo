@@ -1,6 +1,6 @@
-# Builds macOS (Apple silicon + Intel), Windows and Linux and uploads them with a merged latest.json
+# Builds macOS (Apple silicon + Intel), Windows and Linux and uploads the installers
 # to a draft GitHub release. Push a tag `v<version>` (matching tauri.conf.json), wait for all jobs,
-# then publish the draft: the in-app updater only sees published releases.
+# then publish the draft.
 # Manual runs (workflow_dispatch) just build, as a smoke test, without touching releases.
 # A tag with a pre-release part (v1.8.0-1) makes a pre-release: only beta testers get it (channel.yml).
 name: release
@@ -122,11 +122,8 @@ jobs:
       - uses: tauri-apps/tauri-action@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
-          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
           releaseId: ${{ needs.release.outputs.id }} # empty on manual runs: build only
-          # ponytail: each job merges latest.json as it finishes; two finishing in the same second could drop a platform. Check it before publishing.
           args: ${{ matrix.args }} ${{ env.BUNDLE_ARGS }}
 
       # #138: fail the build if the AppImage lacks the GStreamer plugins WebKitGTK needs for audio.

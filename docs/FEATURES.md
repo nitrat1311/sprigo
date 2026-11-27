@@ -11,7 +11,6 @@
 - **Practice hub:** fix your mistakes, speaking and listening practice, your word list, Match Madness, a timed challenge, and the units, guidebooks and stories you saved.
 - **Your garden:** a tree that grows with your lessons, stays green while you keep your streak (days of roots) and grows a fruit for every level you pass. Each level has its own landscape, from meadow to summit.
 - **Gamification:** XP, coins, drops, daily quests, a shop, friends and a local league.
-- **Use it on your phone:** turn on **Settings → Use on your phone** and scan the code to open Sprigo in your phone's browser over [Tailscale](https://tailscale.com). Your data, speech recognition and Ollama stay on the computer. Details in [MOBILE.md](MOBILE.md).
 - **Private by default:** your progress stays in a local SQLite database with daily backups, and API keys are kept in the system keychain. You can move the data folder (for example to a synced folder), or export and import it. Several profiles can share one computer, optionally with a PIN. With a cloud AI provider, Settings shows the tokens used per month.
 - Reminders, light and dark themes, and an interface in English, Turkish, German, French, Spanish, Hungarian or Russian.
 - Automatic in-app updates.

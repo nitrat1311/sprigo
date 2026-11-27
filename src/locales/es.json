@@ -22,12 +22,7 @@
     "lockedDesc": "Cierra Sprigo allí y vuelve a intentarlo. Si tomas el control, los cambios que ese dispositivo aún no haya guardado podrían perderse.",
     "retry": "Reintentar",
     "takeOver": "Tomar el control",
-    "useDefault": "Usar la carpeta predeterminada",
-    "onPhoneTitle": "Sigue en tu móvil",
-    "onPhoneDesc": "Sprigo está abierto en tu móvil, así que esta ventana espera para proteger tu progreso. Vuelve aquí cuando quieras.",
-    "onDesktopTitle": "Sigue en tu ordenador",
-    "onDesktopDesc": "Sprigo se abrió en tu ordenador, así que esta pantalla espera para proteger tu progreso.",
-    "continueHere": "Continuar aquí"
+    "useDefault": "Usar la carpeta predeterminada"
   },
   "nav": {
     "live": "Clase en vivo",
@@ -611,22 +606,6 @@
     "memoryDesc": "Sprigo guarda lo duradero que le cuentas a tu tutor (intereses, planes, lo que te cuesta) y lo usa en las lecciones. Nada sale de este dispositivo salvo que tu proveedor de IA esté en la nube.",
     "speech": "Análisis de voz",
     "speechDesc": "Mide el ritmo y los tiempos mientras hablas con un tutor (qué tan rápido respondes, pausas, longitud de las frases) para adaptar la lección y mostrar tu progreso. No se graba el audio.",
-    "phone": "Usar en tu móvil",
-    "phoneDesc": "Abre Sprigo a tus propios dispositivos mediante Tailscale; tus datos se quedan en este ordenador.",
-    "phoneMissing": "Tailscale no está instalado en este ordenador.",
-    "phoneSignIn": "Abre Tailscale en este ordenador e inicia sesión.",
-    "phoneAbout": "Cómo funciona",
-    "phoneShowQr": "Mostrar el código",
-    "phoneHow1": "Instala Tailscale en este ordenador y en tu móvil, e inicia sesión con la misma cuenta.",
-    "phoneHow2": "Activa esto y escanea el código con la cámara del móvil.",
-    "phoneHow3": "En iPhone, desactiva el modo silencio para oír al tutor. Sprigo se abre en un solo dispositivo a la vez.",
-    "phoneGetTailscale": "Descargar Tailscale",
-    "phoneOk": "Vale",
-    "phoneScan": "Escanea con tu móvil",
-    "phoneScanDesc": "Tu móvil necesita Tailscale con la misma cuenta.",
-    "phoneApprove": "Tailscale necesita tu permiso",
-    "phoneApproveDesc": "Tu tailnet aún no permite compartir. Permítelo en la página que se abre y vuelve a activar esto.",
-    "phoneApproveOpen": "Abrir Tailscale",
     "reminder": "Recordatorios",
     "reminderDesc": "Sprigo te avisa varias veces al día y se calla cuando ya has practicado. Mientras esté activado, sigue en segundo plano.",
     "reduceMotion": "Reducir movimiento",
@@ -667,8 +646,6 @@
     },
     "profileDesc": "Nombre, color y PIN",
     "edit": "Editar",
-    "betaUpdates": "Actualizaciones beta",
-    "betaUpdatesDesc": "Recibe las versiones de prueba antes que nadie. Pueden tener errores; también sigues recibiendo todas las versiones normales.",
     "usage": {
       "title": "Uso de tokens",
       "details": "Detalles",
@@ -892,18 +869,8 @@
     "playback": "Reproducir mi grabación"
   },
   "update": {
-    "section": "Actualizaciones",
     "version": "Sprigo {{version}}",
-    "desc": "Las versiones nuevas se descargan de GitHub y se instalan al reiniciar",
-    "check": "Buscar",
-    "none": "Tienes la última versión",
-    "title": "Sprigo {{version}} está disponible",
-    "install": "Actualizar y reiniciar",
-    "later": "Más tarde",
-    "downloading": "Descargando… {{pct}}%",
-    "madeBy": "Desarrollado por Mehmet Özer Özdaş ·",
-    "whatsNew": "Novedades de Sprigo {{version}}",
-    "gotIt": "Entendido"
+    "madeBy": "Desarrollado por Mehmet Özer Özdaş ·"
   },
   "voice": {
     "kokoroDesc": "Una voz más natural. Puede tardar unos segundos por frase, según la velocidad de tu equipo.",
@@ -1242,10 +1209,6 @@
       "voice": {
         "q": "¿Qué voz debo usar?",
         "a": "Piper funciona dentro de la app y habla todos los idiomas de los cursos. Kokoro es la voz local más natural, pero solo habla inglés. La voz del sistema usa las voces instaladas en tu sistema operativo, y ElevenLabs es una voz en la nube con tu propia clave.\nSi una voz no puede hablar, Sprigo cambia a la voz del sistema.\n¿El tutor se calla solo? El micrófono oye tus altavoces: usa auriculares o desactiva Interrumpir al tutor."
-      },
-      "phone": {
-        "q": "¿Puedo usar Sprigo en el móvil?",
-        "a": "Sí, con Tailscale: Ajustes → Privacidad y datos → Usar en tu móvil. El móvil usa los datos, el reconocimiento de voz y el modelo local del ordenador, así que el ordenador debe estar encendido. Los proveedores en la nube no funcionan allí, porque las claves se quedan en el ordenador.\nEn el iPhone, desactiva el modo silencio para oír al tutor."
       },
       "data": {
         "q": "¿Dónde están mis datos?",

@@ -2,7 +2,7 @@
 import { mark } from "./latency";
 import { Channel, invoke } from "@tauri-apps/api/core";
 import { fetch as tauriFetch } from "@tauri-apps/plugin-http";
-import { isTauri, isCompanion, getSetting } from "./db";
+import { isTauri, isWeb, getSetting } from "./db";
 import { VAD, VAD_IDLE, concat, cutTo, loudness, resample, rms, vadStep, type VadEvent } from "./audio";
 import { wav16 } from "./wav";
 import { speechMetrics, type Utterance } from "./speech";
@@ -46,7 +46,7 @@ let ready: Promise<boolean> | undefined;
 /** Speaking available? Deepgram: key present. Whisper: model present in this build (always false in the browser preview). */
 export const sttReady = () => (ready ??= (async () => {
   if ((await sttProvider()) === "deepgram") return !!(await getDeepgramKey().catch(() => null));
-  return isTauri ? invoke<boolean>("stt_ready").catch(() => false) : isCompanion;
+  return isTauri ? invoke<boolean>("stt_ready").catch(() => false) : isWeb;
 })());
 /** Call after the provider or the key changes. */
 export const resetSttReady = () => { ready = undefined; };
@@ -109,9 +109,9 @@ export async function openMic(): Promise<Mic> {
 const SILENT = 1e-4; // -80 dBFS: below any real mic, even in a quiet room (measured: -44 dBFS peak for a silent take)
 
 /** Where the learner spoke in 16 kHz `x` (seconds), by the speech detector in Rust (Silero, through whisper.cpp): null
- *  when it heard no speech, undefined when there is no detector (browser preview, phone companion, model missing). */
+ *  when it heard no speech, undefined when there is no detector (browser preview, standalone web, model missing). */
 async function speechSpan(x: Float32Array): Promise<[number, number] | null | undefined> {
-  if (!isTauri || isCompanion) return undefined;
+  if (!isTauri) return undefined;
   return invoke<[number, number] | null>("speech_span", { samples: Array.from(x) }).catch(() => undefined);
 }
 
@@ -152,7 +152,7 @@ export type Recording = ReturnType<typeof startRecording>;
 async function transcribeSamples(all: Float32Array, rate: number, lang: string): Promise<string> {
   if (all.length < rate * 0.3) return "";
   if ((await sttProvider()) === "deepgram") return deepgramTranscribe(wav16(resample(all, rate)), lang);
-  if (isCompanion) { // phone: the desktop's whisper (src-tauri/src/companion.rs), raw f32 samples
+  if (isWeb) { // standalone web speech endpoint accepts raw f32 samples
     const r = await fetch(`/transcribe?lang=${encodeURIComponent(lang)}`, { method: "POST", headers: { "X-Sprigo": "1" }, body: resample(all, rate) as BodyInit });
     if (!r.ok) throw new Error(await r.text());
     return r.text();
@@ -167,7 +167,7 @@ export type Listener = { pause(bargeIn?: boolean): void; resume(): void; stop():
 const STRICT = { ...VAD, threshold: VAD.threshold * 3, startMs: 300 };
 
 /** Hands-free listening (tutor call): the voice detector cuts the mic stream into utterances and each one is transcribed.
- *  With `native` each utterance also gets its speech signals (SPR-25), measured here so the phone companion gets them too. */
+ *  With `native` each utterance also gets its speech signals (SPR-25), measured here so browser sessions get them too. */
 export async function listen(lang: string, on: { utterance: (text: string, m?: Utterance) => void; speech?: () => void; level?: (rms: number) => void; error?: (e: Error) => void }, native?: string): Promise<Listener> {
   const stream = await navigator.mediaDevices.getUserMedia({ audio: { channelCount: { ideal: 1 }, echoCancellation: true, noiseSuppression: true } });
   const ctx = new AudioContext();

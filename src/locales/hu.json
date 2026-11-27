@@ -22,12 +22,7 @@
     "lockedDesc": "Zárd be ott a Sprigót, majd próbáld újra. Ha átveszed, elveszhetnek azok a változások, amelyeket az az eszköz még nem mentett.",
     "retry": "Újra",
     "takeOver": "Átveszem",
-    "useDefault": "Alapértelmezett mappa használata",
-    "onPhoneTitle": "Folytatás a telefonodon",
-    "onPhoneDesc": "A Sprigo meg van nyitva a telefonodon, ezért ez az ablak vár, hogy a haladásod biztonságban legyen. Bármikor visszatérhetsz ide.",
-    "onDesktopTitle": "Folytatás a számítógépeden",
-    "onDesktopDesc": "A Sprigót most a számítógépeden használod, ezért ez a képernyő vár, hogy a haladásod biztonságban legyen.",
-    "continueHere": "Folytatás itt"
+    "useDefault": "Alapértelmezett mappa használata"
   },
   "nav": {
     "live": "Élő óra",
@@ -583,22 +578,6 @@
     "memoryDesc": "A Sprigo megjegyzi a hosszabb távon is fontos dolgokat, amelyeket a tanárodnak mondasz (érdeklődés, tervek, ami nehéz neked), és felhasználja őket a leckékben. Semmi sem hagyja el ezt az eszközt, hacsak nem felhőbeli MI-szolgáltatót használsz.",
     "speech": "Hangelemzés",
     "speechDesc": "Méri az időzítést és a tempót, miközben a tanárral beszélsz (milyen gyorsan válaszolsz, a szüneteket, a mondatok hosszát), hogy ehhez igazítsa az órát, és megmutassa a fejlődésedet. Hangfelvétel nem készül.",
-    "phone": "Használat telefonon",
-    "phoneDesc": "A Tailscale-en keresztül megnyitja a Sprigót a saját eszközeid számára; az adataid ezen a számítógépen maradnak.",
-    "phoneMissing": "A Tailscale nincs telepítve ezen a számítógépen.",
-    "phoneSignIn": "Nyisd meg a Tailscale-t ezen a számítógépen, és jelentkezz be.",
-    "phoneAbout": "Hogyan működik",
-    "phoneShowQr": "Kód megjelenítése",
-    "phoneHow1": "Telepítsd a Tailscale-t erre a számítógépre és a telefonodra, és jelentkezz be ugyanazzal a fiókkal.",
-    "phoneHow2": "Kapcsold be ezt, és olvasd be a kódot a telefonod kamerájával.",
-    "phoneHow3": "iPhone-on kapcsold ki a néma módot, hogy halld a tanárt. A Sprigo egyszerre csak egy eszközön fut.",
-    "phoneGetTailscale": "Tailscale letöltése",
-    "phoneOk": "OK",
-    "phoneScan": "Olvasd be a telefonoddal",
-    "phoneScanDesc": "A telefonodon is ugyanazzal a fiókkal kell bejelentkezned a Tailscale-be.",
-    "phoneApprove": "A Tailscale-nek szüksége van a jóváhagyásodra",
-    "phoneApproveDesc": "A tailneted még nem engedélyezte a megosztást. Engedélyezd a megnyíló oldalon, majd kapcsold be ezt újra.",
-    "phoneApproveOpen": "Tailscale megnyitása",
     "reminder": "Emlékeztetők",
     "reminderDesc": "A Sprigo naponta néhányszor emlékeztet, és elcsendesedik, ha már gyakoroltál. Bekapcsolva a háttérben fut.",
     "reduceMotion": "Kevesebb mozgás",
@@ -639,8 +618,6 @@
     },
     "profileDesc": "Név, szín és PIN-kód",
     "edit": "Szerkesztés",
-    "betaUpdates": "Bétafrissítések",
-    "betaUpdatesDesc": "Mindenki más előtt megkapod a tesztverziókat. Lehetnek bennük hibák; a rendes kiadásokat továbbra is megkapod.",
     "usage": {
       "title": "Tokenhasználat",
       "details": "Részletek",
@@ -860,18 +837,8 @@
     "playback": "Felvételem lejátszása"
   },
   "update": {
-    "section": "Frissítések",
     "version": "Sprigo {{version}}",
-    "desc": "Az új verziók a GitHubról töltődnek le, és újraindítás után települnek",
-    "check": "Ellenőrzés",
-    "none": "A legújabb verziót használod",
-    "title": "Elérhető a Sprigo {{version}}",
-    "install": "Frissítés és újraindítás",
-    "later": "Később",
-    "downloading": "Letöltés… {{pct}}%",
-    "madeBy": "Készítette: Mehmet Özer Özdaş ·",
-    "whatsNew": "Újdonságok – Sprigo {{version}}",
-    "gotIt": "Értem"
+    "madeBy": "Készítette: Mehmet Özer Özdaş ·"
   },
   "voice": {
     "kokoroDesc": "Természetesebb hang. A géped sebességétől függően mondatonként néhány másodpercig tarthat.",
@@ -1206,10 +1173,6 @@
       "voice": {
         "q": "Melyik hangot használjam?",
         "a": "A Piper az alkalmazásban fut, és minden kurzusnyelven beszél. A Kokoro a legtermészetesebb helyi hang, de csak angolul beszél. A rendszerhang az operációs rendszeredre telepített hangokat használja, az ElevenLabs pedig felhőhang a saját kulcsoddal.\nHa egy hang nem tud megszólalni, a Sprigo a rendszerhangra vált.\nA tanár magától elhallgat? A mikrofon hallja a hangszóróidat: használj fejhallgatót, vagy kapcsold ki A tanár félbeszakítása beállítást."
-      },
-      "phone": {
-        "q": "Használhatom a Sprigót a telefonomon?",
-        "a": "Igen, a Tailscale segítségével: Beállítások → Adatvédelem és adatok → Használat telefonon. A telefon a számítógép adatait, beszédfelismerését és helyi modelljét használja, ezért a számítógépnek bekapcsolva kell lennie. A felhőbeli MI-szolgáltatók ott nem működnek, mert a kulcsok a számítógépen maradnak.\niPhone-on kapcsold ki a néma módot, hogy halld a tanárt."
       },
       "data": {
         "q": "Hol vannak az adataim?",

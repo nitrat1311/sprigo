@@ -18,7 +18,6 @@ flowchart LR
     UI <--> DB
   end
   UI -- "HTTP, streamed" --> LLM["Ollama / LM Studio<br/>(or OpenAI, Anthropic, Gemini)"]
-  Phone["Phone browser"] -- "Tailscale" --> Rust
   Courses["courses/*.yml"] --> UI
 ```
 
@@ -43,11 +42,10 @@ flowchart LR
 - **Storage:** SQLite (`tauri-plugin-sql`) with versioned migrations, a daily backup and a lock file, so two devices never write to a synced data folder at the same time.
 - **Memory and speaking stats:** the facts Sprigo remembers and the per-call speaking measurements are rows in the same SQLite database. Speaking stats are computed from timing and transcripts; no audio is kept.
 - **Secrets:** API keys live in the OS keychain (macOS Keychain, Windows Credential Manager, Secret Service), never in the database.
-- **Phone companion:** the Rust core runs a small HTTP server on `127.0.0.1` and publishes it to the learner's own devices with `tailscale serve`. The phone gets the same UI. Its SQL is sent back to the desktop webview, so the database keeps a single writer, and speech recognition and Ollama run on the desktop. Only one device holds the data at a time.
 
 ### Build and release
 
-Pure logic (activities, course parsing, migrations, the league, timing and more) is written without imports from Vite or Tauri, so `node --test` runs it directly. CI builds macOS (Apple silicon and Intel), Windows and Linux on every tagged release and publishes signed updates for the in-app updater.
+Pure logic (activities, course parsing, migrations, the league, timing and more) is written without imports from Vite or Tauri, so `node --test` runs it directly. CI builds macOS (Apple silicon and Intel), Windows and Linux on every tagged release and packages the installers.
 
 Design decisions and their reasons are in [docs/DECISIONS.md](DECISIONS.md).
 
@@ -122,7 +120,5 @@ Learning loop: teach = `learn` → recognise = `word_select` / `image_select` �
 - `pnpm tauri build` → `src-tauri/target/release/bundle/…`. Most of the size is the bundled whisper model (~57 MB).
 - macOS signing is ad hoc (`bundle.macOS.signingIdentity: "-"`), so other Macs need the one-time `xattr` command from the [README](../README.md#install). Distribution without it needs a Developer ID Application certificate and notarization.
 - `[profile.release.build-override] strip = false`: with the macOS 27 linker, stripped proc-macro dylibs (sqlx-macros) fail to load. The app binary is still stripped.
-- Releases are built in CI ([RELEASE.md](RELEASE.md)). The repo must stay public: the updater downloads without signing in.
-- Updater signing key: kept outside the repo; `TAURI_SIGNING_PRIVATE_KEY` in CI. If it is lost, installed apps will not accept new versions, so keep a backup. Since `createUpdaterArtifacts` is on, every local `tauri build` needs it too.
-- The updater moves the download from the system temp folder next to the app. If the app runs from another disk (e.g. `/Volumes/...`) it fails with "Cross-device link"; `/Applications` is fine.
+- Releases are built in CI ([RELEASE.md](RELEASE.md)). Install a new build from the fork when you update.
 - `tauri-plugin-http` is pinned to `~2.7` on the Rust side to match the npm package; a mismatch stops `tauri build`.

@@ -16,10 +16,6 @@ import "./theme";
 import { AppProvider } from "./store";
 import App from "./App";
 import { CrashProbe, ErrorBoundary } from "./ErrorBoundary";
-import { isCompanion, isWeb } from "./db";
-import { registerOfflinePage } from "./companion";
-
-if (isCompanion && !isWeb) registerOfflinePage();
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>

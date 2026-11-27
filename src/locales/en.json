@@ -22,12 +22,7 @@
     "lockedDesc": "Close Sprigo there, then try again. If you take over, changes that device hasn't saved yet may be lost.",
     "retry": "Try again",
     "takeOver": "Take over",
-    "useDefault": "Use the default folder",
-    "onPhoneTitle": "Continuing on your phone",
-    "onPhoneDesc": "Sprigo is open on your phone, so this window waits to keep your progress safe. Come back here whenever you like.",
-    "onDesktopTitle": "Continuing on your computer",
-    "onDesktopDesc": "Sprigo was picked up on your computer, so this screen waits to keep your progress safe.",
-    "continueHere": "Continue here"
+    "useDefault": "Use the default folder"
   },
   "nav": {
     "live": "Live lesson",
@@ -583,22 +578,6 @@
     "memoryDesc": "Sprigo keeps lasting things you tell your tutor (interests, plans, what you find hard) and uses them in lessons. Nothing leaves this device unless your AI provider is in the cloud.",
     "speech": "Voice analysis",
     "speechDesc": "Measures timing and pace while you talk to a tutor (how fast you answer, pauses, sentence length) to adjust the lesson and show your progress. No audio is recorded.",
-    "phone": "Use on your phone",
-    "phoneDesc": "Opens Sprigo to your own devices through Tailscale; your data stays on this computer.",
-    "phoneMissing": "Tailscale isn't installed on this computer.",
-    "phoneSignIn": "Open Tailscale on this computer and sign in.",
-    "phoneAbout": "How it works",
-    "phoneShowQr": "Show the code",
-    "phoneHow1": "Install Tailscale on this computer and on your phone, and sign in with the same account.",
-    "phoneHow2": "Turn this on and scan the code with your phone's camera.",
-    "phoneHow3": "On iPhone, turn silent mode off to hear the tutor. Sprigo runs on one device at a time.",
-    "phoneGetTailscale": "Get Tailscale",
-    "phoneOk": "OK",
-    "phoneScan": "Scan with your phone",
-    "phoneScanDesc": "Your phone needs Tailscale signed in to the same account.",
-    "phoneApprove": "Tailscale needs your OK",
-    "phoneApproveDesc": "Your tailnet hasn't allowed sharing yet. Allow it on the page that opens, then turn this on again.",
-    "phoneApproveOpen": "Open Tailscale",
     "reminder": "Reminders",
     "reminderDesc": "Sprigo nudges you a few times a day and goes quiet once you've practiced. While on, it stays in the background.",
     "reduceMotion": "Reduce motion",
@@ -639,8 +618,6 @@
     },
     "profileDesc": "Name, color and PIN",
     "edit": "Edit",
-    "betaUpdates": "Beta updates",
-    "betaUpdatesDesc": "Get test versions before everyone else. They can have bugs; you also keep getting every regular release.",
     "usage": {
       "title": "Token usage",
       "details": "Details",
@@ -860,18 +837,8 @@
     "playback": "Play my recording"
   },
   "update": {
-    "section": "Updates",
     "version": "Sprigo {{version}}",
-    "desc": "New versions download from GitHub and install after a restart",
-    "check": "Check",
-    "none": "You're on the latest version",
-    "title": "Sprigo {{version}} is available",
-    "install": "Update and restart",
-    "later": "Later",
-    "downloading": "Downloading… {{pct}}%",
-    "madeBy": "Made by Mehmet Özer Özdaş ·",
-    "whatsNew": "What's new in Sprigo {{version}}",
-    "gotIt": "Got it"
+    "madeBy": "Made by Mehmet Özer Özdaş ·"
   },
   "voice": {
     "kokoroDesc": "A more natural voice. It can take a few seconds per sentence, depending on your computer's speed.",
@@ -1206,10 +1173,6 @@
       "voice": {
         "q": "Which voice should I use?",
         "a": "Piper runs in the app and speaks every course language. Kokoro is the most natural local voice but speaks English only. The system voice uses the voices your OS has installed, and ElevenLabs is a cloud voice with your own key.\nIf a voice can't speak, Sprigo switches to the system voice.\nTutor stops by itself? The mic is hearing your speakers: use headphones, or turn off Cut in on the tutor."
-      },
-      "phone": {
-        "q": "Can I use Sprigo on my phone?",
-        "a": "Yes, through Tailscale: Settings → Privacy & data → Use on your phone. The phone uses the desktop's data, speech recognition and local model, so the desktop must be on. Cloud AI providers don't work there, because the keys stay on the desktop.\nOn iPhone, turn off silent mode to hear the tutor."
       },
       "data": {
         "q": "Where is my data?",

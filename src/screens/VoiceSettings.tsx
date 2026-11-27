@@ -2,7 +2,7 @@
 import { Fragment, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useApp } from "../store";
-import { getSetting, isCompanion, isTauri, isWeb, setSetting } from "../db";
+import { getSetting, isTauri, isWeb, setSetting } from "../db";
 import { elevenVoice, getElevenKey, loadKokoro, loadPiper, localTts, sayWithEleven, sayWithLocal, setElevenKey, speak, speakingWith, TTS_KEY, ttsProvider, ttsSpeaks, useTtsPreparing, ACCENTS, SPEED, ttsAccent, ttsSpeed, type TtsProvider } from "../tts";
 import { ELEVEN_VOICES, LOCAL_TTS } from "../ttsCloud";
 import { Icon } from "../icons";
@@ -124,7 +124,7 @@ function TtsSheet({ initial, onChange }: { initial: TtsProvider; onChange: (v: T
     <div className="od-stack" style={sheet}>
       <h3 className="od-center">{t("settings.tts")}</h3>
       <div className="od-stack" style={gap("var(--s-3)")} role="radiogroup" aria-label={t("settings.tts")}>
-        {TTS.filter(({ p }) => !(isCompanion && p !== "system" && p !== "piper")).map(({ p, bars, color }) => (
+        {TTS.filter(({ p }) => !(isWeb && p !== "system" && p !== "piper")).map(({ p, bars, color }) => (
           <div key={p} className={`voice-option${v === p ? " on" : ""}`}>
             <button role="radio" aria-checked={v === p} disabled={pct !== null || !ttsSpeaks(p, lang)} onClick={() => pick(p)}>
               <Signal bars={bars} color={color} />
