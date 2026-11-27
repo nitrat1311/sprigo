@@ -162,3 +162,41 @@ test("v5 seeds FSRS state from word strength and keeps every word", async () => 
     seeded("cinco", 15, 4, "2026-01-16 00:00:00"),
   ]);
 });
+
+test("v11: drops rows whose parent is gone and keeps every valid row", async () => {
+  const db = fresh();
+  await runMigrations(db, MIGRATIONS.filter((m) => m.v < 11));
+  await db.execute("PRAGMA foreign_keys = OFF"); // what wrote the orphans: the pragma was never on before #184
+  await db.execute(`
+INSERT INTO profiles(id, name, color, ui_lang, native_lang, stats, active_enrollment_id) VALUES (1, 'a', 'green', 'en', 'en', '{}', 10), (2, 'b', 'green', 'en', 'en', '{}', 99);
+INSERT INTO enrollments(id, profile_id, course_iso, level) VALUES (10, 1, 'en', 'A1'), (30, 99, 'en', 'A1');
+INSERT INTO step_progress(enrollment_id, step_id, state) VALUES (10, 's', 'done'), (99, 's', 'done');
+INSERT INTO content_cache(enrollment_id, step_id, content) VALUES (10, 's', '{}'), (99, 's', '{}');
+INSERT INTO mistakes(enrollment_id, item) VALUES (10, 'x'), (99, 'x');
+INSERT INTO words(enrollment_id, word, translation) VALUES (10, 'w', 't'), (99, 'w', 't');
+INSERT INTO bookmarks(enrollment_id, kind, ref) VALUES (10, 'unit', 'A1:greetings'), (99, 'unit', 'A1:greetings');
+INSERT INTO unit_notes(enrollment_id, unit_ref, text) VALUES (10, 'A1:greetings', 'note'), (99, 'A1:greetings', 'note');
+INSERT INTO journal(profile_id, day, text) VALUES (1, '2026-01-01', 'entry'), (99, '2026-01-01', 'entry');
+INSERT INTO memories(profile_id, kind, text, source) VALUES (1, 'interest', 'x', 'tutor'), (99, 'interest', 'x', 'tutor');
+INSERT INTO tutors(id, profile_id, data) VALUES ('custom:1', 1, '{}'), ('custom:99', 99, '{}');
+INSERT INTO speech_sessions(profile_id, enrollment_id, mode, utterances, silences, wpm, pause_ratio, long_pauses, level, fillers, words, native_words, speech_ms) VALUES
+  (1, 10, 'tutor', 1, 0, 90, 0.2, 0, 0.1, 0, 5, 0, 3000),
+  (1, 99, 'tutor', 1, 0, 90, 0.2, 0, 0.1, 0, 5, 0, 3000),
+  (99, 99, 'tutor', 1, 0, 90, 0.2, 0, 0.1, 0, 5, 0, 3000)`);
+  await db.execute("PRAGMA foreign_keys = ON"); // the app opens the connection this way now
+
+  await runMigrations(db, MIGRATIONS);
+  assert.equal(await schemaVersion(db), Math.max(...MIGRATIONS.map((m) => m.v)));
+  assert.deepEqual(await db.select("PRAGMA foreign_key_check"), [], "no constraint is left unsatisfied");
+
+  assert.deepEqual(await db.select("SELECT id, active_enrollment_id FROM profiles"), [{ id: 1, active_enrollment_id: 10 }, { id: 2, active_enrollment_id: null }]);
+  assert.deepEqual(await db.select("SELECT id FROM enrollments"), [{ id: 10 }]);
+  for (const t of ["step_progress", "content_cache", "mistakes", "words", "bookmarks", "unit_notes"])
+    assert.deepEqual(await db.select(`SELECT enrollment_id FROM ${t}`), [{ enrollment_id: 10 }], t);
+  for (const t of ["journal", "memories", "tutors"])
+    assert.deepEqual(await db.select(`SELECT profile_id FROM ${t}`), [{ profile_id: 1 }], t);
+  assert.deepEqual(await db.select("SELECT profile_id, enrollment_id FROM speech_sessions ORDER BY enrollment_id NULLS FIRST"), [
+    { profile_id: 1, enrollment_id: null }, // its enrollment was already gone
+    { profile_id: 1, enrollment_id: 10 },
+  ]);
+});
