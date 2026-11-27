@@ -837,6 +837,12 @@
     "geminiInfo": "I modelli Gemini scrivono le tue lezioni e chat. Le richieste vanno a Google; limiti di utilizzo e prezzi dipendono dalla tua chiave.",
     "openrouterGood": "Centinaia di modelli da molti laboratori dietro un'unica chiave API.",
     "openrouterInfo": "Si connette ad OpenRouter, che instrada ogni richiesta al modello scelto (OpenAI, Anthropic, Google, modelli open…). Le richieste vanno ad OpenRouter e al fornitore del modello; fatturato in base all'uso sulla tua chiave OpenRouter. Sprigo spegne il ragionamento del modello dove possibile, così le lezioni rimangono veloci.",
+    "openrouterSignIn": "Accedi con OpenRouter",
+    "openrouterSigningIn": "In attesa del browser…",
+    "openrouterSignInHint": "Apre openrouter.ai nel browser. Nessuna chiave da copiare: viene salvata nel portachiavi.",
+    "openrouterSignedIn": "Accesso eseguito. Scegli un modello qui sotto, poi salva.",
+    "openrouterTimeout": "Accesso scaduto. Riprova.",
+    "openrouterFailed": "Accesso a OpenRouter non riuscito",
     "configure": "{{name}} impostazioni",
     "backup": "Backup",
     "backupDesc": "Il tuo fornitore principale scrive le tue lezioni. Scegli un secondo come backup e Sprigo lo interroga quando quello principale fallisce.",
@@ -860,8 +866,18 @@
     "playback": "Riproduci la mia registrazione"
   },
   "update": {
+    "section": "Aggiornamenti",
     "version": "Sprigo {{version}}",
-    "madeBy": "Realizzato da Mehmet Özer Özdaş ·"
+    "desc": "Le nuove versioni vengono scaricate da GitHub e installate dopo un riavvio",
+    "check": "Controlla",
+    "none": "Sei già sulla versione più recente",
+    "title": "Sprigo {{version}} è disponibile",
+    "install": "Aggiorna e riavvia",
+    "later": "Dopo",
+    "downloading": "Scaricamento… {{pct}}%",
+    "madeBy": "Realizzato da Mehmet Özer Özdaş ·",
+    "whatsNew": "Novità in Sprigo {{version}}",
+    "gotIt": "Capito"
   },
   "voice": {
     "kokoroDesc": "Una voce più naturale. Può richiedere alcuni secondi per frase, a seconda della velocità del tuo computer.",

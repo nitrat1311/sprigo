@@ -1,42 +1,60 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
-  <!-- Sprigo app icon: a friendly tutor in a speech bubble, answered by a second language bubble.
-       macOS grid: 824px body on a 1024 canvas. Regenerate PNG/ICNS/ICO with `pnpm tauri icon src-tauri/icons/icon.svg`. -->
+  <!-- Sprigo app icon: a friendly tutor in a speech bubble, answered by a second language bubble,
+       with a small sprig growing from the tutor's head. macOS grid: 824px body on a 1024 canvas.
+       Regenerate PNG/ICNS/ICO with `pnpm tauri icon src-tauri/icons/icon.svg`.
+
+       Colours are the light-theme tokens from src/styles.css :root. SVG cannot read CSS variables,
+       so the values are inlined; the token names below are written without their leading dashes.
+         body gradient  leaf #6aa84f to green #467e39
+         answer bubble  blue #3d7a99 to blue-dark #2d627d
+         tutor bubble, sprig, answer dots, eye glints  card #fffdf8
+         face ink  text #2e2a24
+         cheeks  orange #cf7a4c, tinted to 50% opacity
+         bubble shadow  green-dark #3a6a2b, tinted to 35% opacity
+       Any other colour used here is a bug. -->
   <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#3dd6a0"/>
-      <stop offset="1" stop-color="#0c8f68"/>
+    <linearGradient id="body" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#6aa84f"/> <!-- leaf -->
+      <stop offset="1" stop-color="#467e39"/> <!-- green -->
     </linearGradient>
-    <linearGradient id="blue" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#748ffc"/>
-      <stop offset="1" stop-color="#3b5bdb"/>
+    <linearGradient id="answer" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3d7a99"/> <!-- blue -->
+      <stop offset="1" stop-color="#2d627d"/> <!-- blue-dark -->
     </linearGradient>
     <filter id="shadow" x="-20%" y="-20%" width="140%" height="150%">
-      <feDropShadow dx="0" dy="14" stdDeviation="16" flood-color="#0a4a36" flood-opacity=".35"/>
+      <feDropShadow dx="0" dy="14" stdDeviation="16" flood-color="#3a6a2b" flood-opacity=".35"/>
     </filter>
   </defs>
 
   <!-- body -->
-  <rect x="100" y="100" width="824" height="824" rx="185" fill="url(#bg)"/>
+  <rect x="100" y="100" width="824" height="824" rx="185" fill="url(#body)"/>
 
   <!-- answer bubble (blue, top right) -->
   <g filter="url(#shadow)">
-    <path d="M598 214h170a74 74 0 0 1 74 74v84a74 74 0 0 1-74 74h-22l14 52-66-52h-96a74 74 0 0 1-74-74v-84a74 74 0 0 1 74-74z" fill="url(#blue)"/>
+    <path d="M598 214h170a74 74 0 0 1 74 74v84a74 74 0 0 1-74 74h-22l14 52-66-52h-96a74 74 0 0 1-74-74v-84a74 74 0 0 1 74-74z" fill="url(#answer)"/>
   </g>
-  <circle cx="627" cy="330" r="19" fill="#fff"/>
-  <circle cx="683" cy="330" r="19" fill="#fff"/>
-  <circle cx="739" cy="330" r="19" fill="#fff"/>
+  <circle cx="627" cy="330" r="19" fill="#fffdf8"/>
+  <circle cx="683" cy="330" r="19" fill="#fffdf8"/>
+  <circle cx="739" cy="330" r="19" fill="#fffdf8"/>
 
-  <!-- tutor bubble (white) -->
+  <!-- sprig on the tutor's head; same cream as the bubble so the two read as one silhouette -->
+  <g fill="#fffdf8">
+    <path d="M348 424q-4-42-18-70" stroke="#fffdf8" stroke-width="34" stroke-linecap="round" fill="none"/>
+    <ellipse cx="288" cy="300" rx="62" ry="33" transform="rotate(-38 288 300)"/>
+    <ellipse cx="382" cy="292" rx="46" ry="26" transform="rotate(24 382 292)"/>
+  </g>
+
+  <!-- tutor bubble (cream) -->
   <g filter="url(#shadow)">
-    <path d="M298 360h300a118 118 0 0 1 118 118v168a118 118 0 0 1-118 118h-186l-118 86 26-92a118 118 0 0 1-140-116v-164a118 118 0 0 1 118-118z" fill="#fff"/>
+    <path d="M298 360h300a118 118 0 0 1 118 118v168a118 118 0 0 1-118 118h-186l-118 86 26-92a118 118 0 0 1-140-116v-164a118 118 0 0 1 118-118z" fill="#fffdf8"/>
   </g>
 
   <!-- face -->
-  <ellipse cx="378" cy="532" rx="36" ry="46" fill="#2f3437"/>
-  <ellipse cx="530" cy="532" rx="36" ry="46" fill="#2f3437"/>
-  <circle cx="390" cy="516" r="12" fill="#fff"/>
-  <circle cx="542" cy="516" r="12" fill="#fff"/>
-  <path d="M398 626q56 50 112 0" fill="none" stroke="#2f3437" stroke-width="26" stroke-linecap="round"/>
-  <ellipse cx="318" cy="610" rx="30" ry="18" fill="#ff8fa3" opacity=".55"/>
-  <ellipse cx="590" cy="610" rx="30" ry="18" fill="#ff8fa3" opacity=".55"/>
+  <ellipse cx="378" cy="532" rx="36" ry="46" fill="#2e2a24"/>
+  <ellipse cx="530" cy="532" rx="36" ry="46" fill="#2e2a24"/>
+  <circle cx="390" cy="516" r="12" fill="#fffdf8"/>
+  <circle cx="542" cy="516" r="12" fill="#fffdf8"/>
+  <path d="M398 626q56 50 112 0" fill="none" stroke="#2e2a24" stroke-width="26" stroke-linecap="round"/>
+  <ellipse cx="318" cy="610" rx="30" ry="18" fill="#cf7a4c" opacity=".5"/>
+  <ellipse cx="590" cy="610" rx="30" ry="18" fill="#cf7a4c" opacity=".5"/>
 </svg>

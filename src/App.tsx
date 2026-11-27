@@ -14,6 +14,8 @@ import { isTauri, profileWordDays, speechMsDays } from "./db";
 import { Chat, Story } from "./Talk";
 import { Flashcards } from "./Flashcards";
 import { TutorCall } from "./TutorCall";
+import { ForkReleaseBanner } from "./ForkRelease";
+import { findForkUpdate, UpdateSheet } from "./ForkUpdate";
 import { ErrorBoundary } from "./ErrorBoundary";
 import { parseTalkId, type CharacterId } from "./characters";
 import { characterOf } from "./tutors";
@@ -208,9 +210,18 @@ export default function App() {
   // Modal focus (#34): what's behind a sheet or lesson is inert; focus moves into it, and back to where it was once it closes.
   const sheetBox = useRef<HTMLDivElement>(null);
   const back = useRef<{ sheet?: HTMLElement; lesson?: HTMLElement }>({});
-  // #43: the launch sheets and the weekly report each open on their own; the report must yield to them.
   const activeProfile = useRef(profile?.id); // async work checks this before writing to the profile
   useEffect(() => { activeProfile.current = profile?.id; }, [profile?.id]);
+  const hasOverlay = useRef(false);
+  hasOverlay.current = !!(sheet || lessonId);
+  useEffect(() => {
+    if (!profile?.id || !isTauri) return;
+    let live = true;
+    void findForkUpdate().then((update) => {
+      if (live && update && !hasOverlay.current) openSheet(<UpdateSheet update={update} />);
+    }).catch((err) => console.warn("fork update check", err));
+    return () => { live = false; };
+  }, [profile?.id]);
   useEffect(() => {
     // focusin for the keyboard; pointerdown too, because WebKit (the macOS app) doesn't focus a clicked button
     const f = (e: Event) => {
@@ -315,7 +326,7 @@ export default function App() {
         </aside>
         <main className="main">
           <div className="main-inner">
-            <div className="center" tabIndex={-1}><Screen /></div>
+          <div className="center" tabIndex={-1}><ForkReleaseBanner /><Screen /></div>
             <aside className="rail" aria-label={t("rail.label")} inert={route === "garden"}><Rail /></aside>
           </div>
         </main>

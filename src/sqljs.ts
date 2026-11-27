@@ -6,6 +6,10 @@ import type { SqlDb } from "./migrate";
 const bind = (args: unknown[] = []) => Object.fromEntries(args.map((v, i) => [`$${i + 1}`, v ?? null])) as any;
 
 export function wrapSqlJs(db: Database, onWrite?: () => void): SqlDb {
+  // Same as the desktop path: sqlx enables foreign_keys on every SQLite connection it opens, so the REFERENCES ...
+  // ON DELETE clauses in src/migrations.ts cascade here too. It has to be set on the connection, once, outside a
+  // transaction (a PRAGMA inside one is ignored).
+  db.run("PRAGMA foreign_keys = ON");
   return {
     async select(sql, args) {
       const st = db.prepare(sql); st.bind(bind(args));

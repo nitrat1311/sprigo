@@ -814,6 +814,12 @@
     "geminiInfo": "Gemini models write your lessons and chats. Requests go to Google; usage limits and prices depend on your key.",
     "openrouterGood": "Hundreds of models from many labs behind one API key.",
     "openrouterInfo": "Connects to OpenRouter, which routes each request to the model you pick (OpenAI, Anthropic, Google, open models…). Requests go to OpenRouter and the model's provider; billed by usage on your OpenRouter key. Sprigo turns the model's thinking off where it can, so lessons stay fast.",
+    "openrouterSignIn": "Sign in with OpenRouter",
+    "openrouterSigningIn": "Waiting for your browser…",
+    "openrouterSignInHint": "Opens openrouter.ai in your browser. No key to copy; it's saved to your keychain.",
+    "openrouterSignedIn": "Signed in. Pick a model below, then save.",
+    "openrouterTimeout": "Sign-in timed out. Try again.",
+    "openrouterFailed": "OpenRouter sign-in failed",
     "configure": "{{name}} settings",
     "backup": "Backup",
     "backupDesc": "Your main provider writes your lessons. Pick a second one as a backup and Sprigo asks it when the main one fails.",
@@ -837,8 +843,18 @@
     "playback": "Play my recording"
   },
   "update": {
+    "section": "Updates",
     "version": "Sprigo {{version}}",
-    "madeBy": "Made by Mehmet Özer Özdaş ·"
+    "desc": "New versions download from GitHub and install after a restart",
+    "check": "Check",
+    "none": "You're on the latest version",
+    "title": "Sprigo {{version}} is available",
+    "install": "Update and restart",
+    "later": "Later",
+    "downloading": "Downloading… {{pct}}%",
+    "madeBy": "Made by Mehmet Özer Özdaş ·",
+    "whatsNew": "What's new in Sprigo {{version}}",
+    "gotIt": "Got it"
   },
   "voice": {
     "kokoroDesc": "A more natural voice. It can take a few seconds per sentence, depending on your computer's speed.",

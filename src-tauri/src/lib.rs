@@ -1,6 +1,7 @@
 use tauri::Manager;
 
 mod data;
+mod oauth;
 
 /// User-installed courses (DECISIONS B3): `<app data>/courses/*.yml`, returned as (file name, text).
 /// The folder is created on first call so users can find where to drop files.
@@ -313,6 +314,7 @@ pub fn run() {
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_autostart::Builder::new().args([HIDDEN_ARG]).build())
         .setup(|app| {
@@ -333,6 +335,7 @@ pub fn run() {
             }
         })
         .invoke_handler(tauri::generate_handler![list_user_courses, secret_get, secret_set, stt_ready, stt_models, stt_use, stt_remove, stt_download, transcribe, speech_span, set_background,
+            oauth::openrouter_signin, oauth::openrouter_cancel,
             data::data_location, data::set_data_dir, data::dir_ok, data::file_exists, data::lock_read, data::lock_write,
             data::lock_remove, data::backups_list, data::backups_remove, data::copy_file, data::write_text, data::is_sqlite, data::install_db])
         .build(tauri::generate_context!())
@@ -342,6 +345,7 @@ pub fn run() {
             #[cfg(target_os = "macos")]
             tauri::RunEvent::Reopen { has_visible_windows: false, .. } => show_main(app),
             tauri::RunEvent::Exit => {
+                oauth::stop();
                 release_stt();
                 release_vad();
                 data::release_lock();

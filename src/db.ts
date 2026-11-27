@@ -3,6 +3,7 @@
 // ponytail: in a plain browser (the Vite preview used during development) the same SQL runs on sql.js,
 // persisted to localStorage. The standalone web edition uses IndexedDB instead.
 import { checkpointId, parseGuideId, type Cefr } from "./course";
+import { cachedLessonItems as cachedItemsFrom, getCached as readCached, putCached as writeCached } from "./contentCache";
 import type { ThemePref } from "./theme";
 import { NEW_STATS, type Stats } from "./progress";
 import { runMigrations, type SqlDb } from "./migrate";
@@ -256,11 +257,10 @@ export async function aiUsage() {
 // ---- Generated lesson cache (DECISIONS C3; per enrollment because it will be personalised by mistakes) ----
 
 export async function getCached<T>(enrollmentId: number, stepId: string): Promise<T | null> {
-  const r = await (await db()).select<{ content: string }>("SELECT content FROM content_cache WHERE enrollment_id = $1 AND step_id = $2", [enrollmentId, stepId]);
-  return r[0] ? JSON.parse(r[0].content) : null;
+  return readCached<T>(await db(), enrollmentId, stepId);
 }
 export async function putCached(enrollmentId: number, stepId: string, content: unknown) {
-  await (await db()).execute("INSERT INTO content_cache(enrollment_id, step_id, content) VALUES ($1, $2, $3) ON CONFLICT DO UPDATE SET content = $3, created_at = CURRENT_TIMESTAMP", [enrollmentId, stepId, JSON.stringify(content)]);
+  await writeCached(await db(), enrollmentId, stepId, content);
 }
 
 /** Course examples can replace an old cache, but a concurrent review takes precedence. */
@@ -312,13 +312,7 @@ export async function resumeEnrollment(enrollment: Enrollment, levels: Cefr[]): 
 
 /** Scored items of every cached step lesson (not legend/story/guide/exam keys, which contain ":"), for the timed challenge. */
 export async function cachedLessonItems<T extends { kind: string }>(enrollmentId: number) {
-  const r = await (await db()).select<{ content: string; course_iso: string }>(
-    "SELECT content, course_iso FROM content_cache JOIN enrollments ON enrollments.id = enrollment_id WHERE enrollment_id = $1 AND step_id NOT LIKE '%:%'", [enrollmentId]);
-  return r.flatMap(({ content, course_iso }) => {
-    const items = JSON.parse(content) as (T & { romanianReview?: 1 | "course" })[];
-    const review = items[0]?.romanianReview;
-    return course_iso !== "ro" || review === 1 || review === "course" ? items : [];
-  }).filter((it) => it.kind !== "learn");
+  return cachedItemsFrom<T>(await db(), enrollmentId);
 }
 
 // ---- Mistakes and words (per enrollment, DECISIONS E6) ----

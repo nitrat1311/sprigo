@@ -10,8 +10,14 @@ test("tokens keep every character and mark only words", () => {
 });
 
 test("cache key ignores case, per the course's language", () => {
-  assert.equal(wordKey("İstanbul", "tr"), wordKey("istanbul", "tr"));
-  assert.equal(wordKey("Haus", "de"), "word:haus");
+  assert.equal(wordKey("B2", "İstanbul", "tr"), wordKey("B2", "istanbul", "tr"));
+  assert.equal(wordKey("B2", "Haus", "de"), "word:B2:haus");
+});
+
+test("cache key carries the level, so an example matches the learner's level (#192)", () => {
+  assert.notEqual(wordKey("B2", "Haus", "de"), wordKey("C1", "Haus", "de"));
+  assert.equal(wordKey("C1", "Haus", "de"), "word:C1:haus");
+  assert.notEqual(wordKey("B2", "Haus", "de"), "word:haus"); // pre-1.15 key: ignored, so it regenerates
 });
 
 test("guidebook entries answer first, ignoring case", () => {

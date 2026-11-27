@@ -38,12 +38,21 @@ function fill(s: any, key = ""): unknown {
 const json = (body: unknown) => ({ status: 200, headers: { "access-control-allow-origin": "*" }, contentType: "application/json", body: JSON.stringify(body) });
 
 export async function mockOllama(page: Page) {
-  await page.route("http://localhost:11434/**", async (route) => {
+  await mockCompatible(page, "http://localhost:11434", "", "mock:latest");
+}
+
+export async function mockOpenRouter(page: Page) {
+  await mockCompatible(page, "https://openrouter.ai", "/api", "openrouter/free");
+}
+
+async function mockCompatible(page: Page, origin: string, prefix: string, model: string) {
+  await page.route(origin + "/**", async (route) => {
     const req = route.request(), path = new URL(req.url()).pathname;
     if (req.method() === "OPTIONS") return route.fulfill({ status: 204, headers: {
       "access-control-allow-origin": "*", "access-control-allow-headers": "*", "access-control-allow-methods": "GET, POST" } });
     if (path === "/api/tags") return route.fulfill(json({ models: [{ name: "mock:latest" }] }));
-    if (path !== "/v1/chat/completions") return route.fulfill(json({})); // warm-up and the rest
+    if (path === prefix + "/v1/models") return route.fulfill(json({ data: [{ id: model }] }));
+    if (path !== prefix + "/v1/chat/completions") return route.fulfill(json({})); // warm-up and the rest
     // ponytail: non-streamed replies only; add SSE when a test covers chat or the tutor call
     const schema = req.postDataJSON().response_format?.json_schema?.schema;
     const turn = schema ? fill(schema) as Record<string, unknown> : null;
@@ -56,7 +65,7 @@ export async function mockOllama(page: Page) {
     if (turn && "goal_reached" in turn) delete turn.translation;
     const content = turn ? JSON.stringify(turn) : "ok";
     return route.fulfill(json({
-      id: "mock", object: "chat.completion", created: 0, model: "mock:latest",
+      id: "mock", object: "chat.completion", created: 0, model,
       choices: [{ index: 0, message: { role: "assistant", content }, finish_reason: "stop" }],
       usage: { prompt_tokens: 1, completion_tokens: 1, total_tokens: 2 },
     }));

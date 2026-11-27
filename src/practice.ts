@@ -29,7 +29,10 @@ export function findTopic(topics: Topic[], said: string, lang?: string) {
   return topics.find((t) => normalize(t.unit.title, lang) === g) ?? topics.find((t) => g.includes(normalize(t.unit.title, lang)));
 }
 
-// ---- Content: one model call per unit, cached as `practice:<unitId>` ----
+// ---- Content: one model call per unit, cached as `practice:<level>:<unitId>` ----
+
+/** A unit's cached practice set: `practice:<level>:<unit>`, like guidebooks, because unit ids may repeat across levels (#192). */
+export const practiceId = (level: Cefr, unit: string) => `practice:${level}:${unit}`;
 
 const WARMUP: LessonActivity[] = [
   { key: "warmup_blank", type: "fill_blank", count: 2, hints: {} },

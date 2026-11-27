@@ -1,7 +1,7 @@
 {
   "name": "sprigo",
   "private": true,
-  "version": "1.14.0",
+  "version": "1.15.0",
   "license": "MIT",
   "type": "module",
   "scripts": {
@@ -32,6 +32,7 @@
     "@tauri-apps/plugin-opener": "~2.7.2",
     "@tauri-apps/plugin-process": "~2.4.0",
     "@tauri-apps/plugin-sql": "^2.6.0",
+    "@tauri-apps/plugin-updater": "~2.14.1",
     "ai": "^7.0.156",
     "i18next": "^26.5.11",
     "kokoro-js": "^1.2.1",

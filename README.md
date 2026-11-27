@@ -39,7 +39,7 @@ Build on macOS from this fork:
 
 ```bash
 pnpm install --frozen-lockfile
-pnpm tauri build --debug --bundles app
+pnpm tauri build --debug --bundles app --config '{"bundle":{"createUpdaterArtifacts":false}}'
 ```
 
 Build the app from this fork and install the resulting bundle. See the [fork release guide](docs/RELEASE.md).

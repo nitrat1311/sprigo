@@ -18,7 +18,7 @@ Install a new version by building your fork locally or downloading one of its pu
    git tag v1.3.0 && git push origin v1.3.0
    ```
    `release` runs the four builds and uploads the installers to a **draft** release.
-6. **Publish:** review and publish the draft in the fork’s Releases page.
+6. **Publish:** review and publish the draft in the fork’s Releases page. The app checks the fork’s latest published release and verifies update signatures against the fork’s public key. Configure `TAURI_SIGNING_PRIVATE_KEY` as a secret in the fork’s Actions settings before building release artifacts.
 **Model guidance:** when the recommended local model or the measurements in Settings change, run `pnpm bench` → `pnpm eval` → `pnpm guide` on the release machine and commit `src/modelGuideData.ts` (provenance rules in [CONTRIBUTING.md](CONTRIBUTING.md)).
 
 ## Local macOS build
@@ -27,7 +27,7 @@ From the fork checkout, run:
 
 ```sh
 pnpm install --frozen-lockfile
-pnpm tauri build --debug --bundles app
+pnpm tauri build --debug --bundles app --config '{"bundle":{"createUpdaterArtifacts":false}}'
 ```
 
 Quit Sprigo and replace the installed app bundle with the build from

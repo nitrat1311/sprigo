@@ -1,6 +1,6 @@
 [package]
 name = "sprigo"
-version = "1.14.0"
+version = "1.15.0"
 description = "Local-first AI language learning"
 authors = ["ozerozdas"]
 edition = "2021"
@@ -27,8 +27,10 @@ keyring = { version = "3", features = ["apple-native", "windows-native", "sync-s
 tauri-plugin-notification = "~2.8"
 tauri-plugin-autostart = "~2.7"
 tauri-plugin-opener = "~2.7"
+tauri-plugin-updater = "~2.14"
 tauri-plugin-process = "~2.4"
 tauri-plugin-dialog = "~2.8"
+tiny_http = "0.12.0" # OpenRouter sign-in callback on loopback
 
 # GPU speech recognition only where Metal exists; CPU elsewhere.
 [target.'cfg(target_os = "macos")'.dependencies]

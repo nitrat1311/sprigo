@@ -1,7 +1,7 @@
 import { romanianExam } from "../src/romanianExam";
 import { expect, test, type Page } from "@playwright/test";
 import { readFileSync } from "node:fs";
-import { ANSWER, BANK, FORM, PAIRS, mockOllama } from "./mockAi";
+import { ANSWER, BANK, FORM, PAIRS, mockOllama, mockOpenRouter } from "./mockAi";
 
 test.beforeEach(async ({ page }) => { await mockOllama(page); });
 
@@ -35,17 +35,49 @@ test("onboarding creates a profile and sets up local AI", async ({ page }) => {
   await expect(page.getByRole("dialog")).toBeHidden();
 });
 
-test("fork settings keep the app version and omit update and phone setup", async ({ page }) => {
+test("fork settings show local release notes and omit phone and beta setup", async ({ page }) => {
   await onboard(page, "ro");
   await page.getByRole("tab", { name: "Profile" }).click();
   await expect(page.getByText("Sprigo dev", { exact: true })).toBeVisible();
-  await expect(page.getByRole("button", { name: /check for updates/i })).toHaveCount(0);
+  await page.getByRole("button", { name: "What’s new" }).click();
+  await expect(page.getByRole("dialog")).toContainText("What’s new · 1.15.0");
+  await expect(page.getByRole("dialog")).toContainText("OpenRouter");
+  await page.getByRole("dialog").getByRole("button", { name: "Close" }).click();
   await expect(page.getByText("Beta updates", { exact: true })).toHaveCount(0);
   await page.locator(".od-row").filter({ has: page.getByText("Help & FAQ", { exact: true }) }).getByRole("button", { name: "Open" }).click();
   await expect(page.getByRole("dialog")).not.toContainText(/Can I use Sprigo on my phone/i);
   await page.getByRole("dialog").getByRole("button", { name: "Close" }).click();
   await page.getByRole("tab", { name: "Privacy & data" }).click();
   await expect(page.getByText("Use on your phone", { exact: true })).toHaveCount(0);
+});
+
+test("Romanian lesson generation uses OpenRouter as the primary model", async ({ page }) => {
+  await mockOpenRouter(page);
+  await onboard(page, "ro");
+  await page.getByRole("tab", { name: "AI & voice" }).click();
+  await page.locator("#set-panel .od-row").filter({ has: page.getByText("AI provider", { exact: true }) })
+    .getByRole("button", { name: "Change" }).click();
+  const sheet = page.getByRole("dialog");
+  await sheet.getByRole("radio", { name: /OpenRouter/ }).click();
+  await expect(sheet.getByLabel(/Model/)).toHaveValue("openrouter/free");
+  await sheet.getByLabel(/API key/).fill("test-key");
+  await sheet.getByRole("button", { name: "Save", exact: true }).click();
+  await expect(sheet.getByRole("radio", { name: /OpenRouter/ })).toHaveAttribute("aria-checked", "true");
+  await sheet.getByRole("button", { name: "Cancel" }).click();
+
+  let localCalls = 0;
+  await page.route("http://localhost:11434/v1/chat/completions", (route) => {
+    localCalls++;
+    return route.abort();
+  });
+  await page.getByRole("button", { name: "Learn" }).click();
+  const generated = page.waitForRequest((r) => r.method() === "POST" && r.url() === "https://openrouter.ai/api/v1/chat/completions");
+  await page.getByRole("button", { name: "Basic Greetings" }).click();
+  const request = await generated;
+  expect(request.headers().authorization).toBe("Bearer test-key");
+  expect(request.postDataJSON()).toMatchObject({ model: "openrouter/free", response_format: { type: "json_schema" } });
+  await expect(page.getByRole("dialog", { name: "Lesson" }).getByText("hola", { exact: true })).toBeVisible();
+  expect(localCalls).toBe(0);
 });
 
 test("the model picker shows measured guidance", async ({ page }) => {

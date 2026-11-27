@@ -806,6 +806,12 @@
     "geminiInfo": "Derslerini ve sohbetlerini Gemini modelleri yazar. İstekler Google'a gider; kullanım sınırı ve ücret anahtarına bağlıdır.",
     "openrouterGood": "Birçok laboratuvarın yüzlerce modeli, tek API anahtarıyla.",
     "openrouterInfo": "OpenRouter'a bağlanır; her isteği seçtiğin modele (OpenAI, Anthropic, Google, açık modeller…) yönlendirir. İstekler OpenRouter'a ve modelin sağlayıcısına gider, OpenRouter anahtarına kullanıma göre ücretlendirilir. Sprigo, mümkün olan modellerde düşünmeyi kapatır; dersler hızlı kalır.",
+    "openrouterSignIn": "OpenRouter ile giriş yap",
+    "openrouterSigningIn": "Tarayıcın bekleniyor…",
+    "openrouterSignInHint": "Tarayıcında openrouter.ai'yi açar. Kopyalanacak anahtar yok; anahtar zincirine kaydedilir.",
+    "openrouterSignedIn": "Giriş yapıldı. Aşağıdan bir model seçip kaydet.",
+    "openrouterTimeout": "Giriş zaman aşımına uğradı. Tekrar dene.",
+    "openrouterFailed": "OpenRouter girişi başarısız oldu",
     "configure": "{{name}} ayarları",
     "backup": "Yedek",
     "backupDesc": "Derslerini ana sağlayıcın yazar. İkinci bir sağlayıcıyı yedek seçersen, ana sağlayıcı hata verdiğinde Sprigo ona sorar.",
@@ -829,8 +835,18 @@
     "playback": "Kaydımı dinle"
   },
   "update": {
+    "section": "Güncellemeler",
     "version": "Sprigo {{version}}",
-    "madeBy": "Geliştiren: Mehmet Özer Özdaş ·"
+    "desc": "Yeni sürümler GitHub'dan iner ve yeniden başlatınca kurulur",
+    "check": "Denetle",
+    "none": "En güncel sürümdesin",
+    "title": "Sprigo {{version}} hazır",
+    "install": "Güncelle ve yeniden başlat",
+    "later": "Sonra",
+    "downloading": "İndiriliyor… %{{pct}}",
+    "madeBy": "Geliştiren: Mehmet Özer Özdaş ·",
+    "whatsNew": "Sprigo {{version}} ile gelen yenilikler",
+    "gotIt": "Anladım"
   },
   "voice": {
     "kokoroDesc": "Daha doğal bir ses. Bilgisayarının hızına göre cümle başına birkaç saniye sürebilir.",
