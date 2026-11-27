@@ -831,7 +831,7 @@
     "openrouterInfo": "Az OpenRouterhez kapcsolódik, amely minden kérést a választott modellhez irányít (OpenAI, Anthropic, Google, nyílt modellek…). A kérések az OpenRouterhez és a modell szolgáltatójához kerülnek; a díjat az OpenRouter-kulcsod alapján, a használat szerint számolják. A Sprigo, ahol tudja, kikapcsolja a modell gondolkodását, hogy a leckék gyorsak maradjanak.",
     "openrouterSignIn": "Bejelentkezés OpenRouterrel",
     "openrouterSigningIn": "Várunk a böngésződre…",
-    "openrouterSignInHint": "Megnyitja az openrouter.ai oldalt a böngésződben. Nem kell kulcsot másolnod; egyenesen a kulcstartódba kerül.",
+    "openrouterSignInHint": "Megnyitja az openrouter.ai oldalt a böngésződben. Nem kell kulcsot másolnod; a kulcstartódba menti.",
     "openrouterSignedIn": "Bejelentkezve. Válassz lent egy modellt, majd mentsd el.",
     "openrouterTimeout": "A bejelentkezés lejárt. Próbáld újra.",
     "openrouterFailed": "Az OpenRouter-bejelentkezés nem sikerült",

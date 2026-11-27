@@ -895,7 +895,7 @@
     "openrouterInfo": "Подключается к OpenRouter, который направляет каждый запрос выбранной модели (OpenAI, Anthropic, Google, открытые модели…). Запросы идут в OpenRouter и провайдеру модели; оплата по использованию с твоего ключа OpenRouter. Sprigo отключает размышления модели, где может, чтобы уроки оставались быстрыми.",
     "openrouterSignIn": "Войти через OpenRouter",
     "openrouterSigningIn": "Ждём твой браузер…",
-    "openrouterSignInHint": "Откроет openrouter.ai в браузере. Ключ не нужно копировать: он сразу попадёт в системное хранилище.",
+    "openrouterSignInHint": "Откроет openrouter.ai в браузере. Ключ не нужно копировать: он сохраняется в системном хранилище.",
     "openrouterSignedIn": "Вход выполнен. Выбери модель ниже и сохрани.",
     "openrouterTimeout": "Время входа истекло. Попробуй снова.",
     "openrouterFailed": "Не удалось войти через OpenRouter",

@@ -823,7 +823,7 @@
     "openrouterInfo": "OpenRouter'a bağlanır; her isteği seçtiğin modele (OpenAI, Anthropic, Google, açık modeller…) yönlendirir. İstekler OpenRouter'a ve modelin sağlayıcısına gider, OpenRouter anahtarına kullanıma göre ücretlendirilir. Sprigo, mümkün olan modellerde düşünmeyi kapatır; dersler hızlı kalır.",
     "openrouterSignIn": "OpenRouter ile giriş yap",
     "openrouterSigningIn": "Tarayıcın bekleniyor…",
-    "openrouterSignInHint": "Tarayıcında openrouter.ai'yi açar. Kopyalanacak anahtar yok; doğrudan anahtar zincirine gider.",
+    "openrouterSignInHint": "Tarayıcında openrouter.ai'yi açar. Kopyalanacak anahtar yok; anahtar zincirine kaydedilir.",
     "openrouterSignedIn": "Giriş yapıldı. Aşağıdan bir model seçip kaydet.",
     "openrouterTimeout": "Giriş zaman aşımına uğradı. Tekrar dene.",
     "openrouterFailed": "OpenRouter girişi başarısız oldu",

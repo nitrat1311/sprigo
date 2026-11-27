@@ -1,5 +1,5 @@
-// OpenRouter sign-in (#197): OAuth PKCE in the system browser. The code is exchanged on the Rust side and the API key
-// goes straight into the OS keychain (DECISIONS A6), so the key never passes through the webview.
+// OpenRouter sign-in (#197): OAuth PKCE in the system browser. Rust exchanges the code and saves the API key in the
+// OS keychain (DECISIONS A6); the settings sheet reads it back like a pasted key.
 import { invoke } from "@tauri-apps/api/core";
 import { isTauri } from "./db";
 

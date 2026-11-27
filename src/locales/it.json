@@ -854,7 +854,7 @@
     "openrouterInfo": "Si connette ad OpenRouter, che instrada ogni richiesta al modello scelto (OpenAI, Anthropic, Google, modelli open…). Le richieste vanno ad OpenRouter e al fornitore del modello; fatturato in base all'uso sulla tua chiave OpenRouter. Sprigo spegne il ragionamento del modello dove possibile, così le lezioni rimangono veloci.",
     "openrouterSignIn": "Accedi con OpenRouter",
     "openrouterSigningIn": "In attesa del browser…",
-    "openrouterSignInHint": "Apre openrouter.ai nel browser. Nessuna chiave da copiare: finisce dritta nel portachiavi.",
+    "openrouterSignInHint": "Apre openrouter.ai nel browser. Nessuna chiave da copiare: viene salvata nel portachiavi.",
     "openrouterSignedIn": "Accesso eseguito. Scegli un modello qui sotto, poi salva.",
     "openrouterTimeout": "Accesso scaduto. Riprova.",
     "openrouterFailed": "Accesso a OpenRouter non riuscito",

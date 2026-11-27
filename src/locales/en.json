@@ -831,7 +831,7 @@
     "openrouterInfo": "Connects to OpenRouter, which routes each request to the model you pick (OpenAI, Anthropic, Google, open models…). Requests go to OpenRouter and the model's provider; billed by usage on your OpenRouter key. Sprigo turns the model's thinking off where it can, so lessons stay fast.",
     "openrouterSignIn": "Sign in with OpenRouter",
     "openrouterSigningIn": "Waiting for your browser…",
-    "openrouterSignInHint": "Opens openrouter.ai in your browser. No key to copy; it goes straight into your keychain.",
+    "openrouterSignInHint": "Opens openrouter.ai in your browser. No key to copy; it's saved to your keychain.",
     "openrouterSignedIn": "Signed in. Pick a model below, then save.",
     "openrouterTimeout": "Sign-in timed out. Try again.",
     "openrouterFailed": "OpenRouter sign-in failed",
