@@ -104,11 +104,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
   useEffect(() => { if (enrollment) { db.doneSteps(enrollment.id).then(setDone); db.legendarySteps(enrollment.id).then(setLegendary); } }, [enrollment?.id]);
 
   // Loads everything that belongs to a profile (E6) and applies its UI prefs.
-  const login = useCallback(async (p: Profile) => {
+  const login = useCallback(async (p: Profile, availableCourses: Course[]) => {
     const fresh = (await db.getProfile(p.id))!;
     const stats = rollDay(fresh.stats, today(), { id: fresh.id, lang: fresh.ui_lang });
     if (stats !== fresh.stats) { fresh.stats = stats; await db.updateProfile(p.id, { stats }); }
-    setEnrollments(await db.listEnrollments(p.id));
+    const enrollments = await db.listEnrollments(p.id);
+    setEnrollments(await Promise.all(enrollments.map((e) => {
+      const course = availableCourses.find((c) => c.iso === e.course_iso);
+      return course ? db.resumeEnrollment(e, levelsOf(course)) : e;
+    })));
     setTutors(await db.listTutors(p.id)); // before the profile, so a custom tutor route never resolves against an empty list
     setViewLevel(null);
     setProfile(fresh);
@@ -132,7 +136,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         // Auto sign-in to the last profile unless it is PIN-locked.
         const last = Number(await db.getSetting(LAST_PROFILE));
         const p = last ? await db.getProfile(last) : null;
-        if (p && !p.pin_hash) await login(p);
+        if (p && !p.pin_hash) await login(p, courses);
         setReady(true);
       } catch (e) {
         console.error(e);
@@ -169,7 +173,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setAiBackup: async (c) => { await saveAiBackup(c); await activateConfig(ai, c); setAiBackupState(c); },
     courses, courseErrors, profile, enrollments, enrollment, course, done, legendary, tutors,
     reloadTutors: async () => { if (profile) setTutors(await db.listTutors(profile.id)); },
-    login,
+    login: (p) => login(p, courses),
     logout: async () => {
       await db.setSetting(LAST_PROFILE, null);
       setProfile(null); setEnrollments([]); setTutors([]); setSheet(null); setLessonId(null);
@@ -177,7 +181,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     },
     createProfile: async (p, iso) => {
       const id = await db.createProfile(p, iso, firstLevel(iso));
-      await login((await db.getProfile(id))!);
+      await login((await db.getProfile(id))!, courses);
       location.hash = ai ? "learn" : "settings";
     },
     updateProfile: async (patch) => {

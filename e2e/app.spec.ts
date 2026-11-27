@@ -4,12 +4,12 @@ import { ANSWER, BANK, FORM, PAIRS, mockOllama } from "./mockAi";
 
 test.beforeEach(async ({ page }) => { await mockOllama(page); });
 
-/** First run: create a profile learning Spanish, then save the (mocked) local Ollama model. */
-async function onboard(page: Page) {
+/** First run: create a profile, then save the (mocked) local Ollama model. */
+async function onboard(page: Page, course = "es") {
   await page.goto("/");
   await expect(page.getByRole("heading", { name: "Create your profile" })).toBeVisible();
   await page.getByLabel("Name").fill("Ada");
-  await page.getByLabel("First course").selectOption("es");
+  await page.getByLabel("First course").selectOption(course);
   await page.getByRole("button", { name: "Create profile" }).click();
 
   const sheet = page.getByRole("dialog");
@@ -250,6 +250,41 @@ test("Stories lists earlier levels once the learner moves up", async ({ page }) 
   await expect(units.getByText("Read")).toHaveCount(await units.count()); // every A1 story is open
   await units.first().click();
   await expect(page.getByRole("dialog", { name: "ok" }).getByText("Hola").first()).toBeVisible();
+});
+
+test("Romanian profiles that finished A1 can continue into B1 after a course update", async ({ page }) => {
+  const course = readFileSync(new URL("../courses/ro.yml", import.meta.url), "utf8");
+  const previous = course.split("\n  B1:")[0];
+  const courseModule = (url: URL) => url.pathname.endsWith("/courses/ro.yml") && url.searchParams.has("raw");
+  await page.route(courseModule, (route) => route.fulfill({
+    contentType: "application/javascript",
+    body: `export default ${JSON.stringify(previous)};`,
+  }));
+  await onboard(page, "ro");
+  await page.getByRole("button", { name: "Learn" }).click();
+  await page.getByRole("button", { name: "Skip A1 — take the level test" }).click();
+  const exam = page.getByRole("dialog", { name: "Lesson" });
+  for (let i = 0; await answer(exam); i++) expect(i).toBeLessThan(40);
+  await expect(exam.getByText("A1 complete!")).toBeVisible();
+  await exam.getByRole("button", { name: "Done" }).click();
+  await expect(page.getByText("Telling Stories", { exact: true })).toHaveCount(0);
+
+  await page.unroute(courseModule);
+  await page.reload();
+  await expect(page.getByRole("heading", { name: "Telling Stories" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "B1 Checkpoint" })).toBeDisabled();
+  await page.getByRole("button", { name: "What Happened First?" }).click();
+  const lesson = page.getByRole("dialog", { name: "Lesson" });
+  for (let i = 0; await answer(lesson); i++) expect(i).toBeLessThan(40);
+  await lesson.getByRole("button", { name: "Done" }).click();
+  await page.reload();
+  await expect(page.getByRole("button", { name: "What Life Used to Be Like" })).toBeEnabled();
+
+  await page.getByRole("button", { name: "Skip B1 — take the level test" }).click();
+  for (let i = 0; await answer(exam); i++) expect(i).toBeLessThan(40);
+  await expect(exam.getByText("B1 complete!")).toBeVisible();
+  await exam.getByRole("button", { name: "Done" }).click();
+  await expect(page.getByRole("button", { name: "B1 Checkpoint" })).toBeEnabled();
 });
 
 test("writing practice corrects the text inline and queues the mistake", async ({ page }) => {

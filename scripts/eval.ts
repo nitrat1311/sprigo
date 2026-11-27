@@ -25,6 +25,8 @@ const CASES: { course: Lang; step: string; native: Lang }[] = [
   { course: "hu", step: "likes-dislikes", native: "en" }, // Hungarian as the target: definite conjugation in word_bank, error_correct, translate
   { course: "nl", step: "nl-a1-jezelf-voorstellen", native: "en" }, // Dutch as the target: A1 introductions, dialogue
   { course: "nl", step: "nl-a2-perfectum-regelmatig", native: "en" }, // Dutch A2: participles in fill_blank, error_correct, listen_type
+  { course: "ro", step: "ro-b1-past-contrast", native: "en" }, // Romanian B1: narration and past tense contrast
+  { course: "ro", step: "ro-b1-integrated-listening", native: "en" }, // Romanian B1: announcements and practical consequences
 ];
 
 /** Normal steps only: the part of stepContext (src/lessons.ts, which imports the database) the cases need. */

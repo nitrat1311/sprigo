@@ -620,3 +620,584 @@ levels:
         - { type: listen_select, count: 3 }
         - { type: translate, count: 3 }
         - { type: dialogue }
+
+  B1:
+    title: Intermediate
+    description: >
+      Understand the main points of clear speech and everyday texts, deal with practical
+      problems, and explain experiences and opinions in connected Romanian. The first two
+      units review the A2 foundations used throughout the level.
+
+    units:
+      - id: ro-b1-past
+        title: "Telling Stories"
+        description: "Tell a connected story and distinguish background, completed events and earlier causes."
+        icon: 📖
+        steps:
+          - id: ro-b1-perfect-compus
+            title: "What Happened First?"
+            description: "Review the compound past and order completed events in a personal anecdote."
+            vocabulary: ["a se întâmpla", "mai întâi", "apoi", "deodată", "până la urmă", "a reuși"]
+            grammar:
+              - pattern: "Mai întâi am sunat la gară, apoi am cumpărat alt bilet."
+              - pattern: "Până la urmă, am reușit să ajung la timp."
+            activities:
+              - { type: learn, count: 3 }
+              - { type: fill_blank, count: 2 }
+              - { type: listen_type, count: 2 }
+              - { type: dialogue, count: 2, scenario: "A friend asks how you got home after missing the last bus." }
+          - id: ro-b1-imperfect
+            title: "What Life Used to Be Like"
+            description: "Use the imperfect for past habits, descriptions and ongoing actions."
+            vocabulary: ["pe vremuri", "de obicei", "în copilărie", "în fiecare vară", "a locui", "a obișnui"]
+            grammar:
+              - pattern: "În copilărie, locuiam lângă parc și mergeam acolo în fiecare zi."
+              - pattern: "Când eram mică, bunicii mă așteptau în gară."
+            activities:
+              - { type: learn, count: 3 }
+              - { type: fill_blank, count: 2 }
+              - { type: error_correct, count: 2 }
+              - { type: translate, count: 2 }
+          - id: ro-b1-past-contrast
+            title: "Background and Interruption"
+            description: "Contrast the imperfect with the compound past in a story about an unexpected event."
+            vocabulary: ["în timp ce", "a suna", "a se opri", "a se întrerupe", "dintr-odată", "curent"]
+            grammar:
+              - pattern: "În timp ce pregăteam cina, s-a întrerupt curentul."
+              - pattern: "Ploua când am ieșit din casă."
+            activities:
+              - { type: fill_blank, count: 2 }
+              - { type: error_correct, count: 2 }
+              - { type: listen_select, count: 2 }
+              - { type: dialogue, count: 2, scenario: "Ask a neighbor what they were doing when the power went out." }
+          - id: ro-b1-past-cause
+            title: "Piecing Together the Story"
+            description: "Use the pluperfect when an earlier event explains a later one, then summarize the sequence."
+            vocabulary: ["deja", "înainte să", "între timp", "a pleca", "a uita", "tocmai"]
+            grammar:
+              - pattern: "Când am ajuns la gară, trenul plecase deja."
+              - pattern: "Nu am putut intra fiindcă uitasem cheia acasă."
+            activities:
+              - { type: learn, count: 3 }
+              - { type: fill_blank, count: 2 }
+              - { type: listen_select, count: 2 }
+              - { type: dialogue, count: 2, scenario: "A short account starts after an appointment was missed. Identify the earlier cause and suggest what the speaker says next." }
+
+      - id: ro-b1-plans
+        title: "Making Plans"
+        description: "Talk about intentions, obligations and arrangements as a bridge from A2."
+        icon: 🗓️
+        steps:
+          - id: ro-b1-future-plans
+            title: "Plans and Predictions"
+            description: "Use o să and voi with common verbs to talk about plans and predictions."
+            vocabulary: ["a avea de gând", "în curând", "probabil", "peste două zile", "a confirma", "a pleca"]
+            grammar:
+              - pattern: "O să plecăm vineri și probabil vom ajunge seara."
+              - pattern: "Am de gând să confirm rezervarea mâine."
+            activities:
+              - { type: learn, count: 3 }
+              - { type: fill_blank, count: 2 }
+              - { type: listen_select, count: 2 }
+              - { type: dialogue, count: 2, scenario: "Two friends coordinate when to leave for a weekend trip." }
+          - id: ro-b1-subjunctive
+            title: "Requests and Intentions"
+            description: "Use să clauses after a vrea, a putea, a trebui and a încerca, including a change of subject."
+            vocabulary: ["a vrea", "a trebui", "a încerca", "a putea", "a împrumuta", "a trimite"]
+            grammar:
+              - pattern: "Vreau să trimit documentele astăzi."
+              - pattern: "Vreau să îmi trimiți confirmarea până joi."
+              - pattern: "Trebuie să ajungem la timp."
+            activities:
+              - { type: learn, count: 3 }
+              - { type: fill_blank, count: 2 }
+              - { type: error_correct, count: 2 }
+              - { type: translate, count: 2 }
+          - id: ro-b1-future-time
+            title: "Before and After an Event"
+            description: "Give a sequence of future arrangements with când, după ce, imediat ce and înainte să."
+            vocabulary: ["după ce", "imediat ce", "înainte să", "programare", "termen", "disponibil"]
+            grammar:
+              - pattern: "Te sun imediat ce ajung."
+              - pattern: "Înainte să pleci, confirmă ora programării."
+              - pattern: "După ce primim răspunsul, stabilim data."
+            activities:
+              - { type: fill_blank, count: 2 }
+              - { type: word_bank, count: 2 }
+              - { type: listen_type, count: 2 }
+              - { type: dialogue, count: 2, scenario: "A colleague is arranging a delivery and needs to agree on the order of calls." }
+          - id: ro-b1-changing-plans
+            title: "Rescheduling Politely"
+            description: "Suggest an alternative, explain a scheduling conflict and confirm the new arrangement."
+            vocabulary: ["a amâna", "a reprograma", "a se potrivi", "a interveni ceva", "din păcate", "în schimb"]
+            grammar:
+              - pattern: "Din păcate, a intervenit ceva. Putem muta întâlnirea pe joi?"
+              - pattern: "Dacă vă convine, o putem reprograma pentru ora trei."
+            activities:
+              - { type: multiple_choice, count: 2 }
+              - { type: translate, count: 2 }
+              - { type: listen_select, count: 2 }
+              - { type: dialogue, count: 2, scenario: "A clinic calls to move an appointment. Track what changed and agree on a new time." }
+
+      - id: ro-b1-services
+        title: "Travel and Everyday Services"
+        description: "Handle disruptions, ask for clarification and make a polite complaint."
+        icon: 🚆
+        steps:
+          - id: ro-b1-object-clitics
+            title: "Who Gets What?"
+            description: "Distinguish direct and indirect object pronouns and practice frequent combinations with a da, a trimite and a arăta."
+            vocabulary: ["mi-l", "ți-o", "vi le", "i-am", "chitanță", "confirmare"]
+            grammar:
+              - pattern: "Îmi trimiteți confirmarea? Da, v-o trimit imediat."
+              - pattern: "I-am arătat controlorului biletul."
+              - pattern: "Unde e formularul? Mi l-au trimis ieri."
+            activities:
+              - { type: learn, count: 3 }
+              - { type: fill_blank, count: 2 }
+              - { type: error_correct, count: 2 }
+              - { type: translate, count: 2 }
+          - id: ro-b1-polite-requests
+            title: "Asking at a Service Desk"
+            description: "Use the conditional to make polite requests and ask how a procedure works."
+            vocabulary: ["aș dori", "ați putea", "ghișeu", "abonament", "cerere", "termen de valabilitate"]
+            grammar:
+              - pattern: "Aș dori să îmi schimb abonamentul."
+              - pattern: "Ați putea să îmi explicați cum se completează cererea?"
+            activities:
+              - { type: learn, count: 3 }
+              - { type: word_bank, count: 2 }
+              - { type: listen_select, count: 2 }
+              - { type: dialogue, count: 2, scenario: "You are at a transport desk to replace a lost pass and need to ask which documents are required." }
+          - id: ro-b1-travel-disruptions
+            title: "When a Journey Changes"
+            description: "Identify key details in a travel announcement and find a workable alternative."
+            vocabulary: ["întârziere", "anulat", "legătură", "peron", "rută ocolitoare", "a rambursa"]
+            grammar:
+              - pattern: "Trenul către Brașov are o întârziere de patruzeci de minute."
+              - pattern: "Dacă pierdem legătura, putem lua autobuzul de la ora șase."
+            activities:
+              - { type: multiple_choice, count: 2 }
+              - { type: listen_select, count: 2 }
+              - { type: listen_type, count: 2 }
+              - { type: dialogue, count: 2, scenario: "Give a brief two-sentence transport announcement with a delay, a new platform or a replacement route. Ask a question that requires deciding what to do." }
+          - id: ro-b1-complaint
+            title: "Making a Complaint"
+            description: "Explain what went wrong, support a request with details and propose a remedy."
+            vocabulary: ["reclamație", "defect", "garanție", "dovada plății", "a restitui", "a înlocui"]
+            grammar:
+              - pattern: "Produsul pe care l-am cumpărat ieri nu funcționează."
+              - pattern: "Vă rog să îl înlocuiți sau să îmi restituiți contravaloarea."
+            activities:
+              - { type: multiple_choice, count: 2 }
+              - { type: error_correct, count: 2 }
+              - { type: translate, count: 2 }
+              - { type: dialogue, count: 2, scenario: "A shop assistant asks for purchase details before deciding whether to offer a replacement." }
+              - { type: speak, count: 1, goal: "Say a short, polite request for a replacement." }
+
+      - id: ro-b1-home
+        title: "Housing and the Neighborhood"
+        description: "Compare homes, identify people and places, and arrange a repair."
+        icon: 🏡
+        steps:
+          - id: ro-b1-housing-comparison
+            title: "Comparing Places to Live"
+            description: "Compare two listings with mai, la fel de, cel mai and totuși, weighing price and transport."
+            vocabulary: ["chirie", "garanție", "utilități", "mobilat", "aproape de", "luminos"]
+            grammar:
+              - pattern: "Apartamentul acesta e mai luminos, dar chiria e mai mare."
+              - pattern: "Cele două camere sunt la fel de mari."
+              - pattern: "Cea mai apropiată stație e la zece minute de mers pe jos."
+            activities:
+              - { type: learn, count: 3 }
+              - { type: fill_blank, count: 2 }
+              - { type: listen_select, count: 2 }
+              - { type: dialogue, count: 2, scenario: "Two renters compare an inexpensive flat far from work with a pricier one near a bus stop." }
+          - id: ro-b1-relative-clauses
+            title: "The Place I Told You About"
+            description: "Use care, pe care, unde and despre care to identify a person, place or thing."
+            vocabulary: ["proprietar", "zonă", "a închiria", "a recomanda", "a se muta", "împrejurimi"]
+            grammar:
+              - pattern: "Blocul în care locuiesc este aproape de metrou."
+              - pattern: "Apartamentul pe care l-am vizitat este liber."
+              - pattern: "Vecinul despre care ți-am vorbit locuiește la etajul doi."
+            activities:
+              - { type: learn, count: 3 }
+              - { type: fill_blank, count: 2 }
+              - { type: error_correct, count: 2 }
+              - { type: translate, count: 2 }
+          - id: ro-b1-possession
+            title: "Whose Responsibility Is It?"
+            description: "Use genitive and dative forms in common combinations and choose al, a, ai or ale where needed."
+            vocabulary: ["proprietarului", "vecinei", "locatarilor", "contract de închiriere", "întreținere", "instalație"]
+            grammar:
+              - pattern: "Cheile proprietarului sunt pe masă."
+              - pattern: "Cheia aceasta este a vecinei."
+              - pattern: "Le-am explicat locatarilor ce s-a întâmplat."
+            activities:
+              - { type: learn, count: 3 }
+              - { type: fill_blank, count: 2 }
+              - { type: error_correct, count: 2 }
+              - { type: translate, count: 2 }
+          - id: ro-b1-repair
+            title: "Arranging a Repair"
+            description: "Report a fault, describe how long it has lasted and agree on access and timing."
+            vocabulary: ["a curge", "robinet", "a se strica", "instalator", "de două zile", "a verifica"]
+            grammar:
+              - pattern: "Robinetul curge de două zile."
+              - pattern: "Dacă nu puteți veni astăzi, lăsați-mi, vă rog, un număr de telefon."
+            activities:
+              - { type: word_bank, count: 2 }
+              - { type: listen_type, count: 2 }
+              - { type: translate, count: 2 }
+              - { type: dialogue, count: 2, scenario: "Tell a landlord when a leak started, what you have already tried and when a plumber can enter." }
+
+      - id: ro-b1-work
+        title: "Work and Learning"
+        description: "Describe responsibilities, give instructions and summarize arrangements."
+        icon: 💼
+        steps:
+          - id: ro-b1-experience
+            title: "Describing Work Experience"
+            description: "Present experience and skills with examples, using de and timp de for different time spans."
+            vocabulary: ["experiență", "a se ocupa de", "responsabilitate", "a coordona", "curs de formare", "competență"]
+            grammar:
+              - pattern: "Lucrez în domeniul acesta de trei ani."
+              - pattern: "Am coordonat o echipă timp de șase luni."
+              - pattern: "Mă ocup de relația cu clienții."
+            activities:
+              - { type: learn, count: 3 }
+              - { type: fill_blank, count: 2 }
+              - { type: translate, count: 2 }
+              - { type: dialogue, count: 2, scenario: "An interviewer asks how long you have worked in a field and for an example of a responsibility." }
+          - id: ro-b1-instructions
+            title: "Giving Clear Instructions"
+            description: "Use polite and informal commands, including negative commands and pronoun placement, to explain a process."
+            vocabulary: ["a completa", "a atașa", "a semna", "a verifica", "formular", "copie"]
+            grammar:
+              - pattern: "Trimite-mi formularul până luni."
+              - pattern: "Nu-l trimite înainte să îl semnezi."
+              - pattern: "Vă rog să atașați o copie a documentului."
+            activities:
+              - { type: learn, count: 3 }
+              - { type: fill_blank, count: 2 }
+              - { type: error_correct, count: 2 }
+              - { type: listen_select, count: 2 }
+          - id: ro-b1-work-updates
+            title: "Passing On a Message"
+            description: "Report statements, requests and yes-or-no questions with că, să and dacă."
+            vocabulary: ["a anunța", "a preciza", "a întreba", "a ruga", "a transmite", "ședință"]
+            grammar:
+              - pattern: "Mara a spus că ședința începe la nouă."
+              - pattern: "M-a rugat să aduc documentele."
+              - pattern: "M-a întrebat dacă pot veni mai devreme."
+            activities:
+              - { type: learn, count: 3 }
+              - { type: fill_blank, count: 2 }
+              - { type: listen_type, count: 2 }
+              - { type: dialogue, count: 2, scenario: "Relay a short message from a colleague, including what changed and what they asked you to do." }
+          - id: ro-b1-work-email
+            title: "Writing to a Colleague"
+            description: "Choose an appropriate greeting, make a request, explain the reason and agree on a deadline."
+            vocabulary: ["în legătură cu", "vă rog să", "a atașa", "a confirma primirea", "cel târziu", "cu stimă"]
+            grammar:
+              - pattern: "Vă scriu în legătură cu interviul de joi."
+              - pattern: "Vă rog să îmi confirmați primirea mesajului până vineri."
+              - pattern: "Vă mulțumesc pentru ajutor."
+            activities:
+              - { type: multiple_choice, count: 2 }
+              - { type: word_bank, count: 2 }
+              - { type: translate, count: 2 }
+              - { type: dialogue, count: 2, scenario: "Choose the clearest reply to a workplace email that requests a document by a given date." }
+
+      - id: ro-b1-health
+        title: "Health and Habits"
+        description: "Describe symptoms, understand advice and discuss changes to daily habits."
+        icon: 🩺
+        steps:
+          - id: ro-b1-symptoms
+            title: "Explaining What Hurts"
+            description: "Describe how symptoms began, what makes them worse and what you have already tried."
+            vocabulary: ["a ameți", "gât", "febră", "a se agrava", "de când", "a tuși"]
+            grammar:
+              - pattern: "Mă doare gâtul de două zile."
+              - pattern: "Am început să tușesc ieri, iar astăzi mă simt mai rău."
+              - pattern: "Nu mai am febră, dar încă amețesc."
+            activities:
+              - { type: learn, count: 3 }
+              - { type: fill_blank, count: 2 }
+              - { type: listen_select, count: 2 }
+              - { type: dialogue, count: 2, scenario: "At a fictional appointment, explain symptom timing and respond to a follow-up question." }
+          - id: ro-b1-advice
+            title: "Giving and Understanding Advice"
+            description: "Distinguish advice from obligation with ar trebui să, e bine să and trebuie să."
+            vocabulary: ["odihnă", "obicei", "a reduce", "a evita", "a face mișcare", "regulat"]
+            grammar:
+              - pattern: "Ar trebui să faci pauze mai des."
+              - pattern: "E bine să faci mișcare regulat."
+              - pattern: "Trebuie să confirmați programarea înainte de consultație."
+            activities:
+              - { type: learn, count: 3 }
+              - { type: fill_blank, count: 2 }
+              - { type: error_correct, count: 2 }
+              - { type: translate, count: 2 }
+          - id: ro-b1-habit-change
+            title: "Changing a Routine"
+            description: "Use reflexive constructions and markers of frequency and change to explain a new routine."
+            vocabulary: ["a se obișnui cu", "a renunța la", "a se simți", "din când în când", "treptat", "a avea grijă de"]
+            grammar:
+              - pattern: "M-am obișnuit să merg pe jos la serviciu."
+              - pattern: "Încerc să renunț treptat la băuturile dulci."
+              - pattern: "De când fac mișcare, mă simt mai bine."
+            activities:
+              - { type: fill_blank, count: 2 }
+              - { type: word_bank, count: 2 }
+              - { type: listen_type, count: 2 }
+              - { type: dialogue, count: 2, scenario: "Two friends discuss a realistic change to their routine and why it helped." }
+          - id: ro-b1-appointment
+            title: "Understanding Follow-up Instructions"
+            description: "Restate practical instructions from a phone call and ask clarifying questions about timing and documents."
+            vocabulary: ["consultație", "trimitere", "cabinet", "a reveni", "programare", "a fi neclar"]
+            grammar:
+              - pattern: "Am înțeles că trebuie să revin marți cu rezultatele."
+              - pattern: "Îmi puteți spune dacă am nevoie de trimitere?"
+            activities:
+              - { type: multiple_choice, count: 2 }
+              - { type: listen_select, count: 2 }
+              - { type: translate, count: 2 }
+              - { type: dialogue, count: 2, scenario: "A receptionist leaves a two-sentence voicemail with an appointment time and what to bring." }
+
+      - id: ro-b1-media
+        title: "Media and Culture"
+        description: "Summarize a short report or event, distinguish facts from opinions, and recommend something."
+        icon: 🎬
+        steps:
+          - id: ro-b1-news-gist
+            title: "Getting the Main Point"
+            description: "Identify who, what and why in a short local report and distinguish a claim from its source."
+            vocabulary: ["știre", "potrivit", "martor", "a avea loc", "a declara", "informație"]
+            grammar:
+              - pattern: "Potrivit organizatorilor, târgul va avea loc sâmbătă."
+              - pattern: "Primăria a anunțat că lucrările încep luni."
+              - pattern: "Nu se știe încă de ce s-a închis strada."
+            activities:
+              - { type: learn, count: 3 }
+              - { type: multiple_choice, count: 2 }
+              - { type: listen_select, count: 2 }
+              - { type: dialogue, count: 2, scenario: "Use a two-sentence local news brief with a source and a practical consequence for residents." }
+          - id: ro-b1-facts-opinions
+            title: "Fact, Opinion or Uncertainty?"
+            description: "Recognize stance and distinguish a reported fact from what the speaker thinks is likely."
+            vocabulary: ["din câte știu", "se pare că", "probabil", "părere", "în opinia mea", "dovadă"]
+            grammar:
+              - pattern: "Din câte știu, intrarea este gratuită."
+              - pattern: "Se pare că spectacolul a fost amânat."
+              - pattern: "În opinia mea, sala e prea mică."
+            activities:
+              - { type: fill_blank, count: 2 }
+              - { type: multiple_choice, count: 2 }
+              - { type: listen_select, count: 2 }
+              - { type: translate, count: 2 }
+          - id: ro-b1-recommendation
+            title: "Recommending a Film or Book"
+            description: "Give a short summary, mention a strength and explain who might enjoy it."
+            vocabulary: ["personaj", "subiect", "a merita", "a recomanda", "impresionant", "a se petrece"]
+            grammar:
+              - pattern: "Acțiunea se petrece într-un sat de munte."
+              - pattern: "Merită să vezi filmul dacă îți plac poveștile de familie."
+              - pattern: "Cel mai mult mi-a plăcut felul în care se schimbă personajul principal."
+            activities:
+              - { type: learn, count: 3 }
+              - { type: word_bank, count: 2 }
+              - { type: translate, count: 2 }
+              - { type: dialogue, count: 2, scenario: "A friend asks whether a film is suitable for a family evening and wants one reason." }
+          - id: ro-b1-event-recap
+            title: "Retelling a Cultural Event"
+            description: "Use ordering and contrast markers to give a clear recap and add a brief reaction."
+            vocabulary: ["la început", "spre final", "între timp", "cu toate acestea", "deși", "reacție"]
+            grammar:
+              - pattern: "Deși sala era plină, am găsit două locuri."
+              - pattern: "La început, publicul a fost rezervat. Spre final, toată sala a aplaudat."
+            activities:
+              - { type: fill_blank, count: 2 }
+              - { type: listen_type, count: 2 }
+              - { type: error_correct, count: 2 }
+              - { type: dialogue, count: 2, scenario: "Relate an event in order, mention what surprised you and respond to a friend's question." }
+
+      - id: ro-b1-community
+        title: "Community and the Environment"
+        description: "Discuss a local issue, explain causes and consequences, and agree on an action."
+        icon: 🌳
+        steps:
+          - id: ro-b1-cause-effect
+            title: "Explaining Causes and Consequences"
+            description: "Choose connectors for reasons, results and purpose in an explanation about a shared problem."
+            vocabulary: ["fiindcă", "din cauza", "datorită", "prin urmare", "de aceea", "pentru ca"]
+            grammar:
+              - pattern: "Din cauza traficului, autobuzele întârzie."
+              - pattern: "Autobuzele întârzie, de aceea mulți oameni pleacă mai devreme."
+              - pattern: "Am afișat programul la intrare pentru ca toată lumea să îl poată vedea."
+            activities:
+              - { type: learn, count: 3 }
+              - { type: fill_blank, count: 2 }
+              - { type: error_correct, count: 2 }
+              - { type: translate, count: 2 }
+          - id: ro-b1-rules
+            title: "Public Rules and Notices"
+            description: "Interpret impersonal se in notices and distinguish what is allowed, required or forbidden."
+            vocabulary: ["se permite", "se interzice", "se colectează", "deșeuri", "recipient", "regulament"]
+            grammar:
+              - pattern: "Aici se colectează separat sticla și hârtia."
+              - pattern: "În parc nu se permite accesul cu mașina."
+              - pattern: "Se pot depune cereri până vineri."
+            activities:
+              - { type: learn, count: 3 }
+              - { type: multiple_choice, count: 2 }
+              - { type: listen_select, count: 2 }
+              - { type: dialogue, count: 2, scenario: "Read a building or community notice and explain which action is permitted." }
+          - id: ro-b1-proposals
+            title: "Proposing Solutions"
+            description: "Use real and hypothetical if-clauses to propose a solution and describe possible results."
+            vocabulary: ["dacă", "a propune", "a contribui", "a reduce", "risipă", "soluție"]
+            grammar:
+              - pattern: "Dacă punem mai multe coșuri, oamenii vor recicla mai ușor."
+              - pattern: "Dacă am avea un buget mai mare, am planta mai mulți copaci."
+            activities:
+              - { type: learn, count: 3 }
+              - { type: fill_blank, count: 2 }
+              - { type: error_correct, count: 2 }
+              - { type: dialogue, count: 2, scenario: "Residents discuss litter near a playground and must choose one feasible action." }
+          - id: ro-b1-participation
+            title: "Agreeing on a Community Plan"
+            description: "Summarize who will do what, agree on a deadline and explain the decision to someone who was absent."
+            vocabulary: ["voluntar", "a strânge", "a participa", "a se implica", "a stabili", "punct de întâlnire"]
+            grammar:
+              - pattern: "Am stabilit să ne întâlnim duminică la intrarea în parc."
+              - pattern: "Irina se ocupă de afișe, iar eu aduc mănușile."
+              - pattern: "Dacă plouă, mutăm acțiunea pe săptămâna viitoare."
+            activities:
+              - { type: multiple_choice, count: 2 }
+              - { type: word_bank, count: 2 }
+              - { type: listen_select, count: 2 }
+              - { type: dialogue, count: 2, scenario: "After a short planning conversation, pass the meeting time and each person's role to an absent volunteer." }
+
+      - id: ro-b1-opinions
+        title: "Discussing Choices"
+        description: "Make a reasoned case, acknowledge another view and find a compromise."
+        icon: 💬
+        steps:
+          - id: ro-b1-supporting-views
+            title: "Giving Reasons and Examples"
+            description: "State an opinion and support it with a reason and a concrete example."
+            vocabulary: ["din punctul meu de vedere", "a considera", "de exemplu", "avantaj", "dezavantaj", "în primul rând"]
+            grammar:
+              - pattern: "Din punctul meu de vedere, transportul public ar trebui să circule mai des."
+              - pattern: "De exemplu, seara aștept uneori o jumătate de oră."
+            activities:
+              - { type: learn, count: 3 }
+              - { type: word_bank, count: 2 }
+              - { type: translate, count: 2 }
+              - { type: dialogue, count: 2, scenario: "Give an opinion about flexible working or public transport, with a practical reason." }
+          - id: ro-b1-concession
+            title: "Agreeing and Disagreeing Politely"
+            description: "Acknowledge a positive point before giving a contrasting reason and requesting clarification."
+            vocabulary: ["ai dreptate", "sunt de acord", "înțeleg că", "totuși", "chiar dacă", "pe de altă parte"]
+            grammar:
+              - pattern: "Înțeleg că e mai ieftin, dar pentru mine contează și durata călătoriei."
+              - pattern: "Chiar dacă ideea îmi place, nu cred că o putem pune în practică luna aceasta."
+            activities:
+              - { type: fill_blank, count: 2 }
+              - { type: error_correct, count: 2 }
+              - { type: listen_select, count: 2 }
+              - { type: dialogue, count: 2, scenario: "Respond respectfully to someone who suggests the cheaper of two options." }
+          - id: ro-b1-compromise
+            title: "Finding a Compromise"
+            description: "Compare two options with conditions and reformulate a proposal when someone raises an objection."
+            vocabulary: ["compromis", "a cădea de acord", "a accepta", "cu condiția să", "în cazul în care", "variantă"]
+            grammar:
+              - pattern: "Putem accepta propunerea cu condiția să împărțim costurile."
+              - pattern: "În cazul în care nu găsim bilete, putem merge în alt weekend."
+            activities:
+              - { type: learn, count: 3 }
+              - { type: fill_blank, count: 2 }
+              - { type: listen_type, count: 2 }
+              - { type: dialogue, count: 2, scenario: "Two friends must agree on a trip within a fixed budget and offer a fallback plan." }
+          - id: ro-b1-argument-summary
+            title: "Summarizing a Discussion"
+            description: "Report the main viewpoints and write a short conclusion using connectors."
+            vocabulary: ["unii", "alții", "pe scurt", "în concluzie", "a susține", "a atrage atenția"]
+            grammar:
+              - pattern: "Unii susțin că programul e prea scurt, iar alții spun că acoperă orele de vârf."
+              - pattern: "În concluzie, am decis să încercăm noul program timp de o lună."
+            activities:
+              - { type: multiple_choice, count: 2 }
+              - { type: word_bank, count: 2 }
+              - { type: translate, count: 2 }
+              - { type: dialogue, count: 2, scenario: "Summarize both sides of a short discussion and identify the final decision." }
+
+      - id: ro-b1-review
+        title: "Using Romanian Independently"
+        description: "Bring together listening, reading, interaction and connected production in everyday tasks."
+        icon: 🧭
+        steps:
+          - id: ro-b1-integrated-listening
+            title: "From Announcement to Action"
+            description: "Extract relevant details from a voice message and choose what to do next."
+            vocabulary: ["a se muta", "până la", "întrebare de clarificare", "a lăsa un mesaj", "a confirma", "a lua legătura cu"]
+            grammar:
+              - pattern: "Întâlnirea de mâine s-a mutat la etajul al doilea."
+              - pattern: "Dacă nu poți veni, lasă un mesaj până la ora cinci."
+            activities:
+              - { type: listen_select, count: 2 }
+              - { type: listen_type, count: 2 }
+              - { type: multiple_choice, count: 2 }
+              - { type: dialogue, count: 2, scenario: "Use short voice messages with a changed plan, a reason and a callback or deadline. Ask about the consequence instead of echoing exact wording." }
+          - id: ro-b1-integrated-reading
+            title: "Reading and Relaying Information"
+            description: "Read a notice or an email, select useful details and pass them on in plain Romanian."
+            vocabulary: ["anunț", "condiție", "excepție", "cu excepția", "începând cu", "acces"]
+            grammar:
+              - pattern: "Începând cu 1 mai, biblioteca va fi deschisă și duminica."
+              - pattern: "Accesul e gratuit, cu excepția atelierelor pentru care trebuie să te înscrii."
+            activities:
+              - { type: multiple_choice, count: 2, focus: "Include a two-sentence Romanian notice in the prompt alongside a question in the learner's language about its practical implications." }
+              - { type: fill_blank, count: 2 }
+              - { type: translate, count: 2 }
+              - { type: dialogue, count: 2, scenario: "Use a short event notice or email, including one rule or exception, and ask what it means for a specific visitor." }
+          - id: ro-b1-integrated-writing
+            title: "Planning a Connected Message"
+            description: "Organize a message that recounts an event, explains an impact and ends with a concrete request."
+            vocabulary: ["vă scriu în legătură cu", "din acest motiv", "ulterior", "a solicita", "a lămuri", "aștept răspunsul"]
+            grammar:
+              - pattern: "Vă scriu în legătură cu cursul pe care l-am plătit luna trecută."
+              - pattern: "Din acest motiv, vă rog să îmi confirmați noua dată."
+              - pattern: "Aștept răspunsul dumneavoastră."
+            activities:
+              - { type: multiple_choice, count: 2 }
+              - { type: word_bank, count: 2 }
+              - { type: error_correct, count: 2 }
+              - { type: dialogue, count: 2, scenario: "Put the opening, factual explanation and request of a short message in a sensible order, then choose the most appropriate reply." }
+          - id: ro-b1-integrated-speaking
+            title: "Solving a Problem in Conversation"
+            description: "Clarify the situation, ask a follow-up and agree on the next step using familiar Romanian."
+            vocabulary: ["dacă am înțeles bine", "puteți repeta", "să recapitulăm", "de acord", "a găsi o soluție", "pasul următor"]
+            grammar:
+              - pattern: "Dacă am înțeles bine, trebuie să trimit cererea până luni."
+              - pattern: "Puteți repeta adresa, vă rog?"
+              - pattern: "Să recapitulăm. Dumneavoastră îmi trimiteți un mesaj, iar eu confirm."
+            activities:
+              - { type: listen_select, count: 2 }
+              - { type: translate, count: 2 }
+              - { type: error_correct, count: 2 }
+              - { type: dialogue, count: 2, scenario: "Role scenario for next-line selection. A delayed service needs a workable alternative. Include clarification, an offer and a confirmation in different items." }
+              - { type: speak, count: 1, goal: "Ask for clarification or confirm a next step in a short sentence." }
+
+    checkpoint:
+      title: B1 Checkpoint
+      required_score: 80
+      activities:
+        - { type: multiple_choice, count: 3, focus: "Understand the main point or practical consequence of a brief Romanian notice, email or report." }
+        - { type: fill_blank, count: 3, focus: "Test past tense contrasts, pronoun placement and clause connectors in context." }
+        - { type: listen_select, count: 3, focus: "Hear an announcement, a plan change or a short account. Ask about the meaning and avoid answers that simply repeat the audio." }
+        - { type: translate, count: 3, focus: "Use a polite request, a reported message and a short reasoned opinion. Accept natural equivalent translations." }
+        - { type: dialogue, count: 3, focus: "Choose the next turn in a service interaction, a discussion or an everyday negotiation." }

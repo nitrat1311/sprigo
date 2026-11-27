@@ -2,7 +2,7 @@
 // Schema changes live in src/migrations.ts and run on open.
 // ponytail: in a plain browser (the Vite preview used during development) the same SQL runs on sql.js,
 // persisted to localStorage. The standalone web edition uses IndexedDB instead.
-import { parseGuideId, type Cefr } from "./course";
+import { checkpointId, parseGuideId, type Cefr } from "./course";
 import type { ThemePref } from "./theme";
 import { NEW_STATS, type Stats } from "./progress";
 import { runMigrations, type SqlDb } from "./migrate";
@@ -292,6 +292,19 @@ export async function cachedGuidebooks<T>(enrollmentId: number) {
 export async function completeLevel(enrollmentId: number, ids: string[], next: Cefr | null) {
   for (const id of ids) await markDone(enrollmentId, id);
   if (next) await (await db()).execute("UPDATE enrollments SET level = $1 WHERE id = $2", [next, enrollmentId]);
+}
+
+/** Resume a course that gained a new level after this enrollment passed its last checkpoint. */
+export async function resumeEnrollment(enrollment: Enrollment, levels: Cefr[]): Promise<Enrollment> {
+  const index = levels.indexOf(enrollment.level);
+  if (index < 0 || index === levels.length - 1) return enrollment;
+  const done = await doneSteps(enrollment.id);
+  let next = index;
+  while (next + 1 < levels.length && done.has(checkpointId(levels[next]))) next++;
+  if (next === index) return enrollment;
+  const level = levels[next];
+  await (await db()).execute("UPDATE enrollments SET level = $1 WHERE id = $2 AND level = $3", [level, enrollment.id, enrollment.level]);
+  return { ...enrollment, level };
 }
 
 /** Scored items of every cached step lesson (not legend/story/guide/exam keys, which contain ":"), for the timed challenge. */
